@@ -1,0 +1,52 @@
+{
+  "avatars": {
+    "wolf": {
+      "levels": {
+        "1": {
+          "avatar_id": "232ba61fb3424ba28a3b14182b86a237",
+          "voice_id": "btIY8K0iIypydsjKFUzI"
+        },
+        "2": {
+          "avatar_id": "5c1a43b26cd94cbc9d7532927b61cb27",
+          "voice_id": "btIY8K0iIypydsjKFUzI"
+        },
+        "3": {
+          "avatar_id": "12686d82f726427fa8caafe9af43d8e1",
+          "voice_id": "btIY8K0iIypydsjKFUzI"
+        },
+        "4": {
+          "avatar_id": "e268ee6a1ef94fe99e34e0a1c26e7072",
+          "voice_id": "btIY8K0iIypydsjKFUzI"
+        },
+        "5": {
+          "avatar_id": "bcc3bbee01934ae6adf444c567492753",
+          "voice_id": "btIY8K0iIypydsjKFUzI"
+        }
+      }
+    },
+    "human": {
+      "levels": {
+        "1": {
+          "avatar_id": "b8acebce59594758b1a8a6365fe6aeaa",
+          "voice_id": "Mub7zCyLDpa4L9LfvXCr"
+        },
+        "2": {
+          "avatar_id": "9debbf90c761424582a0ba5643f2078b",
+          "voice_id": "Mub7zCyLDpa4L9LfvXCr"
+        },
+        "3": {
+          "avatar_id": "f08c81c448b14a0a84787e4ef89c0abe",
+          "voice_id": "Mub7zCyLDpa4L9LfvXCr"
+        },
+        "4": {
+          "avatar_id": "b8cb1655404c462081eed28b2372810b",
+          "voice_id": "Mub7zCyLDpa4L9LfvXCr"
+        },
+        "5": {
+          "avatar_id": "2a6f82737cd64d4fa46375812def5f6f",
+          "voice_id": "Mub7zCyLDpa4L9LfvXCr"
+        }
+      }
+    }
+  }
+}
