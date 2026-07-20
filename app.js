@@ -1912,6 +1912,39 @@ function startFreeTrial() {
     banner.classList.remove('hidden');
 }
 
+function checkAccessRules() {
+    // If the parent cabinet is currently active, do not apply child locks
+    const playground = document.getElementById('playground-view');
+    if (playground && playground.classList.contains('hidden')) {
+        return true;
+    }
+
+    const isSubActive = isSubscriptionActive();
+    
+    // Check if subscription has expired
+    if (isRegistered && !isSubActive && !childAuthenticated) {
+        // Show expired lock screen
+        document.getElementById('sub-expired-lock-modal').classList.remove('hidden');
+        return false;
+    }
+    
+    // If not registered and tutor trial is passed for currentCharacter, lock with post-trial modal
+    if (!isRegistered && tutorTrialPassed[currentCharacter]) {
+        document.getElementById('post-trial-modal').classList.remove('hidden');
+        return false;
+    }
+    
+    // If subscription is inactive (either not registered or expired but child authenticated is false), enforce Scenario 1 only
+    if (!isSubActive && !childAuthenticated) {
+        if (currentScenario !== 1) {
+            currentScenario = 1;
+            updateScenarioUI();
+            alert(currentLang === 'uk' ? "У пробному режимі доступне лише перше завдання." : "В пробном режиме доступно только первое задание.");
+            return false;
+        }
+    }
+    return true;
+}
 
 // Init App
 window.addEventListener('DOMContentLoaded', async () => {
