@@ -2071,6 +2071,7 @@ function checkAccessRules() {
         }
     }
     return true;
+}
 // --- Weekly, Monthly, and Track Selectors ---
 
 function selectTrack(track) {
