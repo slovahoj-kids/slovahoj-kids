@@ -1518,34 +1518,8 @@ function startFreeTrial() {
     banner.classList.remove('hidden');
 }
  
-// Init App
-window.addEventListener('DOMContentLoaded', async () => {
-    // Load env keys
-    await loadEnv();
-    
-    // Setup default voices
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.getVoices();
-    }
-    
-    // Check access controls on load
-    checkAccessRules();
- 
-    // Initialize UI
-    syncMilestonesUI();
-    updateScenarioButtonsVisibility();
-    updateScenarioUI();
-    updateCharacterLevelImage();
-    
-    // Load schedule configurations
-    loadParentScheduleUI();
-    
-    // Initial avatar intro video play
-    updateAvatarState('lesson_intro');
-    
-    // Start parent schedule verification checker (runs every 30 seconds)
-    setInterval(checkLessonSchedule, 30000);
-});
+// Init App (Defined at the end of the file)
+
 
 function processRegistration() {
     const email = document.getElementById('reg-email').value.trim();
@@ -1790,126 +1764,279 @@ function closePaymentModal() {
     document.getElementById('payment-modal').classList.add('hidden');
 }
 
-function closePremiumLockModal() {
-    document.getElementById('premium-lock-modal').classList.add('hidden');
-}
+// --- Parent Scheduler & Notifications Implementation ---
 
-function upgradeToPremiumFromModal() {
-    document.getElementById('premium-lock-modal').classList.add('hidden');
-    // Open payment modal for Premium
-    const planName = currentLang === 'uk' ? 'Преміум (Оксана)' : 'Премиум (Оксана)';
-    openPaymentModal(50, planName);
-}
-
-function formatCardNumber(input) {
-    let value = input.value.replace(/\D/g, '');
-    let formatted = '';
-    for (let i = 0; i < value.length; i++) {
-        if (i > 0 && i % 4 === 0) formatted += ' ';
-        formatted += value[i];
+function loadParentScheduleUI() {
+    const savedSchedule = localStorage.getItem('slovahoj_parent_schedule');
+    let schedule = { days: [], time: "" };
+    if (savedSchedule) {
+        try {
+            schedule = JSON.parse(savedSchedule);
+        } catch (e) {
+            console.error("Error parsing saved schedule", e);
+        }
     }
-    input.value = formatted;
-}
-
-function formatExpiry(input) {
-    let value = input.value.replace(/\D/g, '');
-    if (value.length > 2) {
-        input.value = value.substring(0, 2) + '/' + value.substring(2, 4);
-    } else {
-        input.value = value;
-    }
-}
-
-function processPayment() {
-    const holder = document.getElementById('card-holder').value.trim();
-    const number = document.getElementById('card-number').value.replace(/\s/g, '');
-    const expiry = document.getElementById('card-expiry').value.trim();
-    const cvv = document.getElementById('card-cvv').value.trim();
-    const submitBtn = document.getElementById('btn-submit-payment');
     
-    if (!holder || number.length < 16 || expiry.length < 5 || cvv.length < 3) {
-        document.getElementById('payment-error').classList.remove('hidden');
+    // Update Day Buttons
+    for (let day = 1; day <= 7; day++) {
+        const btn = document.getElementById(`day-btn-${day}`);
+        if (btn) {
+            if (schedule.days.includes(day)) {
+                btn.style.background = 'var(--primary-color, #0b47a6)';
+                btn.style.color = '#ffffff';
+                btn.style.borderColor = 'var(--primary-color, #0b47a6)';
+            } else {
+                btn.style.background = '#ffffff';
+                btn.style.color = 'var(--text-dark, #1e293b)';
+                btn.style.borderColor = '#cbd5e1';
+            }
+        }
+    }
+    
+    // Update Time Input
+    const timeInput = document.getElementById('schedule-time');
+    if (timeInput) {
+        timeInput.value = schedule.time || "";
+    }
+    
+    // Update Checkbox for permission
+    const notifyChk = document.getElementById('notify-browser-chk');
+    if (notifyChk) {
+        notifyChk.checked = (Notification.permission === 'granted' && localStorage.getItem('slovahoj_notifications_enabled') === 'true');
+    }
+}
+
+function toggleScheduleDay(day) {
+    const savedSchedule = localStorage.getItem('slovahoj_parent_schedule');
+    let schedule = { days: [], time: "" };
+    if (savedSchedule) {
+        try {
+            schedule = JSON.parse(savedSchedule);
+        } catch (e) {
+            console.error("Error parsing saved schedule", e);
+        }
+    }
+    
+    const index = schedule.days.indexOf(day);
+    if (index > -1) {
+        schedule.days.splice(index, 1);
+    } else {
+        schedule.days.push(day);
+    }
+    
+    localStorage.setItem('slovahoj_parent_schedule', JSON.stringify(schedule));
+    loadParentScheduleUI();
+}
+
+function saveParentSchedule() {
+    const savedSchedule = localStorage.getItem('slovahoj_parent_schedule');
+    let schedule = { days: [], time: "" };
+    if (savedSchedule) {
+        try {
+            schedule = JSON.parse(savedSchedule);
+        } catch (e) {
+            console.error("Error parsing saved schedule", e);
+        }
+    }
+    
+    const timeInput = document.getElementById('schedule-time');
+    if (timeInput) {
+        schedule.time = timeInput.value;
+    }
+    
+    localStorage.setItem('slovahoj_parent_schedule', JSON.stringify(schedule));
+}
+
+function toggleNotificationsPermission() {
+    const chk = document.getElementById('notify-browser-chk');
+    if (!chk) return;
+    
+    if (chk.checked) {
+        if (!('Notification' in window)) {
+            alert(currentLang === 'uk' ? 'Ваш браузер не підтримує push-сповіщення.' : 'Ваш браузер не поддерживает push-уведомления.');
+            chk.checked = false;
+            localStorage.setItem('slovahoj_notifications_enabled', 'false');
+            return;
+        }
+        
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                localStorage.setItem('slovahoj_notifications_enabled', 'true');
+                chk.checked = true;
+            } else {
+                localStorage.setItem('slovahoj_notifications_enabled', 'false');
+                chk.checked = false;
+                alert(currentLang === 'uk' 
+                    ? 'Дозвіл на сповіщення було відхилено. Будь ласка, увімкніть його в налаштуваннях браузера.' 
+                    : 'Разрешение на уведомления было отклонено. Пожалуйста, включите его в настройках браузера.');
+            }
+        });
+    } else {
+        localStorage.setItem('slovahoj_notifications_enabled', 'false');
+        chk.checked = false;
+    }
+}
+
+function playAlarmSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const playTone = (freq, duration, delay) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime + delay);
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + delay + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime + delay);
+            osc.stop(audioCtx.currentTime + delay + duration);
+        };
+        
+        playTone(523.25, 0.5, 0); // C5
+        playTone(659.25, 0.5, 0.15); // E5
+        playTone(783.99, 0.6, 0.3); // G5
+    } catch (e) {
+        console.warn("AudioContext playback failed", e);
+    }
+}
+
+function showToastNotification() {
+    const existing = document.getElementById('slovahoj-toast-notification');
+    if (existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.id = 'slovahoj-toast-notification';
+    toast.style.position = 'fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '99999';
+    toast.style.background = '#ffffff';
+    toast.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)';
+    toast.style.borderRadius = '12px';
+    toast.style.borderLeft = '6px solid var(--primary-color, #0b47a6)';
+    toast.style.padding = '16px 20px';
+    toast.style.display = 'flex';
+    toast.style.flexDirection = 'column';
+    toast.style.gap = '10px';
+    toast.style.maxWidth = '360px';
+    toast.style.animation = 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+    
+    if (!document.getElementById('slovahoj-toast-styles')) {
+        const style = document.createElement('style');
+        style.id = 'slovahoj-toast-styles';
+        style.innerHTML = `
+            @keyframes slideIn {
+                from { transform: translateX(120%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    const titleText = currentLang === 'uk' ? '⏰ Час займатися!' : '⏰ Время заниматься!';
+    const descText = currentLang === 'uk' 
+        ? 'Твій персональний урок словацької мови з Оксаною вже починається!' 
+        : 'Твой персональный урок словацкого языка с Оксаной уже начинается!';
+    const buttonText = currentLang === 'uk' ? 'Почати урок' : 'Начать урок';
+    const closeText = currentLang === 'uk' ? 'Закрити' : 'Закрыть';
+    
+    toast.innerHTML = `
+        <div style="font-weight: 700; font-size: 16px; color: var(--primary-color, #0b47a6);">${titleText}</div>
+        <div style="font-size: 14px; color: #4b5563; line-height: 1.4;">${descText}</div>
+        <div style="display: flex; gap: 10px; margin-top: 5px;">
+            <button onclick="switchView('playground'); document.getElementById('slovahoj-toast-notification').remove();" 
+                    style="background: var(--primary-color, #0b47a6); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
+                ${buttonText}
+            </button>
+            <button onclick="document.getElementById('slovahoj-toast-notification').remove();" 
+                    style="background: #f3f4f6; color: #4b5563; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
+                ${closeText}
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        const t = document.getElementById('slovahoj-toast-notification');
+        if (t) t.remove();
+    }, 10000);
+}
+
+function testNotificationReminder() {
+    playAlarmSound();
+    
+    const notificationsEnabled = localStorage.getItem('slovahoj_notifications_enabled') === 'true';
+    if (notificationsEnabled && Notification.permission === 'granted') {
+        const title = currentLang === 'uk' ? 'Словацька мова з Оксаною' : 'Словацкий язык с Оксаной';
+        const body = currentLang === 'uk' 
+            ? 'Привіт! Час починати наше заняття! Тварини чекають на тебе.' 
+            : 'Привет! Время начинать наше занятие! Животные ждут тебя.';
+        try {
+            new Notification(title, {
+                body: body,
+                icon: './favicon.ico'
+            });
+        } catch (e) {
+            console.error("Failed to show browser notification", e);
+        }
+    }
+    
+    showToastNotification();
+}
+
+function checkLessonSchedule() {
+    const savedSchedule = localStorage.getItem('slovahoj_parent_schedule');
+    if (!savedSchedule) return;
+    
+    let schedule = null;
+    try {
+        schedule = JSON.parse(savedSchedule);
+    } catch (e) {
         return;
     }
     
-    submitBtn.disabled = true;
-    submitBtn.innerText = currentLang === 'uk' ? 'Обробка...' : 'Обработка...';
+    if (!schedule || !schedule.days || schedule.days.length === 0 || !schedule.time) return;
     
-    setTimeout(() => {
-        submitBtn.disabled = false;
-        submitBtn.innerText = currentLang === 'uk' ? 'Сплатити' : 'Оплатить';
+    const now = new Date();
+    let jsDay = now.getDay();
+    let currentDayOfWeek = jsDay === 0 ? 7 : jsDay;
+    
+    if (!schedule.days.includes(currentDayOfWeek)) return;
+    
+    const currentHour = now.getHours().toString().padStart(2, '0');
+    const currentMinute = now.getMinutes().toString().padStart(2, '0');
+    const currentTimeString = `${currentHour}:${currentMinute}`;
+    
+    if (currentTimeString === schedule.time) {
+        const lastTriggered = localStorage.getItem('slovahoj_last_triggered_reminder');
+        const triggerIdentifier = `${currentDayOfWeek}-${currentTimeString}`;
         
-        // Mock check
-        if (number.startsWith('4') || number.startsWith('5')) {
-            // Success
-            document.getElementById('payment-main-form').classList.add('hidden');
-            document.getElementById('payment-modal-footer').classList.add('hidden');
-            document.getElementById('payment-success-screen').classList.remove('hidden');
+        if (lastTriggered !== triggerIdentifier) {
+            localStorage.setItem('slovahoj_last_triggered_reminder', triggerIdentifier);
             
-            // Set paid subscription state (Preserves child's progress!)
-            subscriptionStart = Date.now();
-            let periodDays = 30;
-            if (currentPaymentPlanName.includes('3')) periodDays = 90;
-            else if (currentPaymentPlanName.includes('6')) periodDays = 180;
-            subscriptionEnd = subscriptionStart + (periodDays * 24 * 60 * 60 * 1000);
+            playAlarmSound();
             
-            if (currentPaymentPlanName.includes('Преміум') || currentPaymentPlanName.includes('Premium') || currentPaymentPlanName.includes('Премиум')) {
-                subscriptionType = 'premium';
-            } else {
-                subscriptionType = 'paid';
+            const notificationsEnabled = localStorage.getItem('slovahoj_notifications_enabled') === 'true';
+            if (notificationsEnabled && Notification.permission === 'granted') {
+                const title = currentLang === 'uk' ? 'Словацька мова з Оксаною' : 'Словацкий язык с Оксаной';
+                const body = currentLang === 'uk' 
+                    ? 'Привіт! Час починати наше заняття! Тварини чекають на тебе.' 
+                    : 'Привет! Время начинать наше занятие! Животные ждут тебя.';
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: './favicon.ico'
+                    });
+                } catch (e) {
+                    console.error("Failed to show browser notification", e);
+                }
             }
-            saveSubState();
             
-            // Clean lock screens
-            document.getElementById('sub-expired-lock-modal').classList.add('hidden');
-            document.getElementById('parent-expiry-modal').classList.add('hidden');
-
-            // Activate subscription banner
-            const banner = document.getElementById('subscription-status-banner');
-            banner.querySelector('.sub-title').setAttribute('data-i18n', 'sub_active_title');
-            banner.querySelector('.sub-title').innerText = currentLang === 'uk' ? 'Ваша підписка активна!' : 'Ваша подписка активна!';
-            
-            const expDate = new Date(subscriptionEnd);
-            const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
-            banner.querySelector('.sub-details').innerText = currentLang === 'uk'
-                ? `Тарифний план: ${currentPaymentPlanName}. Дійсний до ${expString}.`
-                : `Тарифный план: ${currentPaymentPlanName}. Действителен до ${expString}.`;
-            banner.classList.remove('hidden');
-        } else {
-            // Error
-            document.getElementById('payment-error').classList.remove('hidden');
+            showToastNotification();
         }
-    }, 1200);
-}
-
-function startFreeTrial() {
-    const message = currentLang === 'uk'
-        ? 'Вітаємо! Ви успішно активували безкоштовний пробний доступ на 7 днів.'
-        : 'Поздравляем! Вы успешно активировали бесплатный пробный доступ на 7 дней.';
-        
-    alert(message);
-    
-    // Set trial state (Preserves child's progress!)
-    subscriptionStart = Date.now();
-    subscriptionEnd = subscriptionStart + (7 * 24 * 60 * 60 * 1000);
-    subscriptionType = 'trial';
-    saveSubState();
-    
-    // Clean lock screens
-    document.getElementById('sub-expired-lock-modal').classList.add('hidden');
-    document.getElementById('parent-expiry-modal').classList.add('hidden');
-
-    // Activate subscription banner as trial active
-    const banner = document.getElementById('subscription-status-banner');
-    banner.querySelector('.sub-title').setAttribute('data-i18n', 'trial_active_title');
-    banner.querySelector('.sub-title').innerText = currentLang === 'uk' ? 'Ваш пробний період активний!' : 'Ваш пробный период активен!';
-    
-    const expDate = new Date(subscriptionEnd);
-    const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
-    banner.querySelector('.sub-details').innerText = currentLang === 'uk'
-        ? `Пробний період дійсний до ${expString}.`
-        : `Пробный период действителен до ${expString}.`;
-    banner.classList.remove('hidden');
+    }
 }
 
 function checkAccessRules() {
