@@ -2072,6 +2072,26 @@ function checkAccessRules() {
     }
     return true;
 }
+
+function speakSlovak(text) {
+    if (!text) return;
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'sk-SK';
+        utterance.rate = 0.85;
+        
+        const voices = window.speechSynthesis.getVoices();
+        const skVoice = voices.find(v => v.lang.startsWith('sk'));
+        if (skVoice) {
+            utterance.voice = skVoice;
+        }
+        window.speechSynthesis.speak(utterance);
+    } else {
+        console.warn("Speech synthesis not supported in this browser.");
+    }
+}
+
 // --- Weekly, Monthly, and Track Selectors ---
 
 function selectTrack(track) {
