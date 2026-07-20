@@ -74,42 +74,64 @@
                 <!-- Left Column: Avatar & Chat -->
                 <div class="avatar-panel card">
                     <div class="character-selector">
-                        <span class="selector-label" data-i18n="select_tutor">Обери вчителя:</span>
-                        
-                        <!-- Группа Животные -->
+                        <!-- Track Selector -->
                         <div class="character-group">
-                            <span class="group-title" data-i18n="group_animals">Тварини:</span>
+                            <span class="selector-label"><i class="fa-solid fa-graduation-cap"></i> Віковий трек:</span>
                             <div class="character-options">
-                                <button id="char-btn-wolf" class="char-option-btn active" onclick="selectCharacter('wolf')">
-                                    <span class="char-icon">🐺</span> <span data-i18n="char_wolf">Вовченя (Vĺča)</span>
+                                <button id="track-btn-junior" class="char-option-btn active" onclick="selectTrack('junior')">
+                                    <span class="char-icon">🟢</span> <span>Молодший (6-8)</span>
                                 </button>
-                                <button id="char-btn-fox" class="char-option-btn" onclick="selectCharacter('fox')">
-                                    <span class="char-icon">🦊</span> <span data-i18n="char_fox">Лисеня (Líška)</span>
+                                <button id="track-btn-middle" class="char-option-btn" onclick="selectTrack('middle')">
+                                    <span class="char-icon">🟡</span> <span>Середній (9-11)</span>
                                 </button>
-                                <button id="char-btn-bear" class="char-option-btn" onclick="selectCharacter('bear')">
-                                    <span class="char-icon">🐻</span> <span data-i18n="char_bear">Ведмежа (Macko)</span>
-                                </button>
-                                <button id="char-btn-bunny" class="char-option-btn" onclick="selectCharacter('bunny')">
-                                    <span class="char-icon">🐰</span> <span data-i18n="char_bunny">Зайченя (Zajko)</span>
+                                <button id="track-btn-senior" class="char-option-btn" onclick="selectTrack('senior')">
+                                    <span class="char-icon">🔵</span> <span>Старший (12-14)</span>
                                 </button>
                             </div>
                         </div>
                         
-                        <!-- Группа Люди -->
-                        <div class="character-group">
-                            <span class="group-title" data-i18n="group_humans">Люди:</span>
+                        <!-- Month & Week Progression Selectors -->
+                        <div style="display: flex; gap: 15px; margin-top: 5px;">
+                            <div style="flex: 1;">
+                                <span class="selector-label" style="font-size: 11px;"><i class="fa-solid fa-calendar"></i> Місяць:</span>
+                                <select id="month-select" onchange="changeMonth(this.value)" class="modal-input" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--card-border);">
+                                    <option value="1">Місяць 1: Знайомство</option>
+                                    <option value="2">Місяць 2: Сім'я та дім</option>
+                                    <option value="3">Місяць 3: Школа</option>
+                                    <option value="4">Місяць 4: Їжа</option>
+                                    <option value="5">Місяць 5: Моє місто</option>
+                                    <option value="6">Місяць 6: Тварини</option>
+                                    <option value="7">Місяць 7: Час та розклад</option>
+                                    <option value="8">Місяць 8: Професії</option>
+                                    <option value="9">Місяць 9: Моє дозвілля</option>
+                                    <option value="10">Місяць 10: Подорожі</option>
+                                    <option value="11">Місяць 11: Природа</option>
+                                    <option value="12">Місяць 12: Свята</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="selector-label" style="font-size: 11px;"><i class="fa-solid fa-calendar-week"></i> Тиждень:</span>
+                                <select id="week-select" onchange="changeWeek(this.value)" class="modal-input" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--card-border);">
+                                    <option value="1">Тиждень 1</option>
+                                    <option value="2">Тиждень 2</option>
+                                    <option value="3">Тиждень 3</option>
+                                    <option value="4">Тиждень 4 (🛡️ Безпека)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Day/Lesson Selector -->
+                        <div class="character-group" style="margin-top: 10px;">
+                            <span class="selector-label"><i class="fa-solid fa-circle-play"></i> Оберіть заняття тижня:</span>
                             <div class="character-options">
-                                <button id="char-btn-human" class="char-option-btn" onclick="selectCharacter('human')">
-                                    <span class="char-icon">👩</span> <span data-i18n="char_human">Оксана (Oksana)</span>
+                                <button id="day-btn-lesson-1" class="char-option-btn active" onclick="selectLessonDay(1)" style="padding: 8px;">
+                                    <span>Заняття 1 (День 1)</span>
                                 </button>
-                                <button id="char-btn-taras" class="char-option-btn" onclick="selectCharacter('taras')">
-                                    <span class="char-icon">👦</span> <span data-i18n="char_taras">Тарас (Taras)</span>
+                                <button id="day-btn-lesson-2" class="char-option-btn" onclick="selectLessonDay(2)" style="padding: 8px;">
+                                    <span>Заняття 2 (День 2)</span>
                                 </button>
-                                <button id="char-btn-marijka" class="char-option-btn" onclick="selectCharacter('marijka')">
-                                    <span class="char-icon">👧</span> <span data-i18n="char_marijka">Марійка (Marijka)</span>
-                                </button>
-                                <button id="char-btn-grandfather" class="char-option-btn" onclick="selectCharacter('grandfather')">
-                                    <span class="char-icon">👴</span> <span data-i18n="char_grandfather">Дідусь (Dedo)</span>
+                                <button id="day-btn-lesson-3" class="char-option-btn" onclick="selectLessonDay(3)" style="padding: 8px;">
+                                    <span>Заняття 3 (День 3)</span>
                                 </button>
                             </div>
                         </div>
@@ -127,21 +149,21 @@
                             <!-- Static/Interactive Video Mock (Fallback) -->
                             <div id="avatar-fallback" class="avatar-mock-animation">
                                 <div class="pulse-ring"></div>
-                                <img id="char-avatar-img" class="avatar-img" src="wolf_mascot.png" alt="Tutor Avatar">
+                                <img id="char-avatar-img" class="avatar-img" src="tutor_girl.png" alt="Tutor Avatar">
                             </div>
                         </div>
 
                         <!-- Subtitle Overlay -->
                         <div id="avatar-subtitles" class="subtitle-overlay">
-                            <p id="tutor-speech-text">Ahoj! Ja som vlk Vlk. Poďme sa spolu zahrať!</p>
+                            <p id="tutor-speech-text">Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!</p>
                         </div>
                     </div>
 
                     <!-- Chat History (Recent dialogue bubbles) -->
                     <div id="dialogue-chat" class="dialogue-chat">
                         <div class="bubble tutor-bubble">
-                            <div class="bubble-meta" data-i18n="char_wolf">Вовчик Влк</div>
-                            <div class="bubble-text">Ahoj! Ja som vlk Vlk. Poďme sa spolu zahraть! (Привіт! Я вовчик Влк. Давай гратися разом!)</div>
+                            <div class="bubble-meta" data-i18n="char_human">Оксана (Oksana)</div>
+                            <div class="bubble-text">Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka! (Привіт! Мене звати Оксана. Давай разом вивчати словацькі слова!)</div>
                         </div>
                     </div>
 
@@ -343,9 +365,9 @@
                         </div>
                         <div class="plan-total" data-i18n="plan_free_total">Всього: €0 на 7 днів</div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Доступ до 8 аватаров</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Родительский контроль</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
                         </ul>
                         <button class="btn-plan-select" onclick="startFreeTrial()" data-i18n="btn_start_trial">Спробувати безкоштовно</button>
                     </div>
@@ -360,9 +382,9 @@
                         </div>
                         <div class="plan-total" style="visibility: hidden;">&nbsp;</div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Доступ до 8 аватаров</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Родительский контроль</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
                         </ul>
                         <button class="btn-plan-select" onclick="openPaymentModal(10, '1 місяць')" data-i18n="btn_choose_plan">Обрати тариф</button>
                     </div>
@@ -377,9 +399,9 @@
                         </div>
                         <div class="plan-total" data-i18n="plan_3_total">Всього: €24</div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Доступ до 8 аватаров</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Родительский контроль</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
                         </ul>
                         <button class="btn-plan-select" onclick="openPaymentModal(24, '3 місяці')" data-i18n="btn_choose_plan">Обрати тариф</button>
                     </div>
@@ -394,11 +416,28 @@
                         </div>
                         <div class="plan-total" data-i18n="plan_6_total">Всього: €30</div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Доступ до 8 аватаров</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Родительский контроль</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
                         </ul>
                         <button class="btn-plan-select" onclick="openPaymentModal(30, '6 місяців')" data-i18n="btn_choose_plan">Обрати тариф</button>
+                    </div>
+
+                    <!-- Plan 4: Premium -->
+                    <div class="plan-card featured-premium">
+                        <div class="plan-badge" data-i18n="plan_premium_badge">Преміум-ІІ</div>
+                        <h4 class="plan-name" data-i18n="plan_premium">Преміум (Оксана)</h4>
+                        <div class="plan-price">
+                            <span class="price-currency">€</span><span class="price-value">50</span>
+                            <span class="price-period" data-i18n="plan_period_month">/ міс</span>
+                        </div>
+                        <div class="plan-total" data-i18n="plan_premium_total">Всього: €50 на місяць</div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_1">Повна програма навчання (12 місяців)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_2">Персональний ІІ-наставник Оксана</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_3">Безлімітний розмовний тренажер</span></li>
+                        </ul>
+                        <button class="btn-plan-select btn-premium" onclick="openPaymentModal(50, 'Преміум (Оксана)')" data-i18n="btn_choose_plan">Обрати тариф</button>
                     </div>
                 </div>
 
@@ -408,6 +447,55 @@
                     <div class="sub-banner-text">
                         <span class="sub-title" data-i18n="sub_active_title">Ваша підписка активна!</span>
                         <span class="sub-details" id="sub-active-details">Тарифний план: 3 місяці. Дійсний до 18 жовтня 2026.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lesson Scheduler Section -->
+            <div class="gdpr-settings-card card" style="margin-top: 20px; border: 1px solid rgba(11, 71, 166, 0.15);">
+                <div class="gdpr-header" style="display: flex; gap: 15px; align-items: center;">
+                    <div style="font-size: 32px; color: var(--primary-color);"><i class="fa-solid fa-calendar-days"></i></div>
+                    <div class="gdpr-title">
+                        <h3 style="color: var(--primary-color);">Планування занять та нагадування</h3>
+                        <p style="color: #64748b; font-size: 13.5px; margin-top: 5px;">Оберіть зручні дні та час для навчання. Наша система автоматично надсилатиме вам нагадування перед початком занять, щоб дитина не пропускала уроки словацької мови з Оксаною.</p>
+                    </div>
+                </div>
+                
+                <div class="schedule-settings" style="margin-top: 20px;">
+                    <!-- Days of Week Selector -->
+                    <span class="selector-label" style="display: block; margin-bottom: 8px;"><i class="fa-solid fa-calendar-week"></i> Дні занять:</span>
+                    <div class="schedule-days-selector" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                        <button id="day-btn-1" class="day-select-btn" onclick="toggleScheduleDay(1)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Понеділок</button>
+                        <button id="day-btn-2" class="day-select-btn" onclick="toggleScheduleDay(2)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Вівторок</button>
+                        <button id="day-btn-3" class="day-select-btn" onclick="toggleScheduleDay(3)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Середа</button>
+                        <button id="day-btn-4" class="day-select-btn" onclick="toggleScheduleDay(4)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Четвер</button>
+                        <button id="day-btn-5" class="day-select-btn" onclick="toggleScheduleDay(5)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">П'ятниця</button>
+                        <button id="day-btn-6" class="day-select-btn" onclick="toggleScheduleDay(6)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Субота</button>
+                        <button id="day-btn-7" class="day-select-btn" onclick="toggleScheduleDay(7)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Неділя</button>
+                    </div>
+                    
+                    <!-- Time Selector and Actions -->
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; border-top: 1px solid var(--card-border); padding-top: 15px;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label for="schedule-time" style="font-weight: 600; display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-dark);"><i class="fa-solid fa-clock"></i> Час початку занять:</label>
+                            <input type="time" id="schedule-time" class="modal-input" style="width: 150px; font-size: 16px; padding: 8px; border: 1.5px solid #cbd5e1;" onchange="saveParentSchedule()">
+                        </div>
+                        
+                        <div style="flex: 2; min-width: 280px;">
+                            <span style="font-weight: 600; display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-dark);"><i class="fa-solid fa-bell"></i> Отримувати нагадування:</span>
+                            <div style="display: flex; gap: 15px; align-items: center; margin-top: 8px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text-dark); font-weight: 500;">
+                                    <input type="checkbox" id="notify-browser-chk" onchange="toggleNotificationsPermission()" style="width: 18px; height: 18px; cursor: pointer;">
+                                    <span>Браузерні push-сповіщення</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 12px; border-top: 1px solid var(--card-border); padding-top: 15px;">
+                        <button class="btn-gdpr-secondary" onclick="testNotificationReminder()" style="border-color: var(--primary-color); color: var(--primary-color); padding: 10px 20px; font-weight: 700;">
+                            <i class="fa-solid fa-paper-plane"></i> Надіслати тестове нагадування
+                        </button>
                     </div>
                 </div>
             </div>
@@ -582,6 +670,22 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-modal-primary" onclick="scrollToPricingAndClose()" style="width: 100%;">Перейти до вибору тарифу</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Subscription Lock Modal -->
+    <div id="premium-lock-modal" class="modal-overlay hidden">
+        <div class="modal-card premium-lock-card">
+            <button class="modal-close-btn" onclick="closePremiumLockModal()">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fa-solid fa-gem"></i></div>
+                <h3 data-i18n="premium_lock_title">Потрібен Преміум-тариф</h3>
+                <p data-i18n="premium_lock_sub">Для спілкування з людьми-наставниками (Оксана, Тарас, Дідусь) в реальному часі потрібен Преміум-тариф. У вашому поточному пакеті доступні всі 4 тварини-маскоти без обмежень!</p>
+            </div>
+            <div class="modal-footer" style="flex-direction: column; gap: 10px; width: 100%;">
+                <button class="btn-modal-primary btn-premium" onclick="upgradeToPremiumFromModal()" style="width: 100%; background: linear-gradient(135deg, #8b5cf6, #d946ef); color: #fff; border: none;" data-i18n="btn_upgrade_premium">Перейти на Преміум (€50/міс)</button>
+                <button class="btn-modal-secondary" onclick="closePremiumLockModal()" style="width: 100%; background: #e2e8f0; color: var(--text-dark); border: none;" data-i18n="btn_continue_standard">Продовжити з тваринами</button>
             </div>
         </div>
     </div>

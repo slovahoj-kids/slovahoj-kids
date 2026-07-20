@@ -1,6 +1,6 @@
 // 1. App State & Configurations
 let currentLang = 'uk';
-let currentCharacter = 'wolf';
+let currentCharacter = 'human'; // 'human' maps to Оксана
 let isRecording = false;
 let recordTimer = null;
 let progressChart = null;
@@ -11,6 +11,11 @@ function setParentVerified(val) {
     sessionStorage.setItem('slovahoj_kids_parent_verified', val ? 'true' : 'false');
 }
 
+// Curriculum progression states
+let currentMonth = 1;
+let currentWeek = 1;
+let currentLessonDay = 1;
+let currentTrack = 'junior'; // 'junior', 'middle', 'senior'
 let currentScenario = 1;
 const completedScenariosKey = 'slovahoj_kids_completed_scenarios';
 let completedScenarios = [1, 2, 3];
@@ -27,30 +32,6 @@ try {
 }
 let envKeys = null;
 let currentLevel = 1;
-
-// NEW State Variables for PIN Access, Registrations, and Subscription tracking
-const tutorTrialPassedKey = 'slovahoj_kids_tutor_trial_passed';
-let tutorTrialPassed = {
-    wolf: false,
-    fox: false,
-    bear: false,
-    bunny: false,
-    human: false,
-    taras: false,
-    marijka: false,
-    grandfather: false
-};
-try {
-    const stored = localStorage.getItem(tutorTrialPassedKey);
-    if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed && typeof parsed === 'object') {
-            tutorTrialPassed = parsed;
-        }
-    }
-} catch (e) {
-    console.warn("Error parsing tutorTrialPassed, using default.", e);
-}
 
 let currentUserEmail = localStorage.getItem('slovahoj_kids_email');
 if (currentUserEmail === 'null' || currentUserEmail === 'undefined') currentUserEmail = null;
@@ -87,205 +68,483 @@ function saveSubState() {
     localStorage.setItem('slovahoj_kids_sub_end', subscriptionEnd.toString());
 }
 
-function saveTutorTrials() {
-    localStorage.setItem(tutorTrialPassedKey, JSON.stringify(tutorTrialPassed));
-}
-
-const scenarios = {
+// Full curriculum data database for Month 1 and 2, with metadata for Months 3-12
+const curriculumCatalog = {
     1: {
-        title: {
-            uk: "Твоє завдання: Привітайся зі словацьким другом",
-            ru: "Твое задание: Поздоровайся со словацким другом"
-        },
-        desc: {
-            uk: "Повтори фразу: \"Dobrý deň, ako sa máš?\"",
-            ru: "Повтори фразу: \"Dobrý deň, ako sa máš?\""
-        },
-        phrase: "Dobrý deň, ako sa máš?",
-        words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
-        tip: {
-            uk: "Словацька буква 'ň' вимовляется м'яко, як українська 'нь'.",
-            ru: "Словацкая буква 'ň' произносится мягко, как русская 'нь'."
-        },
-        phoneticTip: {
-            uk: "Звук [ň] вимовляється м'яко. Кінчик язика торкається верхніх зубів. Спробуй ще раз: [де нь]",
-            ru: "Звук [ň] произносится мягко. Кончик языка касается верхних зубов. Попробуй еще раз: [де нь]"
-        },
-        audioCorrection: "deň"
+        theme: "Знайомство та привітання",
+        weeks: {
+            1: {
+                topic: "Привіт і знайомство",
+                is_safety: false,
+                hint: {
+                    uk: "Це слово підходить і вранці, і ввечері — універсальне!",
+                    ru: "Это слово подходит и утром, и вечером — универсальное!"
+                },
+                tracks: {
+                    junior: {
+                        phrase: "Ahoj!",
+                        translation: "Привіт!",
+                        words: ["Ahoj"],
+                        intro: "Ahoj! Ja som Oksana. Poďme sa spolu zahrať!"
+                    },
+                    middle: {
+                        phrase: "Ahoj! Ako sa voláš?",
+                        translation: "Привіт! Як тебе звати?",
+                        words: ["Ahoj", "Ako", "sa", "voláš"],
+                        intro: "Ahoj! Ako sa voláš? Ja som Oksana."
+                    },
+                    senior: {
+                        phrase: "Ahoj, ako sa voláš? Ja som student. Odkiaľ si?",
+                        translation: "Привіт, як тебе звати? Я — студент. Звідки ти?",
+                        words: ["Ahoj", "ako sa voláš", "Ja som", "Odkiaľ si"],
+                        intro: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?"
+                    }
+                },
+                scenarios: [
+                    { id: 1, title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
+                    { id: 2, title: { uk: "Побачив сусідського кота і привітався жартома", ru: "Увидел соседского кота и поздоровался в шутку" } },
+                    { id: 3, title: { uk: "Зайшов до класу вранці", ru: "Вошел в класс утром" } },
+                    { id: 4, title: { uk: "Зустрів вчительку в коридорі", ru: "Встретил учительницу в коридоре" } },
+                    { id: 5, title: { uk: "Привітав Дідуся по відеодзвінку", ru: "Поздравил Дедушку по видеозвонку" } }
+                ],
+                mistake_or_joke: "Секунду, я сама трохи забула це слово. Навіть дорослі повторюють!"
+            },
+            2: {
+                topic: "Як справи",
+                is_safety: false,
+                hint: {
+                    uk: "«Ďakujem» звучить схоже на «дякую» — легко запам'ятати!",
+                    ru: "«Ďakujem» звучит похоже на «дякую» — легко запомнить!"
+                },
+                tracks: {
+                    junior: {
+                        phrase: "Dobre, ďakujem.",
+                        translation: "Добре, дякую.",
+                        words: ["Dobre", "ďakujem"],
+                        intro: "Ako sa máš? Ja som dnes veľmi šťastná!"
+                    },
+                    middle: {
+                        phrase: "Ako sa máš? — Dobre, a ty?",
+                        translation: "Як справи? — Добре, а ти?",
+                        words: ["Ako sa máš", "Dobre", "a ty"],
+                        intro: "Ako sa máš dnes?"
+                    },
+                    senior: {
+                        phrase: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?",
+                        translation: "Як справи сьогодні? Було щось цікаве в школі?",
+                        words: ["Ako sa dnes máš", "Bolo niečo zaujímavé", "v škole"],
+                        intro: "Ako sa dnes máš? Bolo niečo zaujímavé в школі?"
+                    }
+                },
+                scenarios: [
+                    { id: 1, title: { uk: "Відповідь мамі вранці", ru: "Ответ маме утром" } },
+                    { id: 2, title: { uk: "Відповідь вчительці", ru: "Ответ учительнице" } },
+                    { id: 3, title: { uk: "Відповідь другові на майданчику", ru: "Ответ другу на площадке" } },
+                    { id: 4, title: { uk: "Відповідь бабусі по телефону", ru: "Ответ бабушке по телефону" } },
+                    { id: 5, title: { uk: "Відповідь новому сусідському цуценяті", ru: "Ответ новому соседскому щенку в шутку" } }
+                ],
+                mistake_or_joke: "Ой, здається, я переплутала порядок слів! Буває навіть у мене."
+            },
+            3: {
+                topic: "Прощання",
+                is_safety: false,
+                hint: {
+                    uk: "Довге слово Dovidenia можна розбити: До-ви-де-ня.",
+                    ru: "Длинное слово Dovidenia можно разбить: До-ви-де-ня."
+                },
+                tracks: {
+                    junior: {
+                        phrase: "Dovidenia!",
+                        translation: "До побачення!",
+                        words: ["Dovidenia"],
+                        intro: "Dovidenia, kamarát! Uvidíme sa nabudúce."
+                    },
+                    middle: {
+                        phrase: "Maj sa pekne! Uvidíme sa zajtra.",
+                        translation: "Гарного дня! Побачимось завтра.",
+                        words: ["Maj sa pekne", "Uvidíme sa", "zajtra"],
+                        intro: "Maj sa pekne! Uvidíme sa zajtra."
+                    },
+                    senior: {
+                        phrase: "Bolo super sa s tebou porozprávať. Maj sa a čoskoro dopočutia!",
+                        translation: "Було супер з тобою поспілкуватися. Бувай, до швидкого!",
+                        words: ["Bolo super", "porozprávať", "Maj sa", "dopočutia"],
+                        intro: "Bolo super sa s tebou porozprávať!"
+                    }
+                },
+                scenarios: [
+                    { id: 1, title: { uk: "Прощання з вчителькою", ru: "Прощание с учительницей" } },
+                    { id: 2, title: { uk: "Прощання з другом на майданчику", ru: "Прощание с другом на площадке" } },
+                    { id: 3, title: { uk: "Прощання з водієм автобуса", ru: "Прощание с водителем автобуса" } },
+                    { id: 4, title: { uk: "Прощання з продавчинею в магазині", ru: "Прощание с продавщицей в магазине" } },
+                    { id: 5, title: { uk: "Прощання з Дідусем по відеодзвінку", ru: "Прощание с Дедушкой по видеозвонку" } }
+                ],
+                mistake_or_joke: "Хвилинку… а як це было? Ах так, згадала!"
+            },
+            4: {
+                topic: "Ввічлива відмова (безпека)",
+                is_safety: true,
+                hint: {
+                    uk: "Це чарівна фраза. Вона працює в будь-якій країні і завжди ввічлива.",
+                    ru: "Это волшебная фраза. Она работает в любой стране и всегда вежлива."
+                },
+                tracks: {
+                    junior: {
+                        phrase: "Nie, ďakujem.",
+                        translation: "Ні, дякую.",
+                        words: ["Nie", "ďakujem"],
+                        intro: "Ak niekto neznámy niečo ponúka, povieš: Nie, ďakujem!"
+                    },
+                    middle: {
+                        phrase: "Nie, ďakujem. Musím ísť za mamou.",
+                        translation: "Ні, дякую. Мені треба йти до мами.",
+                        words: ["Nie, ďakujem", "Musím ísť", "za mamou"],
+                        intro: "Vždy môžeš povedať: Nie, ďakujem. Musím ísť za mamou."
+                    },
+                    senior: {
+                        phrase: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma.",
+                        translation: "Вибачте, мене це не цікавитть. Я йду до батьків, вони на мене чекають.",
+                        words: ["Prepáčte", "nemám záujem", "Idem za rodičmi", "čakajú ma"],
+                        intro: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma."
+                    }
+                },
+                scenarios: [
+                    { id: 1, title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
+                    { id: 2, title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
+                    { id: 3, title: { uk: "Хтось у парку пропонує піти показати щось", ru: "Кто-то в парке предлагает пойти показать что-то интересное" } },
+                    { id: 4, title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } },
+                    { id: 5, title: { uk: "Рольова гра: незнайомець каже, що знає маму", ru: "Ролевая игра: а что если незнакомец говорит, что знает твою маму?" } }
+                ],
+                mistake_or_joke: null
+            }
+        }
     },
     2: {
-        title: {
-            uk: "Твоє завдання: Похід у словацький магазин",
-            ru: "Твое задание: Поход в словацкий магазин"
-        },
-        desc: {
-            uk: "Попроси яблуко: \"Prosím si jedno jablko.\"",
-            ru: "Попроси яблоко: \"Prosím si jedno jablko.\""
-        },
-        phrase: "Prosím si jedno jablko.",
-        words: ["Prosím", "si", "jedno", "jablko."],
-        tip: {
-            uk: "Зверни увагу на наголос: у словацькій мові він завжди падає на первый склад.",
-            ru: "Обрати внимание на ударение: в словацком языке оно всегда падает на первый слог."
-        },
-        phoneticTip: {
-            uk: "Голосна 'o' вимовляється чітко. Спробуй ще раз: [я блу ко]",
-            ru: "Гласная 'o' произносится четко. Попробуй еще раз: [я блу ко]"
-        },
-        audioCorrection: "jablko"
-    },
-    3: {
-        title: {
-            uk: "Твоє завдання: Безпечна відмова стороннім",
-            ru: "Твое задание: Безопасный отказ посторонним"
-        },
-        desc: {
-            uk: "Скажи незнайомцю: \"Nie, ďakujem, ja vás nepoznám.\"",
-            ru: "Скажи незнакомцу: \"Nie, ďakujem, ja vás nepoznám.\""
-        },
-        phrase: "Nie, ďakujem, ja vás nepoznám.",
-        words: ["Nie,", "ďakujem,", "ja", "vás", "nepoznám."],
-        tip: {
-            uk: "Словацьке 'ď' вимовляється дуже м'яко, схоже на українське 'дь'.",
-            ru: "Словацкое 'ď' произносится очень мягко, похоже на русское 'дь'."
-        },
-        phoneticTip: {
-            uk: "Буква 'ď' вимовляється м'яко. Спробуй ще раз: [дьа ку єм]",
-            ru: "Буква 'ď' произносится мягко. Попробуй еще раз: [дьа ку ем]"
-        },
-        audioCorrection: "ďakujem"
-    },
-    4: {
-        title: {
-            uk: "Твоє завдання: У словацькій школі / садочку",
-            ru: "Твое задание: В словацкой школе / садике"
-        },
-        desc: {
-            uk: "Попроси вийти: \"Môžem ísť na toaletu, prosím?\"",
-            ru: "Попроси выйти: \"Môžem ísť na toaletu, prosím?\""
-        },
-        phrase: "Môžem ísť na toaletu, prosím?",
-        words: ["Môžem", "ísť", "na", "toaletu,", "prosím?"],
-        tip: {
-            uk: "Буква 'ô' вимовляється як дифтонг 'уо'. Спробуй: [муожем].",
-            ru: "Буква 'ô' произносится как дифтонг 'уо'. Попробуй: [муожем]."
-        },
-        phoneticTip: {
-            uk: "Звук 'ô' вимовляється як дифтонг 'уо'. Спробуй ще раз: [муо жем]",
-            ru: "Звук 'ô' произносится как дифтонг 'уо'. Попробуй еще раз: [муо жем]"
-        },
-        audioCorrection: "Môžem"
-    },
-    5: {
-        title: {
-            uk: "Твоє завдання: Поїздка у громадському транспорті",
-            ru: "Твое задание: Поездка в общественном транспорте"
-        },
-        desc: {
-            uk: "Купи квиток: \"Prosím si jeden lístok.\"",
-            ru: "Купи билет: \"Prosím si jeden lístok.\""
-        },
-        phrase: "Prosím si jeden lístok.",
-        words: ["Prosím", "si", "jeden", "lístok."],
-        tip: {
-            uk: "Словацьке 'í' є довгим звуком. Тягни його трохи довше.",
-            ru: "Словацкое 'í' является долгим звуком. Тяни его чуть дольше."
-        },
-        phoneticTip: {
-            uk: "Довге 'í' вимовляється протяжно. Спробуй ще раз: [лііс ток]",
-            ru: "Долгое 'í' произносится протяжно. Попробуй еще раз: [лиисток]"
-        },
-        audioCorrection: "lístok"
+        theme: "Сім'я та дім",
+        weeks: {
+            1: {
+                topic: "Члени родини",
+                is_safety: false,
+                hint: {
+                    uk: "«Mama» і «otec» звучать майже так само — легко запам'ятати.",
+                    ru: "«Mama» и «otec» звучат почти так же — легко запомнить."
+                },
+                tracks: {
+                    junior: {
+                        phrase: "Mama, otec, brat, sestra.",
+                        translation: "Мама, тато, брат, сестра.",
+                        words: ["Mama", "otec", "brat", "sestra"],
+                        intro: "Ahoj! Dnes sa naučíme členov rodiny: mama, otec, brat a sestra."
+                    },
+                    middle: {
+                        phrase: "To je moja mama a môj otec.",
+                        translation: "Це моя мама і мій тато.",
+                        words: ["To je", "moja mama", "môj otec"],
+                        intro: "Predstavujem ti moju rodinu. To je moja mama a otec."
+                    },
+                    senior: {
+                        phrase: "To je moja rodina — mama, otec, brat a sestra.",
+                        translation: "Це моя сім'я — мама, тато, брат і сестра.",
+                        words: ["To je", "rodina", "mama", "otec", "brat", "sestra"],
+                        intro: "Ahoj! To je moja rodina — mama, otec, brat a sestra."
+                    }
+                },
+                scenarios: [
+                    { id: 1, title: { uk: "Показує сімейне фото другові", ru: "Показывает семейное фото другу" } },
+                    { id: 2, title: { uk: "Розповідає про родину новому однокласнику", ru: "Рассказывает о семье новому однокласснику" } },
+                    { id: 3, title: { uk: "Знайомить родину з сусідами", ru: "Знакомит семью с соседями" } },
+                    { id: 4, title: { uk: "Розповідає бабусі по відеодзвінку", ru: "Рассказывает бабушке по видеозвонку" } },
+                    { id: 5, title: { uk: "Заповнює шкільну анкету про родину", ru: "Заполняет школьную анкету о семье" } }
+                ],
+                mistake_or_joke: "Ой-ой, зачекай, я відволіклася. Спробуємо ще раз разом?"
+            },
+            2: {
+                topic: "Мій дім",
+                is_safety: false,
+                hint: {
+                    uk: "«Izba» — кімната, слово часто зустрічатиметься далі.",
+                    ru: "«Izba» — комната, это слово часто будет встречаться дальше."
+                },
+                tracks: {
+                    junior: {
+                        phrase: "Toto je môj byt.",
+                        translation: "Це моя квартира.",
+                        words: ["Toto je", "môj byt"],
+                        intro: "Ahoj! Toto je môj byt."
+                    },
+                    middle: {
+                        phrase: "Toto je môj byt. Tu je moja izba.",
+                        translation: "Це моя квартира. Тут моя кімната.",
+                        words: ["Toto je", "môj byt", "Tu je", "moja izba"],
+                        intro: "Ukážem ti môj byt. Tu je moja izba."
+                    },
+                    senior: {
+                        phrase: "Toto je náš byt. Mám tu svoju izbu a tu je obývačka.",
+                        translation: "Це наша квартира. Тут моя кімната, а тут вітальня.",
+                        words: ["Toto je", "náš byt", "izbu", "obývačka"],
+                        intro: "Toto je náš byt. Mám tu svoju izbu a tu je obývaчка."
+                    }
+                },
+                scenarios: [
+                    { id: 1, title: { uk: "Показує кімнату другу по відео", ru: "Показывает комнату другу по видео" } },
+                    { id: 2, title: { uk: "Розповідає про новий дім бабусі", ru: "Рассказывает о новом доме бабушке" } },
+                    { id: 3, title: { uk: "Пояснює сусідському хлопчику, де живе", ru: "Объясняет соседскому мальчику, где живет" } },
+                    { id: 4, title: { uk: "Малює план квартири на уроці", ru: "Рисует план квартиры на уроке" } },
+                    { id: 5, title: { uk: "Відео-екскурсія квартирою для родички", ru: "Видео-экскурсия по квартире для родственницы" } }
+                ],
+                mistake_or_joke: "Хочеш дізнатися хитрість? Найкращий спосіб запам'ятати слово — сказати його вголос тричі. Спробуємо?"
+            },
+            3: {
+                topic: "Речі вдома",
+                is_safety: false,
+                hint: {
+                    uk: "«Kde» — питальне слово «де», буде зустрічатися часто.",
+                    ru: "«Kde» — вопросительное слово «где», будет встречаться часто."
+                },
+                tracks: {
+                    junior: {
+                        phrase: "Kde je moja hračka?",
+                        translation: "Де моя іграшка?",
+                        words: ["Kde je", "moja hračka"],
+                        intro: "Kde je moja hračka? Hľadajme spolu!"
+                    },
+                    middle: {
+                        phrase: "Kde je moja hračka? Tu je!",
+                        translation: "Де моя іграшка? Ось вона!",
+                        words: ["Kde je", "moja hračka", "Tu je"],
+                        intro: "Kde je moja hračka? Tu je!"
+                    },
+                    senior: {
+                        phrase: "Nemôžem nájsť svoju hračku. Ach, tu je, pod posteľou!",
+                        translation: "Не можу знайти іграшку. Ах, ось вона, під ліжком!",
+                        words: ["Nemôžem nájsť", "hračku", "pod posteľou"],
+                        intro: "Nemôžem nájsť svoju hračку."
+                    }
+                },
+                scenarios: [
+                    { id: 1, title: { uk: "Шукає іграшку вдома", ru: "Ищет игрушку дома" } },
+                    { id: 2, title: { uk: "Питає, де річ у гостях", ru: "Спрашивает, где вещь в гостях" } },
+                    { id: 3, title: { uk: "Допомагає молодшому братику знайти річ", ru: "Помогает младшему брату найти вещь" } },
+                    { id: 4, title: { uk: "Питає вчительку, де його зошит", ru: "Спрашивает учительницу, где его тетрадь" } },
+                    { id: 5, title: { uk: "Гра «хованки» з предметами по-словацьки", ru: "Игра «прятки» с предметами по-словацки" } }
+                ],
+                mistake_or_joke: "А знаєш, чому мені подобається вчити тебе словацької? Бо разом веселіше, навіть коли помиляємось!"
+            },
+            4: {
+                topic: "🛡️ Безпека: особисті дані",
+                is_safety: true,
+                hint: {
+                    uk: "Свою адресу можна казати тільки дорослим, яких добре знаєш.",
+                    ru: "Свой адрес можно говорить только взрослым, которых хорошо знаешь."
+                },
+                tracks: {
+                    junior: {
+                        phrase: "Moja adresa je tajomstvo.",
+                        translation: "Моя адреса — це секрет.",
+                        words: ["Moja adresa", "tajomstvo"],
+                        intro: "Moja adresa je tajomstvo. Nikomu ju nehovor!"
+                    },
+                    middle: {
+                        phrase: "Moja adresa je tajomstvo — vedia ju len rodičia.",
+                        translation: "Моя адреса — секрет, її знають лише батьки.",
+                        words: ["Moja adresa", "tajomstvo", "vedia", "rodičia"],
+                        intro: "Povedz: Moja adresa je tajomstvo — vedia ju len rodičia."
+                    },
+                    senior: {
+                        phrase: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých poznám.",
+                        translation: "Свою адресу я кажу лише батькам або вчителям, яких знаю.",
+                        words: ["Svoju adresu", "hovorím", "rodičom", "učiteľom", "poznám"],
+                        intro: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých познам."
+                    }
+                },
+                scenarios: [
+                    { id: 1, title: { uk: "Незнайомець на вулиці питає адресу", ru: "Незнакомец на улице спрашивает адрес" } },
+                    { id: 2, title: { uk: "Дзвінок з невідомого номера питає, де живеш", ru: "Звонок с неизвестного номера спрашивает, где живешь" } },
+                    { id: 3, title: { uk: "Онлайн-гра просить вказати адресу", ru: "Онлайн-игра просит указать адрес" } },
+                    { id: 4, title: { uk: "Новий друг в інтернеті просить адресу", ru: "Новый «друг» в интернете просит адрес" } },
+                    { id: 5, title: { uk: "Комплексна рольова гра — коли адресу казати можна, а коли ні", ru: "Комплексная ролевая игра — когда адрес говорить можно, а когда нет" } }
+                ],
+                mistake_or_joke: null
+            }
+        }
     }
 };
 
-// Env loader utility
-async function loadEnv() {
-    if (envKeys) return envKeys;
-    try {
-        let response = await fetch('../.env');
-        if (!response.ok) {
-            response = await fetch('/api/keys');
+// Metadata for dynamically building Months 3-12 on the fly if chosen
+const monthMetadata = {
+    3: {
+        theme: "Школа та шлях до школи",
+        weeks: {
+            1: { topic: "У класі", phrase: "Toto je moja trieda. Toto je moja učiteľka.", is_safety: false, hint: "Učiteľka — довге слово, розбий: у-чи-тель-ка." },
+            2: { topic: "Шкільні речі", phrase: "Potrebujem pero a zošit.", is_safety: false, hint: "«Potrebujem» означає «мені потрібно»." },
+            3: { topic: "Розклад та предмети", phrase: "Dnes mám matematiku a telesnú výchovu.", is_safety: false, hint: "Telesná výchova — фізкультура." },
+            4: { topic: "🛡️ Безпека: дорога до школи", phrase: "Idem do školy len s tým, koho poznajú moji rodičia", is_safety: true, hint: "Ніколи не йди з незнайомцями." }
         }
-        if (!response.ok) return null;
-        
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-            envKeys = await response.json();
-            console.log("Loaded API Keys from serverless endpoint successfully.");
-            return envKeys;
+    },
+    4: {
+        theme: "Їжа та святковий стіл",
+        weeks: {
+            1: { topic: "Улюблена їжа", phrase: "Mám rád jablká a chlieb.", is_safety: false, hint: "«Mám rád» (хлопчик) / «Mám rada» (дівчинка)." },
+            2: { topic: "За столом", phrase: "Prosím, môžem dostať vodu?", is_safety: false, hint: "«Prosím» підходить до будь-якого прохання." },
+            3: { topic: "Свята кухня", phrase: "Toto voňa výborne! Čo je to?", is_safety: false, hint: "«Voňa výborne» — чудово пахне." },
+            4: { topic: "🛡️ Безпека: частування", phrase: "Neberiem sladkosti od cudzích ľudí", is_safety: true, hint: "Твердо відмовляйся від їжі сторонніх." }
         }
-
-        const text = await response.text();
-        const keys = {};
-        text.split(/\r?\n/).forEach(line => {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed.startsWith('#')) return;
-            const index = trimmed.indexOf('=');
-            if (index !== -1) {
-                const key = trimmed.substring(0, index).trim();
-                const value = trimmed.substring(index + 1).trim();
-                keys[key] = value;
-            }
-        });
-        envKeys = keys;
-        console.log("Loaded API Keys from .env successfully.");
-        return keys;
-    } catch (e) {
-        console.warn("Could not fetch .env file, utilizing simulated backend.", e);
-        return null;
+    },
+    5: {
+        theme: "Місто та транспорт",
+        weeks: {
+            1: { topic: "У місті", phrase: "Kde je najbližší obchod?", is_safety: false, hint: "«Najbližší» — найближчий." },
+            2: { topic: "Транспорт", phrase: "Tento autobus ide do centra?", is_safety: false, hint: "«Vlak» — потяг, «autobus» — автобус." },
+            3: { topic: "Орієнтування", phrase: "Prepáčte, ako sa dostanem na námestie?", is_safety: false, hint: "«Námestie» — площа." },
+            4: { topic: "🛡️ Безпека: транспорт", phrase: "Nenastupujem do auta k cudziemu človeku", is_safety: true, hint: "Ніколи не сідай у чужі машини." }
+        }
+    },
+    6: {
+        theme: "Погода, пори року, ярмарок",
+        weeks: {
+            1: { topic: "Погода", phrase: "Dnes je zima a prší.", is_safety: false, hint: "«Prší» — йде дощ." },
+            2: { topic: "Одяг по сезону", phrase: "Potrebujem teplú bundu.", is_safety: false, hint: "«Bunda» — куртка." },
+            3: { topic: "Зимовий ярмарок", phrase: "Koľko to stojí?", is_safety: false, hint: "«Koľko stojí» — скільки коштує." },
+            4: { topic: "🛡️ Безпека: загубився в натовпі", phrase: "Ak sa stratím, zostanem stáť a zavolám mamu", is_safety: true, hint: "Стій на місці і голосно клич." }
+        }
+    },
+    7: {
+        theme: "Тіло та здоров'я",
+        weeks: {
+            1: { topic: "Частини тіла", phrase: "Bolí ma hlava.", is_safety: false, hint: "«Bolí ma hlava» — болить голова." },
+            2: { topic: "У лікаря", phrase: "Necítim sa dobre.", is_safety: false, hint: "«Necítim sa dobre» — почуваюсь погано." },
+            3: { topic: "Гігієна та самопочуття", phrase: "Umyl som si ruky pred jedlom.", is_safety: false, hint: "Мий руки перед їжею." },
+            4: { topic: "🛡️ Безпека: тілесна автономія", phrase: "Moje telo patrí len mne. Ak niečo nie je v poriadku, poviem то dospelému", is_safety: true, hint: "Кажи дорослим, якщо хтось ображає." }
+        }
+    },
+    8: {
+        theme: "Магазин та покупки",
+        weeks: {
+            1: { topic: "В магазині", phrase: "Chcem kúpiť toto, prosím.", is_safety: false, hint: "«Chcem» — я хочу." },
+            2: { topic: "Гроші та ціни", phrase: "Koľko to stojí? Je to drahé/lacné.", is_safety: false, hint: "«Drahé» — дорого, «lacné» — дешево." },
+            3: { topic: "Примірка та вибір", phrase: "Môžem si to vyskúšať?", is_safety: false, hint: "«Vyskúšať» — приміряти." },
+            4: { topic: "🛡️ Безпека: гроші та картки", phrase: "Nedávam peniaze ani kartu nikomu okrem rodičov", is_safety: true, hint: "Гроші та картки — це секрет." }
+        }
+    },
+    9: {
+        theme: "Друзі, почуття, інтернет",
+        weeks: {
+            1: { topic: "Емоції", phrase: "Som šťastný. Som smutný.", is_safety: false, hint: "Šťastný/smutný — емоції." },
+            2: { topic: "Дружба", phrase: "Chceš sa so mnou hraть?", is_safety: false, hint: "Просте запитання для нової дружби." },
+            3: { topic: "Онлайн-спілкування", phrase: "To je moja kamarátka z internetu", is_safety: false, hint: "Інтернет-друзі мають бути безпечними." },
+            4: { topic: "🛡️ Безпека: приватність онлайн", phrase: "Nepíšem cudzím ľuďom na internete svoju adresu ani школу", is_safety: true, hint: "Нікому не кажи особисті дані онлайн." }
+        }
+    },
+    10: {
+        theme: "Свята та культура Словаччини",
+        weeks: {
+            1: { topic: "Словацькі традиції", phrase: "Toto je slovenský sviatok.", is_safety: false, hint: "«Sviatok» — свято." },
+            2: { topic: "Пісні та ігри", phrase: "Zaspievajme spolu pieseň!", is_safety: false, hint: "Пісні допомагають вивчити мову." },
+            3: { topic: "Свято в місті", phrase: "Kde sa stretneme po programe?", is_safety: false, hint: "Домовляйся про зустріч заздалегідь." },
+            4: { topic: "🛡️ Безпека: натовп на святі", phrase: "Na sviatku vždy viem, kde sú mama a otec", is_safety: true, hint: "Тримайся ближче до батьків." }
+        }
+    },
+    11: {
+        theme: "Природа, тварини, прогулянки",
+        weeks: {
+            1: { topic: "Тварини та природа", phrase: "Pozri, aké krásne zvieratko!", is_safety: false, hint: "«Zvieratko» — тваринка." },
+            2: { topic: "Прогулянка в парку/лісі", phrase: "Ideme na prechádzku do lesa.", is_safety: false, hint: "«Les» — ліс." },
+            3: { topic: "Пікнік", phrase: "Sadneme si tu a najeme sa.", is_safety: false, hint: "Практикуй слова про їжу." },
+            4: { topic: "🛡️ Безпека: екстрені виклики", phrase: "Číslo 112 zachraňuje. Viem, ako ho vytočiť", is_safety: true, hint: "112 — екстрений виклик у Європі." }
+        }
+    },
+    12: {
+        theme: "Підсумковий: „Я вже самостійний\"",
+        weeks: {
+            1: { topic: "Повторення: привітання і знайомство", phrase: "Dobrý deň, ako sa máš?", is_safety: false, hint: "Повторення перших тем." },
+            2: { topic: "Повторення: місто, магазин, гроші", phrase: "Koľko to stojí?", is_safety: false, hint: "Покупки та розрахунки." },
+            3: { topic: "Повторення: почуття та безпека", phrase: "Moje telo patrí len mne.", is_safety: false, hint: "Повторення правил тілесної безпеки." },
+            4: { topic: "🏆 Фінальний сценарій", phrase: "Stratil som sa. Pomôžete mi?", is_safety: true, hint: "Повний підсумковий іспит безпеки!" }
+        }
     }
+};
+
+// Global function to get active week's lesson data
+function getLessonData(m, w) {
+    if (curriculumCatalog[m] && curriculumCatalog[m].weeks[w]) {
+        return curriculumCatalog[m].weeks[w];
+    }
+    // Dynamic generator fallback for Months 3-12
+    const meta = monthMetadata[m];
+    if (!meta) return null;
+    const weekMeta = meta.weeks[w];
+    if (!weekMeta) return null;
+
+    // Build dynamic track phrases
+    const rawPhrase = weekMeta.phrase;
+    const simplified = rawPhrase.split(' ')[0] + '!'; // simplified junior version
+    
+    return {
+        topic: weekMeta.topic,
+        is_safety: weekMeta.is_safety,
+        hint: { uk: weekMeta.hint, ru: weekMeta.hint },
+        tracks: {
+            junior: {
+                phrase: simplified,
+                translation: simplified === 'Bolí!' ? 'Болить!' : (simplified === 'Dnes!' ? 'Сьогодні!' : 'Це!'),
+                words: [simplified.replace('!', '')],
+                intro: "Ahoj! Poďme sa zahrať!"
+            },
+            middle: {
+                phrase: rawPhrase,
+                translation: rawPhrase,
+                words: rawPhrase.split(' '),
+                intro: "Ahoj! Ja som Oksana. " + rawPhrase
+            },
+            senior: {
+                phrase: rawPhrase + " Odkiaľ si?",
+                translation: rawPhrase + " Звідки ти?",
+                words: (rawPhrase + " Odkiaľ si?").split(' '),
+                intro: "Ahoj! " + rawPhrase + " Odkiaľ si?"
+            }
+        },
+        scenarios: [
+            { id: 1, title: { uk: `Ситуація у контексті: ${weekMeta.topic} (Крок 1)`, ru: `Ситуация в контексте: ${weekMeta.topic} (Шаг 1)` } },
+            { id: 2, title: { uk: `Розмова з однокласником про ${weekMeta.topic}`, ru: `Разговор с одноклассником о ${weekMeta.topic}` } },
+            { id: 3, title: { uk: `Урок у словацькій школі: ${weekMeta.topic}`, ru: `Урок в словацкой школе: ${weekMeta.topic}` } },
+            { id: 4, title: { uk: `Практична життєва гра про ${weekMeta.topic}`, ru: `Практическая жизненная игра о ${weekMeta.topic}` } },
+            { id: 5, title: { uk: `🏆 Фінал тижня: ${weekMeta.topic}`, ru: `🏆 Финал недели: ${weekMeta.topic}` } }
+        ],
+        mistake_or_joke: weekMeta.is_safety ? null : "Хвилинку… а як це було? Ах так, згадала!"
+    };
 }
 
-// Dynamic avatar configurations loaded from config.json mock
+// Generate the global scenarios wrapper mapping dynamically based on state
+const scenarios = new Proxy({}, {
+    get: function(target, prop) {
+        const idx = parseInt(prop);
+        const data = getLessonData(currentMonth, currentWeek);
+        if (!data) return null;
+        const trackData = data.tracks[currentTrack];
+        const sc = data.scenarios[idx - 1];
+        if (!sc) return null;
+
+        return {
+            title: { uk: sc.title.uk, ru: sc.title.ru },
+            desc: {
+                uk: `Завдання: ${sc.title.uk}. Повтори: "${trackData.phrase}"`,
+                ru: `Задание: ${sc.title.ru}. Повтори: "${trackData.phrase}"`
+            },
+            phrase: trackData.phrase,
+            words: trackData.words,
+            tip: { uk: data.hint.uk, ru: data.hint.ru },
+            phoneticTip: {
+                uk: `Будь уважним! Спробуй вимовити чіткіше словацькі звуки. Зверни увагу на '${trackData.words[0]}'`,
+                ru: `Будь внимателен! Попробуй произнести четче словацкие звуки. Обрати внимание на '${trackData.words[0]}'`
+            },
+            audioCorrection: trackData.words[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"")
+        };
+    }
+});
+
+// Tutor configuration - only Oksana is active now
 const avatarConfig = {
-    wolf: {
-        avatarId: "bcc3bbee01934ae6adf444c567492753",
-        voiceId: "btIY8K0iIypydsjKFUzI",
-        name: { uk: "Вовченя (Vĺča)", ru: "Волчонок (Vĺča)" },
-        icon: "🐺",
-        greet: {
-            uk: "Привіт, друже! Я — Вовченя. Будемо грати та вчити словацьку?",
-            ru: "Привет, дружище! Я — Волчонок. Будем играть и учить словацкий?"
-        },
-        greetSk: "Ahoj, kamarát! Ja som Vĺča. Budeme sa hrať a učiť sa slovenčinu?"
-    },
-    fox: {
-        avatarId: "fox_avatar_id_placeholder",
-        voiceId: "fox_voice_id_placeholder",
-        name: { uk: "Лисеня (Líška)", ru: "Лисёнок (Líška)" },
-        icon: "🦊",
-        greet: {
-            uk: "Привіт! Я хитре Лисеня. Давай вивчати словацьку мову разом!",
-            ru: "Привет! Я хитрая Лисичка. Давай учить словацкий язык вместе!"
-        },
-        greetSk: "Ahoj! Ja som bystrá Líška. Poďme sa spolu učiť slovenčinu!"
-    },
-    bear: {
-        avatarId: "bear_avatar_id_placeholder",
-        voiceId: "bear_voice_id_placeholder",
-        name: { uk: "Ведмежа (Macko)", ru: "Медвежонок (Macko)" },
-        icon: "🐻",
-        greet: {
-            uk: "Привіт, малюку! Я велике Ведмежа. Хочеш поговорити словацькою?",
-            ru: "Привет, малыш! Я большой Медвежонок. Хочешь поговорить по-словацки?"
-        },
-        greetSk: "Ahoj, drobček! Ja som veľký Macko. Chceš sa rozprávaть po slovensky?"
-    },
-    bunny: {
-        avatarId: "bunny_avatar_id_placeholder",
-        voiceId: "bunny_voice_id_placeholder",
-        name: { uk: "Зайченя (Zajko)", ru: "Зайчонок (Zajko)" },
-        icon: "🐰",
-        greet: {
-            uk: "Привіт! Я прудке Зайченя. Будемо весело стрибати та вчити словацьку?",
-            ru: "Привет! Я шустрый Зайчонок. Будем весело прыгать и учить словацкий?"
-        },
-        greetSk: "Ahoj! Ja som rýchly Zajko. Budeme veselo skákať a učiť sa slovenčinu?"
-    },
     human: {
-        avatarId: "f08c81c448b14a0a84787e4ef89c0abe",
-        voiceId: "Mub7zCyLDpa4L9LfvXCr",
         name: { uk: "Оксана (Oksana)", ru: "Оксана (Oksana)" },
         icon: "👩",
         greet: {
@@ -293,125 +552,79 @@ const avatarConfig = {
             ru: "Приветствую! Меня зовут Оксана. Давай вместе изучать словацкие слова и правила безопасности!"
         },
         greetSk: "Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka a bezpečnostné pravidlá!"
-    },
-    taras: {
-        avatarId: "taras_avatar_id_placeholder",
-        voiceId: "taras_voice_id_placeholder",
-        name: { uk: "Тарас (Taras)", ru: "Тарас (Taras)" },
-        icon: "👦",
-        greet: {
-            uk: "Привіт! Мене звати Тарас. Я теж вчу словацьку мову, давай дружити!",
-            ru: "Привет! Меня зовут Тарас. Я тоже учу словацкий язык, давай дружить!"
-        },
-        greetSk: "Ahoj! Volám sa Taras. Aj ja sa učím slovenčinu, poďme sa kamarátiť!"
-    },
-    marijka: {
-        avatarId: "marijka_avatar_id_placeholder",
-        voiceId: "marijka_voice_id_placeholder",
-        name: { uk: "Марійка (Marijka)", ru: "Марийка (Marijka)" },
-        icon: "👧",
-        greet: {
-            uk: "Привіт! Я Марійка. Давай разом грати на словацькому майданчику!",
-            ru: "Привет! Я Марийка. Давай вместе играть на словацкой площадке!"
-        },
-        greetSk: "Ahoj! Ja som Marijka. Poďme sa spolu hrať na slovenskom ihrisku!"
-    },
-    grandfather: {
-        avatarId: "grandfather_avatar_id_placeholder",
-        voiceId: "grandfather_voice_id_placeholder",
-        name: { uk: "Дідусь (Dedo)", ru: "Дедушка (Dedo)" },
-        icon: "👴",
-        greet: {
-            uk: "Вітаю, дитино! Я дідусь. Я розповім тобі цікаві казки словацькою мовою.",
-            ru: "Приветствую, дитя! Я дедушка. Я расскажу тебе интересные сказки на словацком языке."
-        },
-        greetSk: "Ahoj, dieťa moje! Ja som dedko. Poviem ti zaujímavé rozprávky po slovensky."
     }
 };
 
 const translations = {
-
     uk: {
-                select_scenario: "Обери життєвий сценарій:",
-                nav_playground: "Ігровий простір",
-                nav_parent_cabinet: "Батьківський кабінет",
-                select_tutor: "Обери вчителя:",
-                group_animals: "Тварини:",
-                group_humans: "Люди:",
-                soon_label: "скоро буде",
-                char_wolf: "Вовченя (Vĺča)",
-                char_fox: "Лисеня (Líška)",
-                char_bear: "Ведмежа (Macko)",
-                char_bunny: "Зайченя (Zajko)",
-                char_human: "Оксана (Oksana)",
-                char_taras: "Тарас (Taras)",
-                char_marijka: "Марійка (Marijka)",
-                char_grandfather: "Дідусь (Dedo)",
-                ai_assistant_badge: "ІІ-Помічник",
-                exercise_title: "Твоє завдання: Привітайся зі словацьким другом",
-                task_desc: "Повтори фразу: \"Dobrý deň, ako sa máš?\"",
-                target_phrase: "Потрібно вимовити:",
-                tip_title: "Підказка від наставника:",
-                tip_content_default: "Словацька буква 'ň' вимовляется м'яко, як українська 'нь'.",
-                press_mic: "Натисни мікрофон та говори словацькою",
-                accuracy_label: "точність",
-                feedback_success: "Чудова вимова!",
-                feedback_subtext_success: "Ти правильно вимовив усі звуки. Рухаємося далі!",
-                feedback_retry: "Майже вийшло!",
-                feedback_subtext_retry: "Зверни увагу на виділені червоним слова і спробуй ще раз.",
-                cabinet_welcome_title: "Кабінет безпечного контролю: Батьківський дашборд",
-                cabinet_welcome_sub: "Тут ви можете бачити статистику прогресу навчання, досягнення дитини та налаштування конфіденційності GDPR.",
-                stat_time_spent: "Час на платформі (тиждень)",
-                stat_vocab_size: "Вивчено словацьких слів",
-                stat_social_milestones: "Рівень адаптації",
-                chart_title: "Динаміка занять по днях (хвилини)",
-                milestones_title: "Практичні досягнення дитини",
-                milestone_1_title: "Знайомство на дитячому майданчику",
-                milestone_1_desc: "Дитина вміє представитися, запитати ім'я та запропонувати пограти.",
-                milestone_2_title: "Похід у словацький магазин",
-                milestone_2_desc: "Дитина може самостійно ввічливо попросити товар та запитати ціну.",
-                milestone_3_title: "Безпечна відмова стороннім",
-                milestone_3_desc: "Вміння твердо сказати \"Nie, ďakujem\" на пропозицію незнайомця.",
-                milestone_4_title: "У словацькій школі / садочку",
-                milestone_4_desc: "Розуміння базових команд вчителя, прохання про допомогу чи вихід.",
-                milestone_5_title: "Поїздка у громадському транспорті",
-                milestone_5_desc: "Спілкування з контролером, купівля та валідація квитка.",
-                gdpr_title: "Центр конфіденційності GDPR-K",
-                gdpr_sub: "Ми піклуємося про безпеку вашої дитини. Відповідно до регламентів ЄС, записи голосу не зберігаються на наших серверах.",
-                btn_export_data: "Експортувати дані прогресу",
-                btn_delete_profile: "Видалити профіль дитини",
-                footer_legal_text: "Усі права захищені. Платформа відповідає нормам GDPR-K та EU AI Act по роботі з дітьми.",
-                chart_days: ["Пн", "Вв", "Ср", "Чт", "Пт", "Сб", "Нд"],
+        select_scenario: "Обери життєвий сценарій:",
+        nav_playground: "Ігровий простір",
+        nav_parent_cabinet: "Батьківський кабінет",
+        select_tutor: "Віковий трек:",
+        ai_assistant_badge: "ІІ-Помічник",
+        exercise_title: "Твоє завдання:",
+        task_desc: "Повтори фразу",
+        target_phrase: "Потрібно вимовити:",
+        tip_title: "Підказка від Оксани:",
+        tip_content_default: "Слухай та повторюй словацькі слова разом зі мною.",
+        press_mic: "Натисни мікрофон та говори словацькою",
+        accuracy_label: "точність",
+        feedback_success: "Чудова вимова!",
+        feedback_subtext_success: "Ти правильно вимовив усі звуки. Рухаємося далі!",
+        feedback_retry: "Майже вийшло!",
+        feedback_subtext_retry: "Зверни увагу на виділені червоним слова і спробуй ще раз.",
+        cabinet_welcome_title: "Кабінет безпечного контролю: Батьківський дашборд",
+        cabinet_welcome_sub: "Тут ви можете бачити статистику прогресу навчання, досягнення дитини та налаштування конфіденційності GDPR.",
+        stat_time_spent: "Час на платформі (тиждень)",
+        stat_vocab_size: "Вивчено словацьких слів",
+        stat_social_milestones: "Рівень адаптації",
+        chart_title: "Динаміка занять по днях (хвилини)",
+        milestones_title: "Практичні досягнення дитини",
+        milestone_1_title: "Знайомство на дитячому майданчику",
+        milestone_1_desc: "Дитина вміє представитися, запитати ім'я та запропонувати пограти.",
+        milestone_2_title: "Похід у словацький магазин",
+        milestone_2_desc: "Дитина може самостійно ввічливо попросити товар та запитати ціну.",
+        milestone_3_title: "Безпечна відмова стороннім",
+        milestone_3_desc: "Вміння твердо сказати \"Nie, ďakujem\" на пропозицію незнайомця.",
+        milestone_4_title: "У словацькій школі / садочку",
+        milestone_4_desc: "Розуміння базових команд вчителя, прохання про допомогу чи вихід.",
+        milestone_5_title: "Поїздка у громадському транспорті",
+        milestone_5_desc: "Спілкування з контролером, купівля та валідація квитка.",
+        gdpr_title: "Центр конфіденційності GDPR-K",
+        gdpr_sub: "Ми піклуємося про безпеку вашої дитини. Відповідно до регламентів ЄС, записи голосу не зберігаються на наших серверах.",
+        btn_export_data: "Експортувати дані прогресу",
+        btn_delete_profile: "Видалити профіль дитини",
+        footer_legal_text: "Усі права захищені. Платформа відповідає нормам GDPR-K та EU AI Act по роботі з дітьми.",
+        chart_days: ["Пн", "Вв", "Ср", "Чт", "Пт", "Сб", "Нд"],
 
-                // Parent Gate & Pricing Translations
-                parent_gate_title: "Доступ лише для батьків",
-                parent_gate_sub: "Будь ласка, введіть ваш батьківський ПІН-код.",
-                parent_gate_error_msg: "Неправильний ПІН-код, спробуйте ще раз.",
-                btn_confirm: "Підтвердити",
-                pricing_title: "Тарифні плани",
-                pricing_sub: "Оберіть відповідний пакет для повноцінного навчання дитини з ІІ-наставником.",
-                plan_popular: "Популярний",
-                plan_1_month: "1 місяць",
-                plan_3_months: "3 місяці",
-                plan_6_months: "6 місяців",
-                plan_period_month: "/ міс",
-                plan_3_total: "Всього: €24",
-                plan_6_total: "Всього: €30",
-                feature_1: "Доступ до 8 аватаров",
-                feature_2: "Аналіз вимови (Speech API)",
-                feature_3: "Родительский контроль",
-                btn_choose_plan: "Обрати тариф",
-                payment_modal_title: "Оплата банківською картою",
-                payment_modal_sub: "Оплата за тарифом",
-                card_holder_label: "Власник карти",
-                card_number_label: "Номер карти",
-                card_expiry_label: "Термін дії",
-                payment_error_msg: "Помилка авторизації карти. Перевірте дані.",
-                payment_success_title: "Оплата успішна!",
-                payment_success_sub: "Дякуємо! Доступ до преміум функцій відкрито.",
-                btn_pay: "Сплатити",
-                btn_close: "Закрити",
-                        sub_active_title: "Ваша підписка активна!",
+        parent_gate_title: "Доступ лише для батьків",
+        parent_gate_sub: "Будь ласка, введіть ваш батьківський ПІН-код.",
+        parent_gate_error_msg: "Неправильний ПІН-код, спробуйте ще раз.",
+        btn_confirm: "Підтвердити",
+        pricing_title: "Тарифні плани",
+        pricing_sub: "Оберіть відповідний пакет для повноцінного навчання дитини з ІІ-наставником.",
+        plan_popular: "Популярний",
+        plan_1_month: "1 місяць",
+        plan_3_months: "3 місяці",
+        plan_6_months: "6 місяців",
+        plan_period_month: "/ міс",
+        plan_3_total: "Всього: €24",
+        plan_6_total: "Всього: €30",
+        feature_1: "Річна програма (12 місяців)",
+        feature_2: "Аналіз вимови (Speech API)",
+        feature_3: "Родинам: планування та напоминалки",
+        btn_choose_plan: "Обрати тариф",
+        payment_modal_title: "Оплата банківською картою",
+        payment_modal_sub: "Оплата за тарифом",
+        card_holder_label: "Власник карти",
+        card_number_label: "Номер карти",
+        card_expiry_label: "Термін дії",
+        payment_error_msg: "Помилка авторизації карти. Перевірте дані.",
+        payment_success_title: "Оплата успішна!",
+        payment_success_sub: "Дякуємо! Доступ до преміум функцій відкрито.",
+        btn_pay: "Сплатити",
+        btn_close: "Закрити",
+        sub_active_title: "Ваша підписка активна!",
         footer_sponsor_text: "спонсор - Експертний блог по безпеці бізнесу в Європі",
         plan_free_badge: "Рекомендовано",
         plan_free_trial: "Пробний період",
@@ -419,39 +632,129 @@ const translations = {
         plan_free_total: "Всього: €0 на 7 днів",
         btn_start_trial: "Спробувати безкоштовно",
         trial_active_title: "Ваш пробний період активний!",
-        trial_success_msg: "Вітаємо! Ви успішно активували безкоштовний пробний доступ на 7 днів."
+        trial_success_msg: "Вітаємо! Ви успішно активували безкоштовний пробний доступ на 7 днів.",
+        plan_premium: "Преміум (Оксана)",
+        plan_premium_badge: "Преміум-ІІ",
+        plan_premium_total: "Всього: €50 на місяць",
+        feature_premium_1: "Спілкування з Оксаною в реальному часі",
+        feature_premium_2: "Аналіз вимови через Azure Speech",
+        feature_premium_3: "Індивідуальний розклад занять",
+        premium_lock_title: "Потрібен Преміум-тариф",
+        premium_lock_sub: "Для повноцінного доступу до вільного чату з Оксаною та ексклюзивних уроків безпеки потрібен тариф Преміум. Спробуйте безкоштовний тестовий період!",
+        btn_upgrade_premium: "Перейти на Преміум (€50/міс)",
+        btn_continue_standard: "Продовжити"
     },
+    ru: {
+        select_scenario: "Выбери жизненный сценарий:",
+        nav_playground: "Игровое пространство",
+        nav_parent_cabinet: "Родительский кабинет",
+        select_tutor: "Возрастной трек:",
+        ai_assistant_badge: "ИИ-Помощник",
+        exercise_title: "Твое задание:",
+        task_desc: "Повтори фразу",
+        target_phrase: "Нужно произнести:",
+        tip_title: "Подсказка от Оксаны:",
+        tip_content_default: "Слушай и повторяй словацкие слова вместе со мной.",
+        press_mic: "Нажми микрофон и говори по-словацки",
+        accuracy_label: "точность",
+        feedback_success: "Отличное произношение!",
+        feedback_subtext_success: "Ты правильно произнес все звуки. Двигаемся дальше!",
+        feedback_retry: "Почти получилось!",
+        feedback_subtext_retry: "Обрати внимание на выделенные красным слова и попробуй еще раз.",
+        cabinet_welcome_title: "Кабинет безопасного контроля: Родительский дашборд",
+        cabinet_welcome_sub: "Здесь вы можете видеть статистику прогресса обучения, достижения ребенка и настройки конфиденциальности GDPR.",
+        stat_time_spent: "Время на платформе (неделя)",
+        stat_vocab_size: "Изучено словацких слов",
+        stat_social_milestones: "Уровень адаптации",
+        chart_title: "Динамика занятий по днях (минуты)",
+        milestones_title: "Практические достижения ребенка",
+        milestones_desc: "Практические успехи за год.",
+        milestone_1_title: "Знакомство на детской площадке",
+        milestone_1_desc: "Ребенок умеет представиться, спросить имя и предложить поиграть.",
+        milestone_2_title: "Поход в словацкий магазин",
+        milestone_2_desc: "Ребенок может самостоятельно вежливо попросить товар и спросить цену.",
+        milestone_3_title: "Безопасный отказ посторонним",
+        milestone_3_desc: "Умение твердо сказать \"Nie, ďakujem\" на предложение незнакомца.",
+        milestone_4_title: "В словацкой школе / садике",
+        milestone_4_desc: "Понимание базовых команд учителя, просьба о помощи или выходе.",
+        milestone_5_title: "Поездка в общественном транспорте",
+        milestone_5_desc: "Общение с контролером, покупка и валидация билета.",
+        gdpr_title: "Центр конфиденциальности GDPR-K",
+        gdpr_sub: "Мы заботимся о безопасности вашего ребенка. В соответствии с регламентом ЕС, записи голоса не сохраняются на наших серверах.",
+        btn_export_data: "Экспортировать данные прогресса",
+        btn_delete_profile: "Удалить профиль ребенка",
+        footer_legal_text: "Все права защищены. Платформа соответствует нормам GDPR-K и EU AI Act по работе с детьми.",
+        chart_days: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
 
-            ru: {
-                select_scenario: "Выбери жизненный сценарий:",
-                nav_playground: "Игровое пространство",
-                nav_parent_cabinet: "Родительский кабинет",
-                select_tutor: "Выбери учителя:",
-                group_animals: "Животные:",
-                group_humans: "Люди:",
-                soon_label: "скоро будет",
-                char_wolf: "Волчонок (Vĺča)",
-                char_fox: "Лисёнок (Líška)",
-                char_bear: "Медвежонок (Macko)",
-                char_bunny: "Зайчонок (Zajko)",
-                char_human: "Оксана (Oksana)",
-                char_taras: "Тарас (Taras)",
-                char_marijka: "Марийка (Marijka)",
-                char_grandfather: "Дедушка (Dedo)",
-                ai_assistant_badge: "ИИ-Помощник",
-                exercise_title: "Tвое задание: Поздоровайся со словацким другом",
-                task_desc: "Повтори фразу: \"Dobrý deň, ako sa máš?\"",
-                target_phrase: "Нужно произнести:",
-                tip_title: "Подсказка от наставника:",
-                tip_content_default: "Словацкая буква 'ň' произносится мягко, как русская 'нь'.",
-                press_mic: "Нажми микрофон и говори по-словацки",
-                accuracy_label: "точность",
-                feedback_success: "Отличное произношение!",
-                feedback_subtext_success: "Ты правильно произнес все звуки. Двигаемся дальше!",
-                feedback_retry: "Почти получилось!",
-                feedback_subtext_retry: "Обрати внимание на выделенные красным слова и попробуй еще раз.",
-                cabinet_welcome_title: "Кабинет безопасного контроля: Родительский дашборд",
-                cabinet_welcome_sub: "Здесь вы можете видеть статистику прогресса обучения, достижения ребенка и настройки конфиденциальности GDPR.",
+        parent_gate_title: "Доступ только для родителей",
+        parent_gate_sub: "Пожалуйста, введите ваш родительский ПИН-код.",
+        parent_gate_error_msg: "Неверный ПИН-код, попробуйте еще раз.",
+        btn_confirm: "Подтвердить",
+        pricing_title: "Тарифные планы",
+        pricing_sub: "Выберите подходящий пакет для полноценного обучения ребенка с ИИ-наставником.",
+        plan_popular: "Популярный",
+        plan_1_month: "1 месяц",
+        plan_3_months: "3 месяца",
+        plan_6_months: "6 месяцев",
+        plan_period_month: "/ мес",
+        plan_3_total: "Всего: €24",
+        plan_6_total: "Всего: €30",
+        feature_1: "Годовая программа (12 месяцев)",
+        feature_2: "Анализ произношения (Speech API)",
+        feature_3: "Семьям: планирование и напоминалки",
+        btn_choose_plan: "Выбрать тариф",
+        payment_modal_title: "Оплата банковской картой",
+        payment_modal_sub: "Оплата по тарифу",
+        card_holder_label: "Владелец карты",
+        card_number_label: "Номер карты",
+        card_expiry_label: "Срок действия",
+        payment_error_msg: "Ошибка авторизации карты. Проверьте данные.",
+        payment_success_title: "Оплата успешна!",
+        payment_success_sub: "Спасибо! Доступ к премиум-функциям открыт.",
+        btn_pay: "Оплатить",
+        btn_close: "Закрыть",
+        sub_active_title: "Ваша подписка активна!",
+        footer_sponsor_text: "спонсор - Экспертный блог по безопасности бизнеса в Европе",
+        plan_free_badge: "Рекомендовано",
+        plan_free_trial: "Пробный период",
+        plan_free_duration: "/ 7 дней",
+        plan_free_total: "Всего: €0 на 7 дней",
+        btn_start_trial: "Попробовать бесплатно",
+        trial_active_title: "Ваш пробный период активен!",
+        trial_success_msg: "Поздравляем! Вы успешно активировали бесплатный пробный доступ на 7 дней.",
+        plan_premium: "Премиум (Оксана)",
+        plan_premium_badge: "Премиум-ИИ",
+        plan_premium_total: "Всего: €50 в месяц",
+        feature_premium_1: "Общение с Оксаной в реальном времени",
+        feature_premium_2: "Анализ произношения через Azure Speech",
+        feature_premium_3: "Индивидуальное расписание занятий",
+        premium_lock_title: "Требуется Премиум-тариф",
+        premium_lock_sub: "Для полноценного доступа к свободному чату с Оксаной и эксклюзивным урокам безопасности требуется тариф Премиум. Попробуйте бесплатный тестовый период!",
+        btn_upgrade_premium: "Перейти на Премиум (€50/мес)",
+        btn_continue_standard: "Продолжить"
+    }
+};
+
+
+// 3. Tab Navigation (Switch views)
+function switchView(view) {
+    if (view === 'playground') {
+        document.getElementById('playground-view').classList.remove('hidden');
+        document.getElementById('cabinet-view').classList.add('hidden');
+        document.getElementById('btn-show-playground').classList.add('active');
+        document.getElementById('btn-show-cabinet').classList.remove('active');
+    } else {
+        document.getElementById('playground-view').classList.add('hidden');
+        document.getElementById('cabinet-view').classList.remove('hidden');
+        document.getElementById('btn-show-playground').classList.remove('active');
+        document.getElementById('btn-show-cabinet').classList.add('active');
+        
+        // Render or update parent chart
+        initParentChart();
+        // Load schedule UI in parent cabinet
+        loadParentScheduleUI();
+    }
+}са обучения, достижения ребенка и настройки конфиденциальности GDPR.",
                 stat_time_spent: "Время на платформе (неделя)",
                 stat_vocab_size: "Изучено словацких слов",
                 stat_social_milestones: "Уровень адаптации",
@@ -488,8 +791,8 @@ const translations = {
                 plan_period_month: "/ мес",
                 plan_3_total: "Всего: €24",
                 plan_6_total: "Всего: €30",
-                feature_1: "Доступ к 8 аватарам",
-                feature_2: "Анализ произношения (Speech API)",
+                feature_1: "Доступ к 4 животным-маскотам",
+                feature_2: "Видео-анимация животных",
                 feature_3: "Родительский контроль",
                 btn_choose_plan: "Выбрать тариф",
                 payment_modal_title: "Оплата банковской картой",
@@ -510,7 +813,17 @@ const translations = {
         plan_free_total: "Всего: €0 на 7 дней",
         btn_start_trial: "Попробовать бесплатно",
         trial_active_title: "Ваш пробный период активен!",
-        trial_success_msg: "Поздравляем! Вы успешно активировали бесплатный пробный доступ на 7 дней."
+        trial_success_msg: "Поздравляем! Вы успешно активировали бесплатный пробный доступ на 7 дней.",
+        plan_premium: "Премиум (Живые наставники)",
+        plan_premium_badge: "Премиум-ИИ",
+        plan_premium_total: "Всего: €50 в месяц",
+        feature_premium_1: "Все 8 персонажей (вкл. людей)",
+        feature_premium_2: "Живая WebRTC-анимация людей",
+        feature_premium_3: "Безлимитный разговорный тренажер",
+        premium_lock_title: "Требуется Премиум-тариф",
+        premium_lock_sub: "Для общения с людьми-наставниками (Оксана, Тарас, Дедушка) в реальном времени требуется Премиум-тариф. В вашем текущем пакете доступны все 4 животных-маскота без ограничений!",
+        btn_upgrade_premium: "Перейти на Премиум (€50/мес)",
+        btn_continue_standard: "Продолжить с животными"
     }
 };
 
@@ -634,6 +947,7 @@ function updateScenarioUI() {
     document.getElementById('pronunciation-tip-text').innerText = sc.tip[currentLang];
     document.getElementById('speech-feedback-card').classList.add('hidden');
     speakSlovak(sc.phrase);
+    updateAvatarState('level_' + currentScenario);
 }
 
 function unlockMilestone(num) {
@@ -675,11 +989,16 @@ function updateCharacterLevelImage() {
     const avatarImg = document.getElementById('char-avatar-img');
     if (!avatarImg) return;
     
-    let src = `${currentCharacter}_level_${currentLevel}.png`;
+    // Map currentLevel (1-5) to animal evolution Version (1-3)
+    let version = 1;
+    if (currentLevel >= 5) version = 3;
+    else if (currentLevel >= 3) version = 2;
+
+    let src = `${currentCharacter}_level_${version}.png`;
     
     avatarImg.onerror = function() {
-        const isAnimal = ['wolf', 'fox', 'bear', 'bunny'].includes(currentCharacter);
-        avatarImg.src = isAnimal ? 'wolf_mascot.png' : 'tutor_girl.png';
+        const isAnimal = ['wolf', 'fox', 'raccoon', 'cat'].includes(currentCharacter);
+        avatarImg.src = isAnimal ? `${currentCharacter}_level_1.png` : 'tutor_girl.png';
         avatarImg.onerror = null;
     };
     avatarImg.src = src;
@@ -755,7 +1074,7 @@ async function sendChatMessage() {
         const typing = showTypingIndicator();
         try {
             const systemPrompt = `You are a friendly Slovak language teacher for Ukrainian children under 14 years old.
-Your name is ${currentCharacter === 'wolf' ? 'Vĺča (Вовченя)' : 'Oksana (Оксана)'}.
+Your name is ${avatarConfig[currentCharacter] ? avatarConfig[currentCharacter].name.uk : 'Oksana'}.
 Speak simple Slovak, guide the child in learning. Mend errors gently. Use simple vocabulary.
 At the end of your message, add a translation of complex Slovak words in parentheses in Ukrainian.
 Keep replies short (1-2 sentences).`;
@@ -1027,6 +1346,7 @@ function handleSpeechResult(result) {
 
         // Vocal feedback
         speakSlovak("Výborne! Veľmi dobre.");
+        updateAvatarState('success');
         
         appendChatBubble('tutor', `Výborne! Veľmi dobre. (${currentLang === 'uk' ? 'Чудово! Дуже добре.' : 'Отлично! Очень хорошо.'})`);
 
@@ -1053,6 +1373,7 @@ function handleSpeechResult(result) {
             
         // Speak correction
         speakSlovak(scenarios[currentScenario].audioCorrection);
+        updateAvatarState('retry');
     }
 }
 
@@ -1071,157 +1392,64 @@ function resetFeedback() {
     document.getElementById('pronunciation-tip-text').innerHTML = sc.tip[currentLang];
 }
 
-// 4.7. HeyGen WebRTC Stream Operations
-let peerConnection = null;
-let sessionId = null;
+// D-ID WebRTC Stream state
+let dIdStreamId = null;
+let dIdSessionId = null;
+let dIdPeerConnection = null;
+let dIdDataChannel = null;
+let dIdStatsIntervalId = null;
+const VIDEO_BASE_URL = localStorage.getItem('slovahoj_video_base_url') || './videos/';
 
-async function startHeyGenSession() {
-    const keys = await loadEnv();
-    if (!keys || !keys.HEYGEN_API_KEY) {
-        console.warn("HeyGen credentials missing. Running in fallback mode.");
-        return;
-    }
-    const avatarId = avatarConfig[currentCharacter].avatarId;
-    const voiceId = avatarConfig[currentCharacter].voiceId;
-    try {
-        const response = await fetch('https://api.heygen.com/v1/streaming.create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': keys.HEYGEN_API_KEY
-            },
-            body: JSON.stringify({
-                quality: 'low',
-                avatar_id: avatarId,
-                voice_id: voiceId
-            })
-        });
-        if (!response.ok) throw new Error("HeyGen session creation failed");
-        const data = await response.json();
-        const { session_id, sdp, ice_servers } = data.data;
-        sessionId = session_id;
-        peerConnection = new RTCPeerConnection({
-            iceServers: ice_servers.map(server => ({
-                urls: server.urls,
-                username: server.username,
-                credential: server.credential
-            }))
-        });
-        const videoElement = document.getElementById('heygen-video');
-        const fallbackElement = document.getElementById('avatar-fallback');
-        peerConnection.ontrack = (event) => {
-            if (event.track.kind === 'video' && videoElement) {
-                videoElement.srcObject = event.streams[0];
-                videoElement.classList.remove('hidden');
-                fallbackElement.classList.add('hidden');
-            }
-        };
-        await peerConnection.setRemoteDescription(new RTCSessionDescription({
-            type: 'offer',
-            sdp: sdp.sdp
-        }));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        const startResponse = await fetch('https://api.heygen.com/v1/streaming.start', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': keys.HEYGEN_API_KEY
-            },
-            body: JSON.stringify({
-                session_id: sessionId,
-                sdp: {
-                    type: 'answer',
-                    sdp: answer.sdp
-                }
-            })
-        });
-        if (!startResponse.ok) throw new Error("HeyGen session start failed");
-        console.log("HeyGen WebRTC session started.");
-    } catch (e) {
-        console.error("HeyGen session failed:", e);
-        closeHeyGenSession();
-    }
-}
-
-function closeHeyGenSession() {
-    if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-    }
-    sessionId = null;
-    const videoElement = document.getElementById('heygen-video');
-    const fallbackElement = document.getElementById('avatar-fallback');
-    if (videoElement) {
-        videoElement.srcObject = null;
-        videoElement.classList.add('hidden');
-    }
-    if (fallbackElement) {
-        fallbackElement.classList.remove('hidden');
-    }
-}
-
-// 5. Select Interactive Character (Wolf, Fox, Bear, Bunny, Оксана, Taras, Marijka, Grandfather)
-function selectCharacter(char) {
-    currentCharacter = char;
+function updateAvatarState(state) {
+    console.log("Avatar state updated to:", state);
+    const video = document.getElementById('heygen-video');
+    const fallback = document.getElementById('avatar-fallback');
+    if (!video || !fallback) return;
     
-    // Set active states on all 8 buttons
-    const avatarIds = ['wolf', 'fox', 'bear', 'bunny', 'human', 'taras', 'marijka', 'grandfather'];
-    avatarIds.forEach(id => {
-        const btn = document.getElementById(`char-btn-${id}`);
-        if (btn) btn.classList.toggle('active', id === char);
+    // Maps avatar states to reaction video names
+    let videoFile = '';
+    switch(state) {
+        case 'thinking':
+            videoFile = 'thinking.mp4';
+            break;
+        case 'success':
+            videoFile = 'correct.mp4';
+            break;
+        case 'retry':
+            videoFile = 'retry.mp4';
+            break;
+        case 'listening':
+            videoFile = 'listening.mp4';
+            break;
+        case 'greeting':
+        case 'greet':
+            videoFile = 'greeting.mp4';
+            break;
+        case 'farewell':
+        case 'bye':
+            videoFile = 'farewell.mp4';
+            break;
+        case 'lesson_intro':
+            videoFile = `oksana_m${currentMonth}_w${currentWeek}_${currentTrack}.mp4`;
+            break;
+        default:
+            videoFile = 'neutral.mp4';
+            break;
+    }
+    
+    const srcUrl = VIDEO_BASE_URL + videoFile;
+    
+    // Play the video stream
+    video.src = srcUrl;
+    video.classList.remove('hidden');
+    fallback.classList.add('hidden');
+    
+    video.play().catch(err => {
+        console.warn("Pre-recorded video play failed or not found, falling back to static avatar.", err);
+        video.classList.add('hidden');
+        fallback.classList.remove('hidden');
     });
-    
-    // Switch visual avatar mock
-    updateCharacterLevelImage();
-    
-    // Setup HeyGen Webrtc Session
-    closeHeyGenSession();
-    startHeyGenSession();
-    
-    // Reset recording feedback
-    resetFeedback();
-    
-    // Play voice greeting out loud (Slovak synthesis)
-    speakSlovak(avatarConfig[char].greetSk);
-    
-    // Update chat log
-    updateChatHistoryLanguage();
-
-    // Check if subscription is expired or trial is completed for this specific character
-    setTimeout(() => {
-        checkAccessRules();
-    }, 800);
 }
-
-function speakSlovak(text) {
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Stop current speech
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'sk-SK';
-        
-        // Dynamic pitch and rate based on active character
-        const isAnimal = ['wolf', 'fox', 'bear', 'bunny'].includes(currentCharacter);
-        if (isAnimal) {
-            utterance.pitch = currentCharacter === 'wolf' ? 0.75 : 0.9;
-            utterance.rate = 0.8;
-        } else {
-            utterance.pitch = currentCharacter === 'grandfather' ? 0.85 : 1.15;
-            utterance.rate = 0.85;
-        }
-        
-        // Find Slovak voice
-        const voices = window.speechSynthesis.getVoices();
-        const skVoice = voices.find(voice => voice.lang.includes('sk'));
-        if (skVoice) {
-            utterance.voice = skVoice;
-        }
-        
-        window.speechSynthesis.speak(utterance);
-    }
-}
-
-
 
 // 7. Parent Dashboard: Render Progress Chart
 function initParentChart() {
@@ -1260,132 +1488,168 @@ function initParentChart() {
         }
     });
 }
-
-// 8. GDPR & Privacy Operations
-function exportGDPRData() {
-    const safetyAuditLogs = {
-        profile: {
-            child_id: "slovak-student-anon-8742",
-            age: "under 14",
-            gdpr_consent_provided: true,
-            consent_date: "2026-07-17"
-        },
-        speech_logs: [
-            { timestamp: "2026-07-17T18:24:12Z", text: "Dobrý deň", accuracy_score: 0.78, raw_audio_retained: false },
-            { timestamp: "2026-07-17T18:25:01Z", text: "Dobrý deň, ako sa máš", accuracy_score: 0.96, raw_audio_retained: false }
-        ],
-        data_processing_rule: "EU GDPR-K compliant: All raw voice wave recordings were deleted immediately from temporary memory (in-memory parsing) upon phonetic translation."
-    };
-
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(safetyAuditLogs, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "slovahoj_kids_gdpr_export.json");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+ function closePremiumLockModal() {
+    document.getElementById('premium-lock-modal').classList.add('hidden');
 }
 
-function deleteGDPRProfile() {
-    const confirmation = confirm(currentLang === 'uk' 
-        ? "Ви дійсно бажаєте безповоротно видалити профіль дитини та всю історію занять відповідно до регламенту GDPR-K?" 
-        : "Вы действительно хотите безвозвратно удалить профиль ребенка и всю историю занятий в соответствии с регламентом GDPR-K?");
+function upgradeToPremiumFromModal() {
+    document.getElementById('premium-lock-modal').classList.add('hidden');
+    // Open payment modal for Premium
+    const planName = currentLang === 'uk' ? 'Преміум (Оксана)' : 'Премиум (Оксана)';
+    openPaymentModal(50, planName);
+}
+
+function formatCardNumber(input) {
+    let value = input.value.replace(/\D/g, '');
+    let formatted = '';
+    for (let i = 0; i < value.length; i++) {
+        if (i > 0 && i % 4 === 0) formatted += ' ';
+        formatted += value[i];
+    }
+    input.value = formatted;
+}
+
+function formatExpiry(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 2) {
+        input.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    } else {
+        input.value = value;
+    }
+}
+
+function processPayment() {
+    const holder = document.getElementById('card-holder').value.trim();
+    const number = document.getElementById('card-number').value.replace(/\s/g, '');
+    const expiry = document.getElementById('card-expiry').value.trim();
+    const cvv = document.getElementById('card-cvv').value.trim();
+    const submitBtn = document.getElementById('btn-submit-payment');
     
-    if (confirmation) {
-        // Reset statistics
-        document.getElementById('stat-time-val').innerHTML = '0 год 0 хв';
-        document.getElementById('stat-vocab-val').innerHTML = '0 слів';
-        document.getElementById('stat-social-val').innerHTML = '0 / 5 етапів';
-
-        // Clear chart
-        if (progressChart) {
-            progressChart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0];
-            progressChart.update();
-        }
-
-        // Lock milestones
-        const milestones = document.querySelectorAll('.milestone-item');
-        milestones.forEach(item => {
-            item.className = 'milestone-item locked';
-            item.querySelector('.milestone-checkbox').innerHTML = '<i class="fa-solid fa-lock"></i>';
-        });
-
-        alert(currentLang === 'uk' 
-            ? "Усі дані дитини успішно та назавжди видалено з баз даних." 
-            : "Все данные ребенка успешно и навсегда удалены из баз данных.");
+    if (!holder || number.length < 16 || expiry.length < 5 || cvv.length < 3) {
+        document.getElementById('payment-error').classList.remove('hidden');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = currentLang === 'uk' ? 'Обробка...' : 'Обработка...';
+    
+    setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerText = currentLang === 'uk' ? 'Сплатити' : 'Оплатить';
         
-        switchView('playground');
-    }
-}
-
-
-// --- PIN Authentication, Registration, and Expiry Check Rules ---
-
-function checkAccessRules() {
-    // If the parent cabinet is currently active, do not apply child locks
-    const playground = document.getElementById('playground-view');
-    if (playground && playground.classList.contains('hidden')) {
-        return true;
-    }
-
-    const isSubActive = isSubscriptionActive();
-    
-    // Check if subscription has expired
-    if (isRegistered && !isSubActive && !childAuthenticated) {
-        // Show expired lock screen
-        document.getElementById('sub-expired-lock-modal').classList.remove('hidden');
-        return false;
-    }
-    
-    // If not registered and tutor trial is passed for currentCharacter, lock with post-trial modal
-    if (!isRegistered && tutorTrialPassed[currentCharacter]) {
-        document.getElementById('post-trial-modal').classList.remove('hidden');
-        return false;
-    }
-    
-    // If subscription is inactive (either not registered or expired but child authenticated is false), enforce Scenario 1 only
-    if (!isSubActive && !childAuthenticated) {
-        if (currentScenario !== 1) {
-            currentScenario = 1;
-            updateScenarioUI();
-            alert(currentLang === 'uk' ? "У пробному режимі доступне лише перше завдання." : "В пробном режиме доступно только первое задание.");
-            return false;
+        // Mock check
+        if (number.startsWith('4') || number.startsWith('5')) {
+            // Success
+            document.getElementById('payment-main-form').classList.add('hidden');
+            document.getElementById('payment-modal-footer').classList.add('hidden');
+            document.getElementById('payment-success-screen').classList.remove('hidden');
+            
+            // Set paid subscription state (Preserves child's progress!)
+            subscriptionStart = Date.now();
+            let periodDays = 30;
+            if (currentPaymentPlanName.includes('3')) periodDays = 90;
+            else if (currentPaymentPlanName.includes('6')) periodDays = 180;
+            subscriptionEnd = subscriptionStart + (periodDays * 24 * 60 * 60 * 1000);
+            
+            if (currentPaymentPlanName.includes('Преміум') || currentPaymentPlanName.includes('Premium') || currentPaymentPlanName.includes('Премиум')) {
+                subscriptionType = 'premium';
+            } else {
+                subscriptionType = 'paid';
+            }
+            saveSubState();
+            
+            // Clean lock screens
+            document.getElementById('sub-expired-lock-modal').classList.add('hidden');
+            document.getElementById('parent-expiry-modal').classList.add('hidden');
+ 
+            // Activate subscription banner
+            const banner = document.getElementById('subscription-status-banner');
+            banner.querySelector('.sub-title').setAttribute('data-i18n', 'sub_active_title');
+            banner.querySelector('.sub-title').innerText = currentLang === 'uk' ? 'Ваша підписка активна!' : 'Ваша подписка активна!';
+            
+            const expDate = new Date(subscriptionEnd);
+            const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
+            banner.querySelector('.sub-details').innerText = currentLang === 'uk'
+                ? `Тарифний план: ${currentPaymentPlanName}. Дійсний до ${expString}.`
+                : `Тарифный план: ${currentPaymentPlanName}. Действителен до ${expString}.`;
+            banner.classList.remove('hidden');
+        } else {
+            // Error
+            document.getElementById('payment-error').classList.remove('hidden');
         }
+    }, 1200);
+}
+
+function startFreeTrial() {
+    const message = currentLang === 'uk'
+        ? 'Вітаємо! Ви успішно активували безкоштовний пробний доступ на 7 днів.'
+        : 'Поздравляем! Вы успешно активировали бесплатный пробный доступ на 7 дней.';
+        
+    alert(message);
+    
+    // Set trial state (Preserves child's progress!)
+    subscriptionStart = Date.now();
+    subscriptionEnd = subscriptionStart + (7 * 24 * 60 * 60 * 1000);
+    subscriptionType = 'trial';
+    saveSubState();
+    
+    // Clean lock screens
+    document.getElementById('sub-expired-lock-modal').classList.add('hidden');
+    document.getElementById('parent-expiry-modal').classList.add('hidden');
+ 
+    // Activate subscription banner as trial active
+    const banner = document.getElementById('subscription-status-banner');
+    banner.querySelector('.sub-title').setAttribute('data-i18n', 'trial_active_title');
+    banner.querySelector('.sub-title').innerText = currentLang === 'uk' ? 'Ваш пробний період активний!' : 'Ваш пробный период активен!';
+    
+    const expDate = new Date(subscriptionEnd);
+    const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
+    banner.querySelector('.sub-details').innerText = currentLang === 'uk'
+        ? `Пробний період дійсний до ${expString}.`
+        : `Пробный период действителен до ${expString}.`;
+    banner.classList.remove('hidden');
+}
+ 
+// Init App
+window.addEventListener('DOMContentLoaded', async () => {
+    // Load env keys
+    await loadEnv();
+    
+    // Setup default voices
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
     }
     
-    return true;
-}
-
-function showPostTrialModal() {
-    document.getElementById('post-trial-modal').classList.remove('hidden');
-}
-
-function closePostTrialModal() {
-    document.getElementById('post-trial-modal').classList.add('hidden');
-}
-
-function openRegModalFromInvite() {
-    closePostTrialModal();
-    document.getElementById('registration-modal').classList.remove('hidden');
-}
-
-function closeRegistrationModal() {
-    document.getElementById('registration-modal').classList.add('hidden');
-}
-
-function generateRandomPin() {
-    return Math.floor(1000 + Math.random() * 9000).toString();
-}
+    // Check access controls on load
+    checkAccessRules();
+ 
+    // Initialize UI
+    syncMilestonesUI();
+    updateScenarioButtonsVisibility();
+    updateScenarioUI();
+    updateCharacterLevelImage();
+    
+    // Load schedule configurations
+    loadParentScheduleUI();
+    
+    // Initial avatar intro video play
+    updateAvatarState('lesson_intro');
+    
+    // Start parent schedule verification checker (runs every 30 seconds)
+    setInterval(checkLessonSchedule, 30000);
+});
 
 function processRegistration() {
     const email = document.getElementById('reg-email').value.trim();
     
-    // Admin override: typing '9999' automatically registers as admin
     if (email === ADMIN_PIN) {
         currentUserEmail = "admin@test.com";
         isRegistered = true;
         parentPin = "9999";
         childPin = "1111";
+        subscriptionType = "premium";
+        subscriptionStart = Date.now();
+        subscriptionEnd = subscriptionStart + (365 * 24 * 60 * 60 * 1000); // 1 year active
         saveSubState();
         
         // Directly proceed to cabinet dashboard
@@ -1577,14 +1841,7 @@ function resetAllAuthData() {
     sessionStorage.removeItem('slovahoj_kids_parent_verified');
     
     tutorTrialPassed = {
-        wolf: false,
-        fox: false,
-        bear: false,
-        bunny: false,
-        human: false,
-        taras: false,
-        marijka: false,
-        grandfather: false
+        human: false
     };
     
     saveSubState();
@@ -1623,6 +1880,17 @@ function openPaymentModal(amount, planName) {
 
 function closePaymentModal() {
     document.getElementById('payment-modal').classList.add('hidden');
+}
+
+function closePremiumLockModal() {
+    document.getElementById('premium-lock-modal').classList.add('hidden');
+}
+
+function upgradeToPremiumFromModal() {
+    document.getElementById('premium-lock-modal').classList.add('hidden');
+    // Open payment modal for Premium
+    const planName = currentLang === 'uk' ? 'Преміум (Оксана)' : 'Премиум (Оксана)';
+    openPaymentModal(50, planName);
 }
 
 function formatCardNumber(input) {
@@ -1676,7 +1944,12 @@ function processPayment() {
             if (currentPaymentPlanName.includes('3')) periodDays = 90;
             else if (currentPaymentPlanName.includes('6')) periodDays = 180;
             subscriptionEnd = subscriptionStart + (periodDays * 24 * 60 * 60 * 1000);
-            subscriptionType = 'paid';
+            
+            if (currentPaymentPlanName.includes('Преміум') || currentPaymentPlanName.includes('Premium') || currentPaymentPlanName.includes('Премиум')) {
+                subscriptionType = 'premium';
+            } else {
+                subscriptionType = 'paid';
+            }
             saveSubState();
             
             // Clean lock screens
@@ -1747,9 +2020,19 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize UI
     syncMilestonesUI();
+    updateScenarioButtonsVisibility();
     updateScenarioUI();
     updateCharacterLevelImage();
     
-    // Start HeyGen Streaming
-    startHeyGenSession();
+    // Load schedule configurations
+    loadParentScheduleUI();
+    
+    // Initial avatar intro video play
+    updateAvatarState('lesson_intro');
+    
+    // Start parent schedule verification checker (runs every 30 seconds)
+    setInterval(checkLessonSchedule, 30000);
+    
+    // Apply translations and update chat greeting on initial load
+    switchLanguage(currentLang);
 });
