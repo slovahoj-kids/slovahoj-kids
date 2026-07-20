@@ -2071,6 +2071,108 @@ function checkAccessRules() {
         }
     }
     return true;
+// --- Weekly, Monthly, and Track Selectors ---
+
+function selectTrack(track) {
+    currentTrack = track;
+    
+    // Toggle active state on track buttons
+    const juniorBtn = document.getElementById('track-btn-junior');
+    const middleBtn = document.getElementById('track-btn-middle');
+    const seniorBtn = document.getElementById('track-btn-senior');
+    
+    if (juniorBtn) juniorBtn.classList.toggle('active', track === 'junior');
+    if (middleBtn) middleBtn.classList.toggle('active', track === 'middle');
+    if (seniorBtn) seniorBtn.classList.toggle('active', track === 'senior');
+    
+    updateScenarioUI();
+    updateAvatarState('lesson_intro');
+}
+
+function changeMonth(value) {
+    currentMonth = parseInt(value);
+    updateScenarioUI();
+    updateAvatarState('lesson_intro');
+}
+
+function changeWeek(value) {
+    currentWeek = parseInt(value);
+    updateScenarioUI();
+    updateAvatarState('lesson_intro');
+}
+
+function selectLessonDay(day) {
+    currentLessonDay = day;
+    
+    // Toggle active state on day lesson buttons
+    const day1Btn = document.getElementById('day-btn-lesson-1');
+    const day2Btn = document.getElementById('day-btn-lesson-2');
+    const day3Btn = document.getElementById('day-btn-lesson-3');
+    
+    if (day1Btn) day1Btn.classList.toggle('active', day === 1);
+    if (day2Btn) day2Btn.classList.toggle('active', day === 2);
+    if (day3Btn) day3Btn.classList.toggle('active', day === 3);
+    
+    updateScenarioUI();
+    updateAvatarState('lesson_intro');
+}
+
+function exportGDPRData() {
+    const data = {
+        email: currentUserEmail,
+        subscriptionType: subscriptionType,
+        subscriptionStart: new Date(subscriptionStart).toISOString(),
+        subscriptionEnd: new Date(subscriptionEnd).toISOString(),
+        completedScenarios: completedScenarios,
+        currentMonth: currentMonth,
+        currentWeek: currentWeek,
+        currentTrack: currentTrack,
+        log: [
+            { timestamp: new Date().toISOString(), event: "Profile accessed", details: "GDPR export triggered" },
+            { timestamp: new Date().toISOString(), event: "Completed scenarios", details: completedScenarios.join(', ') }
+        ]
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `slovahoj_gdpr_export_${currentUserEmail || 'anonymous'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function deleteGDPRProfile() {
+    const confirmMsg = currentLang === 'uk' 
+        ? "Ви впевнені, що хочете назавжди видалити цей профіль дитини? Всі дані про прогрес будуть стерті відповідно до регламенту GDPR."
+        : "Вы уверены, что хотите навсегда удалить этот профиль ребенка? Все данные о прогрессе будут стерты в соответствии с регламентом GDPR.";
+    
+    if (confirm(confirmMsg)) {
+        currentUserEmail = null;
+        parentPin = null;
+        childPin = null;
+        isRegistered = false;
+        subscriptionType = 'none';
+        subscriptionStart = 0;
+        subscriptionEnd = 0;
+        completedScenarios = [1];
+        currentMonth = 1;
+        currentWeek = 1;
+        currentTrack = 'junior';
+        
+        saveSubState();
+        localStorage.removeItem(completedScenariosKey);
+        localStorage.removeItem('slovahoj_parent_schedule');
+        localStorage.removeItem('slovahoj_last_triggered_reminder');
+        
+        const successMsg = currentLang === 'uk'
+            ? "Профіль успішно видалено. Всі дані повністю стерті."
+            : "Профиль успешно удален. Все данные полностью стерты.";
+        alert(successMsg);
+        location.reload();
+    }
 }
 
 // Init App
