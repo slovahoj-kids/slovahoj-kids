@@ -574,23 +574,23 @@ const translations = {
         feedback_retry: "Майже вийшло!",
         feedback_subtext_retry: "Зверни увагу на виділені червоним слова і спробуй ще раз.",
         cabinet_welcome_title: "Кабінет безпечного контролю: Батьківський дашборд",
-        cabinet_welcome_sub: "Тут ви можете бачити статистику прогресу навчання, досягнення дитини та налаштування конфіденційності GDPR.",
+        cabinet_welcome_sub: "Тут ви можете бачити статистику прогресу навчання, досягнення дитини та налаштування конфиденційності GDPR.",
         stat_time_spent: "Час на платформі (тиждень)",
         stat_vocab_size: "Вивчено словацьких слів",
         stat_social_milestones: "Рівень адаптації",
         chart_title: "Динаміка занять по днях (хвилини)",
         milestones_title: "Практичні досягнення дитини",
-        milestone_1_title: "Знайомство на дитячому майданчику",
+        milestone_1_title: "Знакомство на дитячому майданчику",
         milestone_1_desc: "Дитина вміє представитися, запитати ім'я та запропонувати пограти.",
         milestone_2_title: "Похід у словацький магазин",
         milestone_2_desc: "Дитина може самостійно ввічливо попросити товар та запитати ціну.",
         milestone_3_title: "Безпечна відмова стороннім",
-        milestone_3_desc: "Вміння твердо сказати \"Nie, ďakujem\" на пропозицію незнайомця.",
+        milestone_3_desc: "Вміння твердо сказати \"Nie, ďakujem\" на пропозицію незнакомця.",
         milestone_4_title: "У словацькій школі / садочку",
         milestone_4_desc: "Розуміння базових команд вчителя, прохання про допомогу чи вихід.",
         milestone_5_title: "Поїздка у громадському транспорті",
         milestone_5_desc: "Спілкування з контролером, купівля та валідація квитка.",
-        gdpr_title: "Центр конфіденційності GDPR-K",
+        gdpr_title: "Центр конфиденційності GDPR-K",
         gdpr_sub: "Ми піклуємося про безпеку вашої дитини. Відповідно до регламентів ЄС, записи голосу не зберігаються на наших серверах.",
         btn_export_data: "Експортувати дані прогресу",
         btn_delete_profile: "Видалити профіль дитини",
@@ -668,7 +668,6 @@ const translations = {
         stat_social_milestones: "Уровень адаптации",
         chart_title: "Динамика занятий по днях (минуты)",
         milestones_title: "Практические достижения ребенка",
-        milestones_desc: "Практические успехи за год.",
         milestone_1_title: "Знакомство на детской площадке",
         milestone_1_desc: "Ребенок умеет представиться, спросить имя и предложить поиграть.",
         milestone_2_title: "Поход в словацкий магазин",
@@ -735,7 +734,6 @@ const translations = {
     }
 };
 
-
 // 3. Tab Navigation (Switch views)
 function switchView(view) {
     if (view === 'playground') {
@@ -753,96 +751,6 @@ function switchView(view) {
         initParentChart();
         // Load schedule UI in parent cabinet
         loadParentScheduleUI();
-    }
-}са обучения, достижения ребенка и настройки конфиденциальности GDPR.",
-                stat_time_spent: "Время на платформе (неделя)",
-                stat_vocab_size: "Изучено словацких слов",
-                stat_social_milestones: "Уровень адаптации",
-                chart_title: "Динамика занятий по днях (минуты)",
-                milestones_title: "Практические достижения ребенка",
-                milestone_1_title: "Знакомство на детской площадке",
-                milestone_1_desc: "Ребенок умеет представиться, спросить имя и предложить поиграть.",
-                milestone_2_title: "Поход в словацкий магазин",
-                milestone_2_desc: "Ребенок может самостоятельно вежливо попросить товар и спросить цену.",
-                milestone_3_title: "Безопасный отказ посторонним",
-                milestone_3_desc: "Умение твердо сказать \"Nie, ďakujem\" на предложение незнакомца.",
-                milestone_4_title: "В словацкой школе / садике",
-                milestone_4_desc: "Понимание базовых команд учителя, просьба о помощи или выходе.",
-                milestone_5_title: "Поездка в общественном транспорте",
-                milestone_5_desc: "Общение с контролером, покупка и валидация билета.",
-                gdpr_title: "Центр конфиденциальности GDPR-K",
-                gdpr_sub: "Мы заботимся о безопасности вашего ребенка. В соответствии с регламентом ЕС, записи голоса не сохраняются на наших серверах.",
-                btn_export_data: "Экспортировать данные прогресса",
-                btn_delete_profile: "Удалить профиль ребенка",
-                footer_legal_text: "Все права защищены. Платформа соответствует нормам GDPR-K и EU AI Act по работе с детьми.",
-                chart_days: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
-
-                // Parent Gate & Pricing Translations
-                parent_gate_title: "Доступ только для родителей",
-                parent_gate_sub: "Пожалуйста, введите ваш родительский ПИН-код.",
-                parent_gate_error_msg: "Неверный ПИН-код, попробуйте еще раз.",
-                btn_confirm: "Подтвердить",
-                pricing_title: "Тарифные планы",
-                pricing_sub: "Выберите подходящий пакет для полноценного обучения ребенка с ИИ-наставником.",
-                plan_popular: "Популярный",
-                plan_1_month: "1 месяц",
-                plan_3_months: "3 месяца",
-                plan_6_months: "6 месяцев",
-                plan_period_month: "/ мес",
-                plan_3_total: "Всего: €24",
-                plan_6_total: "Всего: €30",
-                feature_1: "Доступ к 4 животным-маскотам",
-                feature_2: "Видео-анимация животных",
-                feature_3: "Родительский контроль",
-                btn_choose_plan: "Выбрать тариф",
-                payment_modal_title: "Оплата банковской картой",
-                payment_modal_sub: "Оплата по тарифу",
-                card_holder_label: "Владелец карты",
-                card_number_label: "Номер карты",
-                card_expiry_label: "Срок действия",
-                payment_error_msg: "Ошибка авторизации карты. Проверьте данные.",
-                payment_success_title: "Оплата успешна!",
-                payment_success_sub: "Спасибо! Доступ к премиум-функциям открыт.",
-                btn_pay: "Оплатить",
-                btn_close: "Закрыть",
-                        sub_active_title: "Ваша подписка активна!",
-        footer_sponsor_text: "спонсор - Экспертный блог по безопасности бизнеса в Европе",
-        plan_free_badge: "Рекомендовано",
-        plan_free_trial: "Пробный период",
-        plan_free_duration: "/ 7 дней",
-        plan_free_total: "Всего: €0 на 7 дней",
-        btn_start_trial: "Попробовать бесплатно",
-        trial_active_title: "Ваш пробный период активен!",
-        trial_success_msg: "Поздравляем! Вы успешно активировали бесплатный пробный доступ на 7 дней.",
-        plan_premium: "Премиум (Живые наставники)",
-        plan_premium_badge: "Премиум-ИИ",
-        plan_premium_total: "Всего: €50 в месяц",
-        feature_premium_1: "Все 8 персонажей (вкл. людей)",
-        feature_premium_2: "Живая WebRTC-анимация людей",
-        feature_premium_3: "Безлимитный разговорный тренажер",
-        premium_lock_title: "Требуется Премиум-тариф",
-        premium_lock_sub: "Для общения с людьми-наставниками (Оксана, Тарас, Дедушка) в реальном времени требуется Премиум-тариф. В вашем текущем пакете доступны все 4 животных-маскота без ограничений!",
-        btn_upgrade_premium: "Перейти на Премиум (€50/мес)",
-        btn_continue_standard: "Продолжить с животными"
-    }
-};
-
-
-// 3. Tab Navigation (Switch views)
-function switchView(view) {
-    if (view === 'playground') {
-        document.getElementById('playground-view').classList.remove('hidden');
-        document.getElementById('cabinet-view').classList.add('hidden');
-        document.getElementById('btn-show-playground').classList.add('active');
-        document.getElementById('btn-show-cabinet').classList.remove('active');
-    } else {
-        document.getElementById('playground-view').classList.add('hidden');
-        document.getElementById('cabinet-view').classList.remove('hidden');
-        document.getElementById('btn-show-playground').classList.remove('active');
-        document.getElementById('btn-show-cabinet').classList.add('active');
-        
-        // Render or update parent chart
-        initParentChart();
     }
 }
 
