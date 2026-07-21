@@ -1099,6 +1099,19 @@ function selectScenario(num) {
 }
 
 function updateScenarioUI() {
+    // Sync dropdown selectors with current state variables
+    const trackSelect = document.getElementById('track-select');
+    if (trackSelect) trackSelect.value = currentTrack;
+    
+    const monthSelect = document.getElementById('month-select');
+    if (monthSelect) monthSelect.value = currentMonth.toString();
+    
+    const weekSelect = document.getElementById('week-select');
+    if (weekSelect) weekSelect.value = currentWeek.toString();
+    
+    const lessonSelect = document.getElementById('lesson-select');
+    if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
+
     const sc = scenarios[currentScenario];
     document.getElementById('current-task-desc').innerText = sc.desc[currentLang];
     const titleEl = document.querySelector('.controls-panel h2');

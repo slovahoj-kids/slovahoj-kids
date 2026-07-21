@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=2.4">
+    <link rel="stylesheet" href="style.css?v=2.5">
 </head>
 <body>
 
@@ -73,67 +73,49 @@
                 
                 <!-- Left Column: Avatar & Chat -->
                 <div class="avatar-panel card">
-                    <div class="character-selector">
-                        <!-- Track Selector -->
-                        <div class="character-group">
+                    <div class="character-selector compact">
+                        <div class="selector-item flex-large">
                             <span class="selector-label"><i class="fa-solid fa-graduation-cap"></i> Віковий трек:</span>
-                            <div class="character-options">
-                                <button id="track-btn-junior" class="char-option-btn active" onclick="selectTrack('junior')">
-                                    <span class="char-icon">🟢</span> <span>Молодший (6-8)</span>
-                                </button>
-                                <button id="track-btn-middle" class="char-option-btn" onclick="selectTrack('middle')">
-                                    <span class="char-icon">🟡</span> <span>Середній (9-11)</span>
-                                </button>
-                                <button id="track-btn-senior" class="char-option-btn" onclick="selectTrack('senior')">
-                                    <span class="char-icon">🔵</span> <span>Старший (12-14)</span>
-                                </button>
-                            </div>
+                            <select id="track-select" onchange="selectTrack(this.value)" class="compact-select">
+                                <option value="junior">🟢 Молодший (6-8)</option>
+                                <option value="middle">🟡 Середній (9-11)</option>
+                                <option value="senior">🔵 Старший (12-14)</option>
+                            </select>
                         </div>
                         
-                        <!-- Month & Week Progression Selectors -->
-                        <div class="month-week-selectors">
-                            <div style="flex: 1;">
-                                <span class="selector-label" style="font-size: 11px;"><i class="fa-solid fa-calendar"></i> Місяць:</span>
-                                <select id="month-select" onchange="changeMonth(this.value)" class="modal-input" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--card-border);">
-                                    <option value="1">Місяць 1: Знайомство</option>
-                                    <option value="2">Місяць 2: Сім'я та дім</option>
-                                    <option value="3">Місяць 3: Школа</option>
-                                    <option value="4">Місяць 4: Їжа</option>
-                                    <option value="5">Місяць 5: Моє місто</option>
-                                    <option value="6">Місяць 6: Тварини</option>
-                                    <option value="7">Місяць 7: Час та розклад</option>
-                                    <option value="8">Місяць 8: Професії</option>
-                                    <option value="9">Місяць 9: Моє дозвілля</option>
-                                    <option value="10">Місяць 10: Подорожі</option>
-                                    <option value="11">Місяць 11: Природа</option>
-                                    <option value="12">Місяць 12: Свята</option>
-                                </select>
-                            </div>
-                            <div style="flex: 1;">
-                                <span class="selector-label" style="font-size: 11px;"><i class="fa-solid fa-calendar-week"></i> Тиждень:</span>
-                                <select id="week-select" onchange="changeWeek(this.value)" class="modal-input" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--card-border);">
-                                    <option value="1">Тиждень 1</option>
-                                    <option value="2">Тиждень 2</option>
-                                    <option value="3">Тиждень 3</option>
-                                    <option value="4">Тиждень 4 (🛡️ Безпека)</option>
-                                </select>
-                            </div>
+                        <div class="selector-item">
+                            <select id="month-select" onchange="changeMonth(this.value)" class="compact-select">
+                                <option value="1">Місяць 1: Знайомство</option>
+                                <option value="2">Місяць 2: Сім'я та дім</option>
+                                <option value="3">Місяць 3: Школа</option>
+                                <option value="4">Місяць 4: Їжа</option>
+                                <option value="5">Місяць 5: Моє місто</option>
+                                <option value="6">Місяць 6: Тварини</option>
+                                <option value="7">Місяць 7: Час та розклад</option>
+                                <option value="8">Місяць 8: Професії</option>
+                                <option value="9">Місяць 9: Моє дозвілля</option>
+                                <option value="10">Місяць 10: Подорожі</option>
+                                <option value="11">Місяць 11: Природа</option>
+                                <option value="12">Місяць 12: Свята</option>
+                            </select>
+                        </div>
+                        
+                        <div class="selector-item">
+                            <select id="week-select" onchange="changeWeek(this.value)" class="compact-select">
+                                <option value="1">Тиждень 1</option>
+                                <option value="2">Тиждень 2</option>
+                                <option value="3">Тиждень 3</option>
+                                <option value="4">Тиждень 4 (🛡️ Безпека)</option>
+                            </select>
                         </div>
 
-                        <!-- Weekly Day/Lesson Selector -->
-                        <div class="character-group" style="margin-top: 10px;">
-                            <span class="selector-label"><i class="fa-solid fa-circle-play"></i> Оберіть заняття тижня:</span>
-                            <div class="character-options">
-                                <button id="day-btn-lesson-1" class="char-option-btn active" onclick="selectLessonDay(1)" style="padding: 8px;">
-                                    <span>Заняття 1 (День 1)</span>
-                                </button>
-                                <button id="day-btn-lesson-2" class="char-option-btn" onclick="selectLessonDay(2)" style="padding: 8px;">
-                                    <span>Заняття 2 (День 2)</span>
-                                </button>
-                                <button id="day-btn-lesson-3" class="char-option-btn" onclick="selectLessonDay(3)" style="padding: 8px;">
-                                    <span>Заняття 3 (День 3)</span>
-                                </button>
-                            </div>
+                        <div class="selector-item flex-large">
+                            <span class="selector-label"><i class="fa-solid fa-circle-play"></i> Заняття:</span>
+                            <select id="lesson-select" onchange="selectLessonDay(parseInt(this.value))" class="compact-select">
+                                <option value="1">Заняття 1 (День 1)</option>
+                                <option value="2">Заняття 2 (День 2)</option>
+                                <option value="3">Заняття 3 (День 3)</option>
+                            </select>
                         </div>
                     </div>
 
@@ -775,6 +757,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=2.4"></script>
+    <script src="app.js?v=2.5"></script>
 </body>
 </html>
