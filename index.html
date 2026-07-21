@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=2.5">
+    <link rel="stylesheet" href="style.css?v=2.6">
 </head>
 <body>
 
@@ -74,7 +74,8 @@
                 <!-- Left Column: Avatar & Chat -->
                 <div class="avatar-panel card">
                     <div class="character-selector compact">
-                        <div class="selector-item flex-large">
+                        <!-- Row 1: Labelled items -->
+                        <div class="selector-item">
                             <span class="selector-label"><i class="fa-solid fa-graduation-cap"></i> Віковий трек:</span>
                             <select id="track-select" onchange="selectTrack(this.value)" class="compact-select">
                                 <option value="junior">🟢 Молодший (6-8)</option>
@@ -82,7 +83,17 @@
                                 <option value="senior">🔵 Старший (12-14)</option>
                             </select>
                         </div>
+
+                        <div class="selector-item">
+                            <span class="selector-label"><i class="fa-solid fa-circle-play"></i> Заняття:</span>
+                            <select id="lesson-select" onchange="selectLessonDay(parseInt(this.value))" class="compact-select">
+                                <option value="1">Заняття 1 (День 1)</option>
+                                <option value="2">Заняття 2 (День 2)</option>
+                                <option value="3">Заняття 3 (День 3)</option>
+                            </select>
+                        </div>
                         
+                        <!-- Row 2: Unlabelled items -->
                         <div class="selector-item">
                             <select id="month-select" onchange="changeMonth(this.value)" class="compact-select">
                                 <option value="1">Місяць 1: Знайомство</option>
@@ -106,15 +117,6 @@
                                 <option value="2">Тиждень 2</option>
                                 <option value="3">Тиждень 3</option>
                                 <option value="4">Тиждень 4 (🛡️ Безпека)</option>
-                            </select>
-                        </div>
-
-                        <div class="selector-item flex-large">
-                            <span class="selector-label"><i class="fa-solid fa-circle-play"></i> Заняття:</span>
-                            <select id="lesson-select" onchange="selectLessonDay(parseInt(this.value))" class="compact-select">
-                                <option value="1">Заняття 1 (День 1)</option>
-                                <option value="2">Заняття 2 (День 2)</option>
-                                <option value="3">Заняття 3 (День 3)</option>
                             </select>
                         </div>
                     </div>
@@ -757,6 +759,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=2.5"></script>
+    <script src="app.js?v=2.6"></script>
 </body>
 </html>

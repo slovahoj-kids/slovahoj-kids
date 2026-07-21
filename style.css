@@ -231,10 +231,10 @@ body {
 }
 
 .character-selector.compact {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     align-items: flex-end;
-    gap: 10px;
+    gap: 12px 15px;
     margin-bottom: 15px;
     background: rgba(255, 255, 255, 0.4);
     padding: 12px;
@@ -1939,7 +1939,7 @@ body {
 
     /* Compact Selectors Mobile layout */
     .character-selector.compact {
-        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
         align-items: stretch !important;
         gap: 8px !important;
         padding: 10px !important;
