@@ -1593,7 +1593,7 @@ function resetFeedback() {
     document.getElementById('pronunciation-tip-text').innerHTML = sc.tip[currentLang];
 }
 
-const VIDEO_BASE_URL = localStorage.getItem('slovahoj_video_base_url') || './videos/';
+const VIDEO_BASE_URL = './videos/';
 
 function updateAvatarState(state) {
     console.log("Avatar state updated to:", state);

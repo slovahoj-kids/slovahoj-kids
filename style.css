@@ -1817,10 +1817,18 @@ body {
     }
     
     .nav-tab-btn {
-        padding: 8px 12px;
-        font-size: 13px;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 6px;
+        font-size: 11px;
         flex: 1;
         justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .nav-tab-btn i {
+        font-size: 16px;
     }
     
     .main-container {
@@ -1847,6 +1855,19 @@ body {
     
     .avatar-screen-wrapper {
         aspect-ratio: 16 / 11; /* slightly taller ratio for small screens */
+    }
+
+    /* Prevent mobile input zooming on focus */
+    #chat-input-field {
+        font-size: 16px !important;
+    }
+
+    /* Wrap scenario selector buttons properly on small screens */
+    .scenario-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
     }
 }
 
