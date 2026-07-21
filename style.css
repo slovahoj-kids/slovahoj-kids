@@ -676,11 +676,17 @@ body {
 /* Stats Cards Grid */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
     .stats-grid {
         grid-template-columns: 1fr;
     }
@@ -1157,14 +1163,14 @@ body {
 
 .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     margin-bottom: 20px;
 }
 
 @media (max-width: 1024px) {
     .pricing-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 }
 
@@ -1201,6 +1207,32 @@ body {
 
 .plan-card.featured:hover {
     transform: scale(1.02) translateY(-3px);
+}
+
+.plan-card.featured-premium {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%);
+    border: 2px solid #8b5cf6;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15);
+    transform: scale(1.03);
+}
+
+.plan-card.featured-premium:hover {
+    transform: scale(1.03) translateY(-3px);
+}
+
+.plan-card.featured-premium .plan-badge {
+    background: linear-gradient(135deg, #8b5cf6, #d946ef);
+}
+
+.btn-plan-select.btn-premium {
+    background: linear-gradient(135deg, #8b5cf6, #d946ef);
+    color: #fff;
+    border: none;
+}
+
+.btn-plan-select.btn-premium:hover {
+    background: linear-gradient(135deg, #7c3aed, #c084fc);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 .plan-badge {

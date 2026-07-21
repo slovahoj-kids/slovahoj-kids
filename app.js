@@ -15,7 +15,7 @@ function setParentVerified(val) {
 let currentMonth = 1;
 let currentWeek = 1;
 let currentLessonDay = 1;
-let currentTrack = 'junior'; // 'junior', 'middle', 'senior'
+let currentTrack = localStorage.getItem('slovahoj_kids_child_track') || 'junior'; // 'junior', 'middle', 'senior'
 let currentScenario = 1;
 const completedScenariosKey = 'slovahoj_kids_completed_scenarios';
 let completedScenarios = [1, 2, 3];
@@ -32,6 +32,30 @@ try {
 }
 let envKeys = null;
 let currentLevel = 1;
+let isSimulatedSpeech = false;
+
+async function loadEnv() {
+    if (envKeys) return envKeys;
+    try {
+        const response = await fetch('/api/keys');
+        if (response.ok) {
+            envKeys = await response.json();
+            return envKeys;
+        }
+    } catch (e) {
+        console.warn("Failed to load environment keys from /api/keys, trying fallback api/keys.js:", e);
+    }
+    try {
+        const response = await fetch('api/keys.js');
+        if (response.ok) {
+            envKeys = await response.json();
+            return envKeys;
+        }
+    } catch (e) {
+        console.error("Failed to load environment keys:", e);
+    }
+    return null;
+}
 
 let currentUserEmail = localStorage.getItem('slovahoj_kids_email');
 if (currentUserEmail === 'null' || currentUserEmail === 'undefined') currentUserEmail = null;
@@ -66,6 +90,7 @@ function saveSubState() {
     localStorage.setItem('slovahoj_kids_sub_type', subscriptionType);
     localStorage.setItem('slovahoj_kids_sub_start', subscriptionStart.toString());
     localStorage.setItem('slovahoj_kids_sub_end', subscriptionEnd.toString());
+    localStorage.setItem('slovahoj_kids_child_track', currentTrack);
 }
 
 // Full curriculum data database for Month 1 and 2, with metadata for Months 3-12
@@ -101,11 +126,11 @@ const curriculumCatalog = {
                     }
                 },
                 scenarios: [
-                    { id: 1, title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
-                    { id: 2, title: { uk: "Побачив сусідського кота і привітався жартома", ru: "Увидел соседского кота и поздоровался в шутку" } },
-                    { id: 3, title: { uk: "Зайшов до класу вранці", ru: "Вошел в класс утром" } },
-                    { id: 4, title: { uk: "Зустрів вчительку в коридорі", ru: "Встретил учительницу в коридоре" } },
-                    { id: 5, title: { uk: "Привітав Дідуся по відеодзвінку", ru: "Поздравил Дедушку по видеозвонку" } }
+                    { id: 1, title_icon: "🛝", title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
+                    { id: 2, title_icon: "🐱", title: { uk: "Побачив сусідського кота і привітався жартома", ru: "Увидел соседского кота и поздоровался в шутку" } },
+                    { id: 3, title_icon: "🏫", title: { uk: "Зайшов до класу вранці", ru: "Вошел в класс утром" } },
+                    { id: 4, title_icon: "👩‍🏫", title: { uk: "Зустрів вчительку в коридорі", ru: "Встретил учительницу в коридоре" } },
+                    { id: 5, title_icon: "👴", title: { uk: "Привітав Дідуся по відеодзвінку", ru: "Поздравил Дедушку по видеозвонку" } }
                 ],
                 mistake_or_joke: "Секунду, я сама трохи забула це слово. Навіть дорослі повторюють!"
             },
@@ -137,11 +162,11 @@ const curriculumCatalog = {
                     }
                 },
                 scenarios: [
-                    { id: 1, title: { uk: "Відповідь мамі вранці", ru: "Ответ маме утром" } },
-                    { id: 2, title: { uk: "Відповідь вчительці", ru: "Ответ учительнице" } },
-                    { id: 3, title: { uk: "Відповідь другові на майданчику", ru: "Ответ другу на площадке" } },
-                    { id: 4, title: { uk: "Відповідь бабусі по телефону", ru: "Ответ бабушке по телефону" } },
-                    { id: 5, title: { uk: "Відповідь новому сусідському цуценяті", ru: "Ответ новому соседскому щенку в шутку" } }
+                    { id: 1, title_icon: "👩", title: { uk: "Відповідь мамі вранці", ru: "Ответ маме утром" } },
+                    { id: 2, title_icon: "👩‍🏫", title: { uk: "Відповідь вчительці", ru: "Ответ учительнице" } },
+                    { id: 3, title_icon: "👦", title: { uk: "Відповідь другові на майданчику", ru: "Ответ другу на площадке" } },
+                    { id: 4, title_icon: "👵", title: { uk: "Відповідь бабусі по телефону", ru: "Ответ бабушке по телефону" } },
+                    { id: 5, title_icon: "🐶", title: { uk: "Відповідь новому сусідському цуценяті", ru: "Ответ новому соседскому щенку в шутку" } }
                 ],
                 mistake_or_joke: "Ой, здається, я переплутала порядок слів! Буває навіть у мене."
             },
@@ -173,11 +198,11 @@ const curriculumCatalog = {
                     }
                 },
                 scenarios: [
-                    { id: 1, title: { uk: "Прощання з вчителькою", ru: "Прощание с учительницей" } },
-                    { id: 2, title: { uk: "Прощання з другом на майданчику", ru: "Прощание с другом на площадке" } },
-                    { id: 3, title: { uk: "Прощання з водієм автобуса", ru: "Прощание с водителем автобуса" } },
-                    { id: 4, title: { uk: "Прощання з продавчинею в магазині", ru: "Прощание с продавщицей в магазине" } },
-                    { id: 5, title: { uk: "Прощання з Дідусем по відеодзвінку", ru: "Прощание с Дедушкой по видеозвонку" } }
+                    { id: 1, title_icon: "👩‍🏫", title: { uk: "Прощання з вчителькою", ru: "Прощание с учительницей" } },
+                    { id: 2, title_icon: "👋", title: { uk: "Прощання з другом на майданчику", ru: "Прощание с другом на площадке" } },
+                    { id: 3, title_icon: "🚌", title: { uk: "Прощання з водієм автобуса", ru: "Прощание с водителем автобуса" } },
+                    { id: 4, title_icon: "🛒", title: { uk: "Прощання з продавчинею в магазині", ru: "Прощание с продавщицей в магазине" } },
+                    { id: 5, title_icon: "👴", title: { uk: "Прощання з Дідусем по відеодзвінку", ru: "Прощание с Дедушкой по видеозвонку" } }
                 ],
                 mistake_or_joke: "Хвилинку… а як це было? Ах так, згадала!"
             },
@@ -209,11 +234,11 @@ const curriculumCatalog = {
                     }
                 },
                 scenarios: [
-                    { id: 1, title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
-                    { id: 2, title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
-                    { id: 3, title: { uk: "Хтось у парку пропонує піти показати щось", ru: "Кто-то в парке предлагает пойти показать что-то интересное" } },
-                    { id: 4, title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } },
-                    { id: 5, title: { uk: "Рольова гра: незнайомець каже, що знає маму", ru: "Ролевая игра: а что если незнакомец говорит, что знает твою маму?" } }
+                    { id: 1, title_icon: "🍬", title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
+                    { id: 2, title_icon: "🐶", title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
+                    { id: 3, title_icon: "🌳", title: { uk: "Хтось у парку пропонує піти показати щось", ru: "Кто-то в парке предлагает пойти показать что-то интересное" } },
+                    { id: 4, title_icon: "🚗", title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } },
+                    { id: 5, title_icon: "🤔", title: { uk: "Рольова гра: незнайомець каже, що знає маму", ru: "Ролевая игра: а что если незнакомец говорит, что знает твою маму?" } }
                 ],
                 mistake_or_joke: null
             }
@@ -250,11 +275,11 @@ const curriculumCatalog = {
                     }
                 },
                 scenarios: [
-                    { id: 1, title: { uk: "Показує сімейне фото другові", ru: "Показывает семейное фото другу" } },
-                    { id: 2, title: { uk: "Розповідає про родину новому однокласнику", ru: "Рассказывает о семье новому однокласснику" } },
-                    { id: 3, title: { uk: "Знайомить родину з сусідами", ru: "Знакомит семью с соседями" } },
-                    { id: 4, title: { uk: "Розповідає бабусі по відеодзвінку", ru: "Рассказывает бабушке по видеозвонку" } },
-                    { id: 5, title: { uk: "Заповнює шкільну анкету про родину", ru: "Заполняет школьную анкету о семье" } }
+                    { id: 1, title_icon: "🖼️", title: { uk: "Показує сімейне фото другові", ru: "Показывает семейное фото другу" } },
+                    { id: 2, title_icon: "👦", title: { uk: "Розповідає про родину новому однокласнику", ru: "Рассказывает о семье новому однокласснику" } },
+                    { id: 3, title_icon: "🏡", title: { uk: "Знайомить родину з сусідами", ru: "Знакомит семью с соседями" } },
+                    { id: 4, title_icon: "👵", title: { uk: "Розповідає бабусі по відеодзвінку", ru: "Рассказывает бабушке по видеозвонку" } },
+                    { id: 5, title_icon: "📝", title: { uk: "Заповнює шкільну анкету про родину", ru: "Заполняет школьную анкету о семье" } }
                 ],
                 mistake_or_joke: "Ой-ой, зачекай, я відволіклася. Спробуємо ще раз разом?"
             },
@@ -322,11 +347,11 @@ const curriculumCatalog = {
                     }
                 },
                 scenarios: [
-                    { id: 1, title: { uk: "Шукає іграшку вдома", ru: "Ищет игрушку дома" } },
-                    { id: 2, title: { uk: "Питає, де річ у гостях", ru: "Спрашивает, где вещь в гостях" } },
-                    { id: 3, title: { uk: "Допомагає молодшому братику знайти річ", ru: "Помогает младшему брату найти вещь" } },
-                    { id: 4, title: { uk: "Питає вчительку, де його зошит", ru: "Спрашивает учительницу, где его тетрадь" } },
-                    { id: 5, title: { uk: "Гра «хованки» з предметами по-словацьки", ru: "Игра «прятки» с предметами по-словацки" } }
+                    { id: 1, title_icon: "🧸", title: { uk: "Шукає іграшку вдома", ru: "Ищет игрушку дома" } },
+                    { id: 2, title_icon: "🔍", title: { uk: "Питає, де річ у гостях", ru: "Спрашивает, где вещь в гостях" } },
+                    { id: 3, title_icon: "👶", title: { uk: "Допомагає молодшому братику знайти річ", ru: "Помогает младшему брату найти вещь" } },
+                    { id: 4, title_icon: "📖", title: { uk: "Питає вчительку, де його зошит", ru: "Спрашивает учительницу, где его тетрадь" } },
+                    { id: 5, title_icon: "🙈", title: { uk: "Гра «хованки» з предметами по-словацьки", ru: "Игра «прятки» с предметами по-словацки" } }
                 ],
                 mistake_or_joke: "А знаєш, чому мені подобається вчити тебе словацької? Бо разом веселіше, навіть коли помиляємось!"
             },
@@ -358,11 +383,11 @@ const curriculumCatalog = {
                     }
                 },
                 scenarios: [
-                    { id: 1, title: { uk: "Незнайомець на вулиці питає адресу", ru: "Незнакомец на улице спрашивает адрес" } },
-                    { id: 2, title: { uk: "Дзвінок з невідомого номера питає, де живеш", ru: "Звонок с неизвестного номера спрашивает, где живешь" } },
-                    { id: 3, title: { uk: "Онлайн-гра просить вказати адресу", ru: "Онлайн-игра просит указать адрес" } },
-                    { id: 4, title: { uk: "Новий друг в інтернеті просить адресу", ru: "Новый «друг» в интернете просит адрес" } },
-                    { id: 5, title: { uk: "Комплексна рольова гра — коли адресу казати можна, а коли ні", ru: "Комплексная ролевая игра — когда адрес говорить можно, а когда нет" } }
+                    { id: 1, title_icon: "🚶", title: { uk: "Незнайомець на вулиці питає адресу", ru: "Незнакомец на улице спрашивает адрес" } },
+                    { id: 2, title_icon: "📞", title: { uk: "Дзвінок з невідомого номера питає, де живеш", ru: "Звонок с неизвестного номера спрашивает, где живешь" } },
+                    { id: 3, title_icon: "🎮", title: { uk: "Онлайн-гра просить вказати адресу", ru: "Онлайн-игра просит указать адрес" } },
+                    { id: 4, title_icon: "💻", title: { uk: "Новий друг в інтернеті просить адресу", ru: "Новый «друг» в интернете просит адрес" } },
+                    { id: 5, title_icon: "🛡️", title: { uk: "Комплексна рольова гра — коли адресу казати можна, а коли ні", ru: "Комплексная ролевая игра — когда адрес говорить можно, а когда нет" } }
                 ],
                 mistake_or_joke: null
             }
@@ -504,11 +529,11 @@ function getLessonData(m, w) {
             }
         },
         scenarios: [
-            { id: 1, title: { uk: `Ситуація у контексті: ${weekMeta.topic} (Крок 1)`, ru: `Ситуация в контексте: ${weekMeta.topic} (Шаг 1)` } },
-            { id: 2, title: { uk: `Розмова з однокласником про ${weekMeta.topic}`, ru: `Разговор с одноклассником о ${weekMeta.topic}` } },
-            { id: 3, title: { uk: `Урок у словацькій школі: ${weekMeta.topic}`, ru: `Урок в словацкой школе: ${weekMeta.topic}` } },
-            { id: 4, title: { uk: `Практична життєва гра про ${weekMeta.topic}`, ru: `Практическая жизненная игра о ${weekMeta.topic}` } },
-            { id: 5, title: { uk: `🏆 Фінал тижня: ${weekMeta.topic}`, ru: `🏆 Финал недели: ${weekMeta.topic}` } }
+            { id: 1, title_icon: "🚶", title: { uk: `Ситуація у контексті: ${weekMeta.topic} (Крок 1)`, ru: `Ситуация в контексте: ${weekMeta.topic} (Шаг 1)` } },
+            { id: 2, title_icon: "💬", title: { uk: `Розмова з однокласником про ${weekMeta.topic}`, ru: `Разговор с одноклассником о ${weekMeta.topic}` } },
+            { id: 3, title_icon: "🏫", title: { uk: `Урок у словацькій школі: ${weekMeta.topic}`, ru: `Урок в словацкой школе: ${weekMeta.topic}` } },
+            { id: 4, title_icon: "🎮", title: { uk: `Практична життєва гра про ${weekMeta.topic}`, ru: `Практическая жизненная игра о ${weekMeta.topic}` } },
+            { id: 5, title_icon: "🛡️", title: { uk: `🏆 Фінал тижня: ${weekMeta.topic}`, ru: `🏆 Финал недели: ${weekMeta.topic}` } }
         ],
         mistake_or_joke: weekMeta.is_safety ? null : "Хвилинку… а як це було? Ах так, згадала!"
     };
@@ -526,6 +551,7 @@ const scenarios = new Proxy({}, {
 
         return {
             title: { uk: sc.title.uk, ru: sc.title.ru },
+            title_icon: sc.title_icon || prop,
             desc: {
                 uk: `Завдання: ${sc.title.uk}. Повтори: "${trackData.phrase}"`,
                 ru: `Задание: ${sc.title.ru}. Повтори: "${trackData.phrase}"`
@@ -575,8 +601,10 @@ const translations = {
         feedback_subtext_retry: "Зверни увагу на виділені червоним слова і спробуй ще раз.",
         cabinet_welcome_title: "Кабінет безпечного контролю: Батьківський дашборд",
         cabinet_welcome_sub: "Тут ви можете бачити статистику прогресу навчання, досягнення дитини та налаштування конфиденційності GDPR.",
-        stat_time_spent: "Час на платформі (тиждень)",
+        stat_sessions: "Заняття за тиждень",
         stat_vocab_size: "Вивчено словацьких слів",
+        stat_track: "Віковий трек",
+        stat_safety_phrases: "Фраз безпеки засвоєно",
         stat_social_milestones: "Рівень адаптації",
         chart_title: "Динаміка занять по днях (хвилини)",
         milestones_title: "Практичні досягнення дитини",
@@ -663,8 +691,10 @@ const translations = {
         feedback_subtext_retry: "Обрати внимание на выделенные красным слова и попробуй еще раз.",
         cabinet_welcome_title: "Кабинет безопасного контроля: Родительский дашборд",
         cabinet_welcome_sub: "Здесь вы можете видеть статистику прогресса обучения, достижения ребенка и настройки конфиденциальности GDPR.",
-        stat_time_spent: "Время на платформе (неделя)",
+        stat_sessions: "Занятия за неделю",
         stat_vocab_size: "Изучено словацких слов",
+        stat_track: "Возрастной трек",
+        stat_safety_phrases: "Фраз безопасности усвоено",
         stat_social_milestones: "Уровень адаптации",
         chart_title: "Динамика занятий по днях (минуты)",
         milestones_title: "Практические достижения ребенка",
@@ -733,6 +763,206 @@ const translations = {
         btn_continue_standard: "Продолжить"
     }
 };
+
+function getMonthWordsForTrack(month, track) {
+    const data = curriculumCatalog[month];
+    if (!data || !data.weeks) return [];
+    let words = [];
+    for (const w in data.weeks) {
+        const weekData = data.weeks[w];
+        if (weekData.tracks && weekData.tracks[track]) {
+            words = words.concat(weekData.tracks[track].words);
+        }
+    }
+    return [...new Set(words)]; // unique words
+}
+
+function getSystemPrompt() {
+    const monthWords = getMonthWordsForTrack(currentMonth, currentTrack);
+    const wordsList = monthWords.join(', ');
+    const name = avatarConfig[currentCharacter] ? avatarConfig[currentCharacter].name[currentLang] : 'Оксана (Oksana)';
+    
+    let trackDesc = '';
+    if (currentTrack === 'junior') {
+        trackDesc = "The child is 6-8 years old. Use extremely simple sentences, very basic grammar, and child-friendly tone.";
+    } else if (currentTrack === 'middle') {
+        trackDesc = "The child is 9-11 years old. Use simple sentences and friendly encouraging tone.";
+    } else {
+        trackDesc = "The child is 12-14 years old. You can use standard beginner Slovak but keep it simple.";
+    }
+
+    return `You are a friendly Slovak language teacher for Ukrainian children.
+Your name is ${name}.
+${trackDesc}
+Speak simple Slovak, guide the child in learning. Mend errors gently.
+IMPORTANT: You MUST limit your vocabulary and grammar to the level of the current month. Here is the list of Slovak words the child has learned or is learning this month: [${wordsList}]. Try to use mainly these words or very simple variations of them.
+At the end of your message, add a translation of complex Slovak words in parentheses in Ukrainian.
+Keep replies short (1-2 sentences).
+SAFETY CRITICAL: Do NOT discuss any topics outside language learning and child education. Strictly forbid any unsafe, sensitive, or inappropriate content for children under 14. Keep the tone warm, patient, and encouraging.`;
+}
+
+function determineReplyTone(text) {
+    const lower = text.toLowerCase();
+    
+    if (lower.includes("výborne") || lower.includes("skvelé") || lower.includes("super") || lower.includes("dobre") || lower.includes("perfektné") || lower.includes("pekné") || lower.includes("gratulujem")) {
+        return 'success';
+    }
+    if (lower.includes("fíha") || lower.includes("naozaj") || lower.includes("wau") || lower.includes("vau") || lower.includes("zaujímavé")) {
+        return 'surprise';
+    }
+    if (lower.includes("skús") || lower.includes("prepáč") || lower.includes("skúsiť") || lower.includes("oprav") || lower.includes("nevadí")) {
+        return 'retry';
+    }
+    if (lower.includes("smiech") || lower.includes("hah") || lower.includes("hravé") || lower.includes("hrať")) {
+        return 'laugh';
+    }
+    if (lower.includes("ahoj") || lower.includes("dobrý deň") || lower.includes("vitaj")) {
+        return 'greeting';
+    }
+    if (lower.includes("dovidenia") || lower.includes("maj sa") || lower.includes("ahojте")) {
+        return 'farewell';
+    }
+    return 'idle';
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input-field');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    input.value = '';
+    appendChatBubble('user', text);
+    
+    const typing = showTypingIndicator();
+    updateAvatarState('thinking');
+    
+    const systemPrompt = getSystemPrompt();
+    
+    // 1. Try server-side chat proxy first
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ systemPrompt, text })
+        });
+        
+        if (response.ok) {
+            removeTypingIndicator(typing);
+            const data = await response.json();
+            const reply = data.reply;
+            appendChatBubble('tutor', reply);
+            speakSlovak(reply.replace(/\(.*?\)/g, ''));
+            
+            const tone = determineReplyTone(reply);
+            updateAvatarState(tone);
+            
+            // Return to idle after speaking
+            const speakingDuration = Math.min(Math.max(reply.length * 60, 3000), 8000);
+            setTimeout(() => {
+                updateAvatarState('idle');
+            }, speakingDuration);
+            return;
+        }
+    } catch (e) {
+        console.warn("Server-side chat proxy /api/chat failed, falling back to client-side requests:", e);
+    }
+    
+    // 2. Client-side fallback if server-side is not available or failed
+    const keys = await loadEnv();
+    if (keys && keys.ANTHROPIC_API_KEY) {
+        // Fallback Client-side Anthropic call (using a CORS proxy or direct call if allowed)
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    'x-api-key': keys.ANTHROPIC_API_KEY,
+                    'anthropic-version': '2023-06-01',
+                    'dangerously-allow-html-user-aspect-ratio': 'true'
+                },
+                body: JSON.stringify({
+                    model: 'claude-3-5-haiku-20241022',
+                    max_tokens: 150,
+                    system: systemPrompt,
+                    messages: [
+                        { role: 'user', content: text }
+                    ]
+                })
+            });
+            
+            removeTypingIndicator(typing);
+            if (response.ok) {
+                const data = await response.json();
+                const reply = data.content && data.content[0] ? data.content[0].text : '';
+                appendChatBubble('tutor', reply);
+                speakSlovak(reply.replace(/\(.*?\)/g, ''));
+                
+                const tone = determineReplyTone(reply);
+                updateAvatarState(tone);
+                
+                const speakingDuration = Math.min(Math.max(reply.length * 60, 3000), 8000);
+                setTimeout(() => {
+                    updateAvatarState('idle');
+                }, speakingDuration);
+                return;
+            }
+        } catch (e) {
+            console.error("Client-side Anthropic fallback failed:", e);
+        }
+    }
+    
+    if (keys && keys.OPENAI_API_KEY) {
+        // Fallback Client-side OpenAI call
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${keys.OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: text }
+                    ],
+                    max_tokens: 150
+                })
+            });
+            
+            removeTypingIndicator(typing);
+            if (response.ok) {
+                const data = await response.json();
+                const reply = data.choices[0].message.content;
+                appendChatBubble('tutor', reply);
+                speakSlovak(reply.replace(/\(.*?\)/g, ''));
+                
+                const tone = determineReplyTone(reply);
+                updateAvatarState(tone);
+                
+                const speakingDuration = Math.min(Math.max(reply.length * 60, 3000), 8000);
+                setTimeout(() => {
+                    updateAvatarState('idle');
+                }, speakingDuration);
+                return;
+            }
+        } catch (e) {
+            console.error("Client-side OpenAI fallback failed:", e);
+        }
+    }
+    
+    // Fully offline / fallback mock response
+    removeTypingIndicator(typing);
+    const reply = "Ahoj! Ja som tvoj slovenský kamarát. Poďme sa spolu učiť! (Привіт! Я твій словацький друг. Давай разом вчитися!)";
+    appendChatBubble('tutor', reply);
+    speakSlovak("Ahoj! Ja som tvoj slovenský kamarát. Poďme sa spolu učiť!");
+    updateAvatarState('greeting');
+    setTimeout(() => {
+        updateAvatarState('idle');
+    }, 4000);
+}
 
 // 3. Tab Navigation (Switch views)
 function switchView(view) {
@@ -855,7 +1085,46 @@ function updateScenarioUI() {
     document.getElementById('pronunciation-tip-text').innerText = sc.tip[currentLang];
     document.getElementById('speech-feedback-card').classList.add('hidden');
     speakSlovak(sc.phrase);
+    
+    // Dynamically update the emoji/label on scenario buttons
+    updateScenarioButtonsContent();
+    
     updateAvatarState('level_' + currentScenario);
+}
+
+function updateScenarioButtonsContent() {
+    const data = getLessonData(currentMonth, currentWeek);
+    if (!data) return;
+    
+    for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById(`scenario-btn-${i}`);
+        if (!btn) continue;
+        
+        const sc = data.scenarios[i - 1];
+        if (currentTrack === 'junior') {
+            btn.innerHTML = sc && sc.title_icon ? sc.title_icon : i;
+            btn.style.fontSize = '20px';
+        } else {
+            btn.innerHTML = i;
+            btn.style.fontSize = '16px';
+        }
+    }
+}
+
+function getSafetyPhrasesMasteredCount() {
+    let count = 0;
+    for (let m = 1; m <= currentMonth; m++) {
+        const maxW = (m === currentMonth) ? currentWeek : 4;
+        for (let w = 1; w <= maxW; w++) {
+            const weekData = getLessonData(m, w);
+            if (weekData && weekData.is_safety) {
+                if (m < currentMonth || w < currentWeek || (m === currentMonth && w === currentWeek && completedScenarios.includes(5))) {
+                    count++;
+                }
+            }
+        }
+    }
+    return count;
 }
 
 function unlockMilestone(num) {
@@ -863,14 +1132,52 @@ function unlockMilestone(num) {
         completedScenarios.push(num);
         localStorage.setItem(completedScenariosKey, JSON.stringify(completedScenarios));
     }
+    
+    // Set scenario_1_4_completed flag if 1, 2, 3, 4 are completed
+    const sc1_4_completed = [1, 2, 3, 4].every(x => completedScenarios.includes(x));
+    localStorage.setItem('slovahoj_kids_scenario_1_4_completed', sc1_4_completed ? 'true' : 'false');
+    
     syncMilestonesUI();
 }
 
 function syncMilestonesUI() {
     const completedCount = completedScenarios.length;
-    document.getElementById('stat-social-val').innerHTML = `${completedCount} / 5 етапів`;
-    document.getElementById('stat-vocab-val').innerHTML = `${completedCount * 12 + 6} слів`;
     
+    // Update Sessions Card
+    const sessionsVal = document.getElementById('stat-sessions-val');
+    if (sessionsVal) {
+        sessionsVal.innerHTML = `${currentLessonDay} / 3`;
+    }
+    
+    // Update Vocabulary Card
+    const vocabVal = document.getElementById('stat-vocab-val');
+    if (vocabVal) {
+        const vocabCount = completedCount * 12 + 6;
+        const vocabSuffix = currentLang === 'uk' ? 'слів' : 'слов';
+        vocabVal.innerHTML = `${vocabCount} ${vocabSuffix}`;
+    }
+    
+    // Update Track Level Card
+    const trackVal = document.getElementById('stat-track-val');
+    if (trackVal) {
+        let trackStr = '';
+        if (currentTrack === 'junior') {
+            trackStr = currentLang === 'uk' ? 'Молодший (6-8 років)' : 'Младший (6-8 лет)';
+        } else if (currentTrack === 'middle') {
+            trackStr = currentLang === 'uk' ? 'Середній (9-11 років)' : 'Средний (9-11 лет)';
+        } else {
+            trackStr = currentLang === 'uk' ? 'Старший (12-14 років)' : 'Старший (12-14 лет)';
+        }
+        trackVal.innerHTML = trackStr;
+    }
+    
+    // Update Safety Phrases Card
+    const safetyVal = document.getElementById('stat-safety-val');
+    if (safetyVal) {
+        safetyVal.innerHTML = `${getSafetyPhrasesMasteredCount()}`;
+    }
+    
+
     for (let i = 1; i <= 5; i++) {
         const item = document.getElementById(`milestone-${i}`);
         const check = document.getElementById(`milestone-check-${i}`);
@@ -969,63 +1276,7 @@ function removeTypingIndicator(element) {
     }
 }
 
-async function sendChatMessage() {
-    const input = document.getElementById('chat-input-field');
-    const text = input.value.trim();
-    if (!text) return;
-    
-    input.value = '';
-    appendChatBubble('user', text);
-    
-    const keys = await loadEnv();
-    if (keys && keys.OPENAI_API_KEY) {
-        const typing = showTypingIndicator();
-        try {
-            const systemPrompt = `You are a friendly Slovak language teacher for Ukrainian children under 14 years old.
-Your name is ${avatarConfig[currentCharacter] ? avatarConfig[currentCharacter].name.uk : 'Oksana'}.
-Speak simple Slovak, guide the child in learning. Mend errors gently. Use simple vocabulary.
-At the end of your message, add a translation of complex Slovak words in parentheses in Ukrainian.
-Keep replies short (1-2 sentences).`;
 
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${keys.OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: 'gpt-4o',
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: text }
-                    ],
-                    max_tokens: 150
-                })
-            });
-            
-            removeTypingIndicator(typing);
-            if (response.ok) {
-                const data = await response.json();
-                const reply = data.choices[0].message.content;
-                appendChatBubble('tutor', reply);
-                speakSlovak(reply.replace(/\(.*?\)/g, ''));
-            } else {
-                appendChatBubble('tutor', "Prepáč, niečo sa pokazilo. (Вибач, щось пішло не так.)");
-            }
-        } catch (e) {
-            removeTypingIndicator(typing);
-            appendChatBubble('tutor', "Prepáč, niečo sa pokazilo. (Вибач, щось пішло не так.)");
-        }
-    } else {
-        const typing = showTypingIndicator();
-        setTimeout(() => {
-            removeTypingIndicator(typing);
-            const reply = "Ahoj! Ja som tvoj slovenský kamarát. Poďme sa spolu učiť! (Привіт! Я твій словацький друг. Давай разом вчитися!)";
-            appendChatBubble('tutor', reply);
-            speakSlovak("Ahoj! Ja som tvoj slovenský kamarát. Poďme sa spolu učiť!");
-        }, 1000);
-    }
-}
 
 // 6. Voice Recording & Pronunciation Evaluation
 let recognizer = null;
@@ -1116,14 +1367,18 @@ async function toggleSpeechRecording() {
         
         // Attempt real Azure speech assessment
         const startedReal = await runAzurePronunciationAssessment(targetPhrase, (result) => {
+            isSimulatedSpeech = false;
             handleSpeechResult(result);
         });
 
         if (!startedReal) {
+            isSimulatedSpeech = true;
             // Mock recording timer (Azure Speech API call takes 3 seconds)
             recordTimer = setTimeout(() => {
                 stopSpeechRecording();
             }, 3000);
+        } else {
+            isSimulatedSpeech = false;
         }
     } else {
         // Force Stop
@@ -1153,10 +1408,12 @@ function stopSpeechRecording() {
     statusText.innerHTML = currentLang === 'uk' ? 'Аналізую твою вимову...' : 'Анализирую твое произношение...';
     wave.classList.add('hidden');
 
-    // Simulate Azure Pronunciation API response for fallback
-    setTimeout(() => {
-        simulateSpeechResult();
-    }, 1000);
+    if (isSimulatedSpeech) {
+        // Simulate Azure Pronunciation API response for fallback
+        setTimeout(() => {
+            simulateSpeechResult();
+        }, 1000);
+    }
 }
 
 function simulateSpeechResult() {
@@ -1300,12 +1557,6 @@ function resetFeedback() {
     document.getElementById('pronunciation-tip-text').innerHTML = sc.tip[currentLang];
 }
 
-// D-ID WebRTC Stream state
-let dIdStreamId = null;
-let dIdSessionId = null;
-let dIdPeerConnection = null;
-let dIdDataChannel = null;
-let dIdStatsIntervalId = null;
 const VIDEO_BASE_URL = localStorage.getItem('slovahoj_video_base_url') || './videos/';
 
 function updateAvatarState(state) {
@@ -1318,30 +1569,50 @@ function updateAvatarState(state) {
     let videoFile = '';
     switch(state) {
         case 'thinking':
-            videoFile = 'thinking.mp4';
+            videoFile = 'reaction_thinking.mp4';
             break;
         case 'success':
-            videoFile = 'correct.mp4';
+            videoFile = 'reaction_praise.mp4';
             break;
         case 'retry':
-            videoFile = 'retry.mp4';
+            videoFile = 'reaction_soft_correction.mp4';
             break;
         case 'listening':
-            videoFile = 'listening.mp4';
+            videoFile = 'reaction_listening.mp4';
             break;
         case 'greeting':
         case 'greet':
-            videoFile = 'greeting.mp4';
+            videoFile = 'reaction_greeting.mp4';
             break;
         case 'farewell':
         case 'bye':
-            videoFile = 'farewell.mp4';
+            videoFile = 'reaction_goodbye.mp4';
+            break;
+        case 'laugh':
+            videoFile = 'reaction_laugh.mp4';
+            break;
+        case 'surprise':
+            videoFile = 'reaction_surprise.mp4';
+            break;
+        case 'idle':
+            videoFile = 'reaction_idle.mp4';
+            break;
+        case 'achievement':
+            videoFile = 'reaction_achievement.mp4';
             break;
         case 'lesson_intro':
-            videoFile = `oksana_m${currentMonth}_w${currentWeek}_${currentTrack}.mp4`;
+        case 'level_1':
+        case 'level_2':
+        case 'level_3':
+        case 'level_4':
+        case 'level_5': {
+            const padMonth = String(currentMonth).padStart(2, '0');
+            const padWeek = String(currentWeek).padStart(2, '0');
+            videoFile = `m${padMonth}_w${padWeek}_${currentTrack}.mp4`;
             break;
+        }
         default:
-            videoFile = 'neutral.mp4';
+            videoFile = 'reaction_idle.mp4';
             break;
     }
     
@@ -1523,7 +1794,9 @@ function startFreeTrial() {
 
 function processRegistration() {
     const email = document.getElementById('reg-email').value.trim();
-    
+    const ageInput = document.getElementById('reg-child-age');
+    const ageVal = ageInput ? ageInput.value.trim() : '';
+
     if (email === ADMIN_PIN) {
         currentUserEmail = "admin@test.com";
         isRegistered = true;
@@ -1532,6 +1805,7 @@ function processRegistration() {
         subscriptionType = "premium";
         subscriptionStart = Date.now();
         subscriptionEnd = subscriptionStart + (365 * 24 * 60 * 60 * 1000); // 1 year active
+        currentTrack = 'middle'; // default for admin
         saveSubState();
         
         // Directly proceed to cabinet dashboard
@@ -1543,7 +1817,9 @@ function processRegistration() {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
+    const age = parseInt(ageVal);
+    
+    if (!email || !emailRegex.test(email) || isNaN(age) || age < 6 || age > 14) {
         document.getElementById('reg-error').classList.remove('hidden');
         return;
     }
@@ -1554,7 +1830,22 @@ function processRegistration() {
     parentPin = generateRandomPin();
     childPin = generateRandomPin();
     
+    // Auto-assign track based on age
+    if (age >= 12) {
+        currentTrack = 'senior';
+    } else if (age >= 9) {
+        currentTrack = 'middle';
+    } else {
+        currentTrack = 'junior';
+    }
+    
+    // Save age in localStorage
+    localStorage.setItem('slovahoj_kids_child_age', age.toString());
+    
     saveSubState();
+    
+    // Select the auto-assigned track in UI
+    selectTrack(currentTrack);
     
     document.getElementById('reg-child-pin').innerText = childPin;
     document.getElementById('reg-parent-pin').innerText = parentPin;
@@ -1563,7 +1854,7 @@ function processRegistration() {
     document.getElementById('reg-modal-footer').classList.add('hidden');
     document.getElementById('reg-modal-footer-success').classList.remove('hidden');
     
-    console.log(`Registered successfully. Child PIN: ${childPin}, Parent PIN: ${parentPin}`);
+    console.log(`Registered successfully. Child PIN: ${childPin}, Parent PIN: ${parentPin}, Age: ${age}, Track: ${currentTrack}`);
 }
 
 function proceedToDashboardAfterReg() {
@@ -2073,7 +2364,43 @@ function checkAccessRules() {
     return true;
 }
 
-function speakSlovak(text) {
+async function speakSlovakAzure(text) {
+    const keys = await loadEnv();
+    if (!keys || !keys.AZURE_SPEECH_KEY || !keys.AZURE_SPEECH_REGION) {
+        console.warn("Azure Speech credentials missing for TTS. Falling back to browser SpeechSynthesis.");
+        speakSlovakBrowser(text);
+        return;
+    }
+
+    try {
+        const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(keys.AZURE_SPEECH_KEY, keys.AZURE_SPEECH_REGION);
+        speechConfig.speechSynthesisVoiceName = "sk-SK-ViktoriaNeural"; // Encouraging Slovak teacher voice
+        
+        const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig);
+        synthesizer.speakTextAsync(
+            text,
+            result => {
+                if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
+                    console.log("Azure TTS synthesis completed successfully.");
+                } else {
+                    console.error("Azure TTS synthesis failed:", result.errorDetails);
+                    speakSlovakBrowser(text);
+                }
+                synthesizer.close();
+            },
+            err => {
+                console.error("Azure TTS error:", err);
+                speakSlovakBrowser(text);
+                synthesizer.close();
+            }
+        );
+    } catch (e) {
+        console.error("Azure TTS initialization failed:", e);
+        speakSlovakBrowser(text);
+    }
+}
+
+function speakSlovakBrowser(text) {
     if (!text) return;
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -2090,6 +2417,10 @@ function speakSlovak(text) {
     } else {
         console.warn("Speech synthesis not supported in this browser.");
     }
+}
+
+function speakSlovak(text) {
+    speakSlovakAzure(text);
 }
 
 // --- Weekly, Monthly, and Track Selectors ---

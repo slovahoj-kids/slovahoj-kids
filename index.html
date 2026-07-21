@@ -58,7 +58,7 @@
                 <!-- Language Switcher -->
                 <div class="lang-switcher">
                     <button id="lang-btn-ua" class="lang-btn active" onclick="switchLanguage('ua')">UA</button>
-                    <button id="lang-btn-ru" class="lang-btn" onclick="switchLanguage('ru')">RU</button>
+                    <button id="lang-btn-ru" class="lang-btn hidden" onclick="switchLanguage('ru')" style="display: none;">RU</button>
                 </div>
             </nav>
         </div>
@@ -266,12 +266,12 @@
 
             <!-- Stats Grid -->
             <div class="stats-grid">
-                <!-- Card 1: Time Spent -->
+                <!-- Card 1: Sessions Weekly -->
                 <div class="stat-card card">
-                    <div class="stat-icon time-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="stat-icon time-icon"><i class="fa-solid fa-calendar-check"></i></div>
                     <div class="stat-info">
-                        <span class="stat-label" data-i18n="stat_time_spent">Час на платформі (тиждень)</span>
-                        <h3 id="stat-time-val">2 год 45 хв</h3>
+                        <span class="stat-label" data-i18n="stat_sessions">Заняття за тиждень</span>
+                        <h3 id="stat-sessions-val">1 / 3</h3>
                     </div>
                 </div>
 
@@ -280,16 +280,25 @@
                     <div class="stat-icon vocab-icon"><i class="fa-solid fa-book-open"></i></div>
                     <div class="stat-info">
                         <span class="stat-label" data-i18n="stat_vocab_size">Вивчено словацьких слів</span>
-                        <h3 id="stat-vocab-val">42 слова</h3>
+                        <h3 id="stat-vocab-val">0 слів</h3>
                     </div>
                 </div>
 
-                <!-- Card 3: Socialization Milestones -->
+                <!-- Card 3: Track Level -->
                 <div class="stat-card card">
-                    <div class="stat-icon social-icon"><i class="fa-solid fa-people-group"></i></div>
+                    <div class="stat-icon social-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                     <div class="stat-info">
-                        <span class="stat-label" data-i18n="stat_social_milestones">Рівень адаптації</span>
-                        <h3 id="stat-social-val">3 / 5 етапів</h3>
+                        <span class="stat-label" data-i18n="stat_track">Віковий трек</span>
+                        <h3 id="stat-track-val">Молодший</h3>
+                    </div>
+                </div>
+
+                <!-- Card 4: Safety Phrases Mastered -->
+                <div class="stat-card card">
+                    <div class="stat-icon safety-icon" style="color: var(--secondary-color);"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label" data-i18n="stat_safety_phrases">Фраз безпеки засвоєно</span>
+                        <h3 id="stat-safety-val">0</h3>
                     </div>
                 </div>
             </div>
@@ -596,7 +605,11 @@
                     <label for="reg-email">Ваш Email</label>
                     <input type="email" id="reg-email" class="modal-input" placeholder="parent@example.com" required>
                 </div>
-                <div id="reg-error" class="modal-error hidden">Будь ласка, введіть коректний Email.</div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="reg-child-age">Вік дитини (років від 6 до 14)</label>
+                    <input type="number" id="reg-child-age" class="modal-input" placeholder="Наприклад: 8" min="6" max="14" required>
+                </div>
+                <div id="reg-error" class="modal-error hidden">Будь ласка, введіть коректний Email та вік дитини (від 6 до 14 років).</div>
                 
                 <!-- Email Confirmation Simulation Result (Hidden initially) -->
                 <div id="reg-success-details" class="reg-success-details hidden">
