@@ -1654,10 +1654,12 @@ function updateAvatarState(state) {
             break;
     }
     
-    const srcUrl = VIDEO_BASE_URL + videoFile;
+    const absoluteUrl = new URL(VIDEO_BASE_URL + videoFile, window.location.href).href;
     
     // Play the video stream
-    video.src = srcUrl;
+    if (video.src !== absoluteUrl) {
+        video.src = absoluteUrl;
+    }
     video.classList.remove('hidden');
     fallback.classList.add('hidden');
     
