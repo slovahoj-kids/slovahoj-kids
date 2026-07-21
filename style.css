@@ -23,6 +23,11 @@
     box-sizing: border-box;
 }
 
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: var(--font-body);
     background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #dcfce7 100%);
@@ -31,6 +36,12 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+.month-week-selectors {
+    display: flex;
+    gap: 15px;
+    margin-top: 5px;
 }
 
 /* Header Styles */
@@ -1868,6 +1879,25 @@ body {
         gap: 8px;
         flex-wrap: wrap;
         margin-top: 10px;
+    }
+
+    /* Flex wrapping for character & track options to prevent horizontal cutoffs */
+    .character-options {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    
+    .char-option-btn {
+        flex: 1 1 calc(50% - 8px) !important;
+        min-width: 110px !important;
+        font-size: 12px !important;
+        padding: 8px !important;
+    }
+
+    /* Stack Month and Week selectors vertically on mobile */
+    .month-week-selectors {
+        flex-direction: column !important;
+        gap: 10px !important;
     }
 }
 

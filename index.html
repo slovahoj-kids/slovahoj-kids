@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=2.2">
+    <link rel="stylesheet" href="style.css?v=2.3">
 </head>
 <body>
 
@@ -91,7 +91,7 @@
                         </div>
                         
                         <!-- Month & Week Progression Selectors -->
-                        <div style="display: flex; gap: 15px; margin-top: 5px;">
+                        <div class="month-week-selectors">
                             <div style="flex: 1;">
                                 <span class="selector-label" style="font-size: 11px;"><i class="fa-solid fa-calendar"></i> Місяць:</span>
                                 <select id="month-select" onchange="changeMonth(this.value)" class="modal-input" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--card-border);">
@@ -775,6 +775,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=2.2"></script>
+    <script src="app.js?v=2.3"></script>
 </body>
 </html>
