@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=2.3">
+    <link rel="stylesheet" href="style.css?v=2.4">
 </head>
 <body>
 
@@ -164,43 +164,7 @@
                         </div>
                     </div>
 
-                    <!-- Chat History (Recent dialogue bubbles) -->
-                    <div id="dialogue-chat" class="dialogue-chat">
-                        <div class="bubble tutor-bubble">
-                            <div class="bubble-meta" data-i18n="char_human">Оксана (Oksana)</div>
-                            <div class="bubble-text">Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka! (Привіт! Мене звати Оксана. Давай разом вивчати словацькі слова!)</div>
-                        </div>
-                    </div>
-
-                    <!-- Chat Input Field -->
-                    <div class="chat-input-wrapper">
-                        <input type="text" id="chat-input-field" class="chat-input" placeholder="Напиши відповідь словацькою..." onkeydown="handleChatSubmit(event)">
-                        <button id="btn-send-chat" class="btn-send-chat" onclick="sendChatMessage()">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Right Column: Speech & Pronunciation Analyzer -->
-                <div class="controls-panel card">
-                    <div class="panel-header">
-                        <h2 data-i18n="exercise_title">Твоє завдання: Привітайся зі словацьким другом</h2>
-                        <p class="exercise-task" id="current-task-desc" data-i18n="task_desc">Повтори фразу: "Dobrý deň, ako sa máš?"</p>
-                        
-                        <!-- Scenario Switcher -->
-                        <div class="scenario-switcher">
-                            <span class="scenario-switcher-label" data-i18n="select_scenario">Обери життєвий сценарій:</span>
-                            <div class="scenario-buttons">
-                                <button id="scenario-btn-1" class="scenario-btn active" onclick="selectScenario(1)">1</button>
-                                <button id="scenario-btn-2" class="scenario-btn" onclick="selectScenario(2)">2</button>
-                                <button id="scenario-btn-3" class="scenario-btn" onclick="selectScenario(3)">3</button>
-                                <button id="scenario-btn-4" class="scenario-btn" onclick="selectScenario(4)">4</button>
-                                <button id="scenario-btn-5" class="scenario-btn" onclick="selectScenario(5)">5</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pronunciation Assessment UI -->
+                    <!-- Pronunciation Assessment UI (Moved here so it sits under the avatar) -->
                     <div class="pronunciation-widget">
                         <div class="phrase-target">
                             <span class="target-label" data-i18n="target_phrase">Потрібно вимовити:</span>
@@ -224,7 +188,7 @@
                         </div>
                     </div>
 
-                    <!-- Speech Recorder Trigger -->
+                    <!-- Speech Recorder Trigger (Moved here so the microphone button is directly under Oksana) -->
                     <div class="record-section">
                         <div id="recording-wave" class="recording-wave hidden">
                             <div class="wave-bar"></div>
@@ -241,7 +205,7 @@
                         <p id="record-status-text" class="record-status" data-i18n="press_mic">Натисни мікрофон та говори словацькою</p>
                     </div>
 
-                    <!-- Feedback / Score Result -->
+                    <!-- Feedback / Score Result (Moved here directly under microphone) -->
                     <div id="speech-feedback-card" class="speech-feedback-card hidden">
                         <div class="score-circle">
                             <span id="pronunciation-score-val">85%</span>
@@ -251,6 +215,42 @@
                             <h3 id="feedback-headline" class="success-text" data-i18n="feedback_success">Чудова вимова!</h3>
                             <p id="feedback-subtext" data-i18n="feedback_subtext_success">Ти правильно вимовив усі звуки. Рухаємося далі!</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Chat History & Written Task Panel -->
+                <div class="controls-panel card">
+                    <div class="panel-header">
+                        <h2 data-i18n="exercise_title">Твоє завдання: Привітайся зі словацьким другом</h2>
+                        <p class="exercise-task" id="current-task-desc" data-i18n="task_desc">Повтори фразу: "Dobrý deň, ako sa máš?"</p>
+                        
+                        <!-- Scenario Switcher -->
+                        <div class="scenario-switcher">
+                            <span class="scenario-switcher-label" data-i18n="select_scenario">Обери життєвий сценарій:</span>
+                            <div class="scenario-buttons">
+                                <button id="scenario-btn-1" class="scenario-btn active" onclick="selectScenario(1)">1</button>
+                                <button id="scenario-btn-2" class="scenario-btn" onclick="selectScenario(2)">2</button>
+                                <button id="scenario-btn-3" class="scenario-btn" onclick="selectScenario(3)">3</button>
+                                <button id="scenario-btn-4" class="scenario-btn" onclick="selectScenario(4)">4</button>
+                                <button id="scenario-btn-5" class="scenario-btn" onclick="selectScenario(5)">5</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat History (Recent dialogue bubbles) (Moved here below the tasks list) -->
+                    <div id="dialogue-chat" class="dialogue-chat">
+                        <div class="bubble tutor-bubble">
+                            <div class="bubble-meta" data-i18n="char_human">Оксана (Oksana)</div>
+                            <div class="bubble-text">Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka! (Привіт! Мене звати Оксана. Давай разом вивчати словацькі слова!)</div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Field (Moved here at the bottom of the card) -->
+                    <div class="chat-input-wrapper">
+                        <input type="text" id="chat-input-field" class="chat-input" placeholder="Напиши відповідь словацькою..." onkeydown="handleChatSubmit(event)">
+                        <button id="btn-send-chat" class="btn-send-chat" onclick="sendChatMessage()">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -775,6 +775,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=2.3"></script>
+    <script src="app.js?v=2.4"></script>
 </body>
 </html>
