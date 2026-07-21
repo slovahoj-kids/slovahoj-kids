@@ -1717,3 +1717,50 @@ body {
     margin: 0 auto 15px auto;
 }
 
+/* Pulse Play Button Overlay for Avatar Autoplay Fallback */
+.play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 50%;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.play-btn-circle {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color, #4f46e5);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+    animation: pulsePlay 2s infinite;
+    padding-left: 5px;
+}
+
+@keyframes pulsePlay {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.6);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 15px rgba(79, 70, 229, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+}
+
+

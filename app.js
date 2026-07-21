@@ -36,6 +36,12 @@ let isSimulatedSpeech = false;
 
 let initialLoadDone = false;
 let firstActionTriggered = false;
+let greetingPlayed = false;
+
+function playGreetingVideo() {
+    greetingPlayed = true;
+    updateAvatarState('greeting');
+}
 
 function triggerFirstActionIfNeeded() {
     if (!firstActionTriggered) {
@@ -44,6 +50,18 @@ function triggerFirstActionIfNeeded() {
         speakSlovak(sc.phrase);
         updateAvatarState('level_' + currentScenario);
     }
+}
+
+function handleUserInteraction() {
+    if (!greetingPlayed) {
+        playGreetingVideo();
+        return false;
+    }
+    if (!firstActionTriggered) {
+        triggerFirstActionIfNeeded();
+        return false;
+    }
+    return true;
 }
 
 async function loadEnv() {
@@ -1076,11 +1094,8 @@ function selectScenario(num) {
         const btn = document.getElementById(`scenario-btn-${i}`);
         if (btn) btn.classList.toggle('active', i === num);
     }
-    if (!firstActionTriggered) {
-        triggerFirstActionIfNeeded();
-    } else {
-        updateScenarioUI();
-    }
+    handleUserInteraction();
+    updateScenarioUI();
 }
 
 function updateScenarioUI() {
@@ -1368,8 +1383,7 @@ async function runAzurePronunciationAssessment(targetPhrase, callback) {
 }
 
 async function toggleSpeechRecording() {
-    if (!firstActionTriggered) {
-        triggerFirstActionIfNeeded();
+    if (!handleUserInteraction()) {
         return;
     }
     const recordBtn = document.getElementById('btn-record-speech');
@@ -1647,10 +1661,13 @@ function updateAvatarState(state) {
     video.classList.remove('hidden');
     fallback.classList.add('hidden');
     
-    video.play().catch(err => {
+    return video.play().then(() => {
+        return true;
+    }).catch(err => {
         console.warn("Pre-recorded video play failed or not found, falling back to static avatar.", err);
         video.classList.add('hidden');
         fallback.classList.remove('hidden');
+        return false;
     });
 }
 
@@ -2594,7 +2611,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     if (videoContainer) {
         videoContainer.addEventListener('click', () => {
-            triggerFirstActionIfNeeded();
+            handleUserInteraction();
         });
         videoContainer.style.cursor = 'pointer';
     }
@@ -2603,7 +2620,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     initialLoadDone = true;
     
     // Initial avatar greeting video play (shows greeting instead of lesson)
-    updateAvatarState('greeting');
+    updateAvatarState('greeting').then(played => {
+        greetingPlayed = played;
+    });
     
     // Start parent schedule verification checker (runs every 30 seconds)
     setInterval(checkLessonSchedule, 30000);
