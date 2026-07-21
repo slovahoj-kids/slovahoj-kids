@@ -34,6 +34,18 @@ let envKeys = null;
 let currentLevel = 1;
 let isSimulatedSpeech = false;
 
+let initialLoadDone = false;
+let firstActionTriggered = false;
+
+function triggerFirstActionIfNeeded() {
+    if (!firstActionTriggered) {
+        firstActionTriggered = true;
+        const sc = scenarios[currentScenario];
+        speakSlovak(sc.phrase);
+        updateAvatarState('level_' + currentScenario);
+    }
+}
+
 async function loadEnv() {
     if (envKeys) return envKeys;
     try {
@@ -1064,7 +1076,11 @@ function selectScenario(num) {
         const btn = document.getElementById(`scenario-btn-${i}`);
         if (btn) btn.classList.toggle('active', i === num);
     }
-    updateScenarioUI();
+    if (!firstActionTriggered) {
+        triggerFirstActionIfNeeded();
+    } else {
+        updateScenarioUI();
+    }
 }
 
 function updateScenarioUI() {
@@ -1084,12 +1100,14 @@ function updateScenarioUI() {
     
     document.getElementById('pronunciation-tip-text').innerText = sc.tip[currentLang];
     document.getElementById('speech-feedback-card').classList.add('hidden');
-    speakSlovak(sc.phrase);
+    
+    if (initialLoadDone && firstActionTriggered) {
+        speakSlovak(sc.phrase);
+        updateAvatarState('level_' + currentScenario);
+    }
     
     // Dynamically update the emoji/label on scenario buttons
     updateScenarioButtonsContent();
-    
-    updateAvatarState('level_' + currentScenario);
 }
 
 function updateScenarioButtonsContent() {
@@ -1213,7 +1231,7 @@ function updateCharacterLevelImage() {
     
     avatarImg.onerror = function() {
         const isAnimal = ['wolf', 'fox', 'raccoon', 'cat'].includes(currentCharacter);
-        avatarImg.src = isAnimal ? `${currentCharacter}_level_1.png` : 'tutor_girl.png';
+        avatarImg.src = isAnimal ? `${currentCharacter}_level_1.png` : 'tutor_girl.jpg';
         avatarImg.onerror = null;
     };
     avatarImg.src = src;
@@ -1350,6 +1368,10 @@ async function runAzurePronunciationAssessment(targetPhrase, callback) {
 }
 
 async function toggleSpeechRecording() {
+    if (!firstActionTriggered) {
+        triggerFirstActionIfNeeded();
+        return;
+    }
     const recordBtn = document.getElementById('btn-record-speech');
     const recordIcon = document.getElementById('record-icon');
     const statusText = document.getElementById('record-status-text');
@@ -1564,6 +1586,8 @@ function updateAvatarState(state) {
     const video = document.getElementById('heygen-video');
     const fallback = document.getElementById('avatar-fallback');
     if (!video || !fallback) return;
+    
+    video.setAttribute('data-state', state);
     
     // Maps avatar states to reaction video names
     let videoFile = '';
@@ -2426,6 +2450,7 @@ function speakSlovak(text) {
 // --- Weekly, Monthly, and Track Selectors ---
 
 function selectTrack(track) {
+    firstActionTriggered = true;
     currentTrack = track;
     
     // Toggle active state on track buttons
@@ -2442,18 +2467,21 @@ function selectTrack(track) {
 }
 
 function changeMonth(value) {
+    firstActionTriggered = true;
     currentMonth = parseInt(value);
     updateScenarioUI();
     updateAvatarState('lesson_intro');
 }
 
 function changeWeek(value) {
+    firstActionTriggered = true;
     currentWeek = parseInt(value);
     updateScenarioUI();
     updateAvatarState('lesson_intro');
 }
 
 function selectLessonDay(day) {
+    firstActionTriggered = true;
     currentLessonDay = day;
     
     // Toggle active state on day lesson buttons
@@ -2549,8 +2577,33 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Load schedule configurations
     loadParentScheduleUI();
     
-    // Initial avatar intro video play
-    updateAvatarState('lesson_intro');
+    // Setup video ended listener and container click handler
+    const video = document.getElementById('heygen-video');
+    const fallback = document.getElementById('avatar-fallback');
+    const videoContainer = document.getElementById('avatar-video-container');
+    
+    if (video) {
+        video.onended = () => {
+            const currentState = video.getAttribute('data-state');
+            if (currentState === 'greeting' || currentState === 'greet') {
+                video.classList.add('hidden');
+                if (fallback) fallback.classList.remove('hidden');
+            }
+        };
+    }
+    
+    if (videoContainer) {
+        videoContainer.addEventListener('click', () => {
+            triggerFirstActionIfNeeded();
+        });
+        videoContainer.style.cursor = 'pointer';
+    }
+
+    // Set initialLoadDone to true now that static rendering is done
+    initialLoadDone = true;
+    
+    // Initial avatar greeting video play (shows greeting instead of lesson)
+    updateAvatarState('greeting');
     
     // Start parent schedule verification checker (runs every 30 seconds)
     setInterval(checkLessonSchedule, 30000);
