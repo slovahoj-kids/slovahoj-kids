@@ -1801,8 +1801,8 @@ body {
     object-fit: cover;
 }
 
-/* Global Mobile Responsiveness Optimizations (Screens under 576px) */
-@media (max-width: 576px) {
+/* Global Mobile Responsiveness Optimizations (Screens under 768px) */
+@media (max-width: 768px) {
     .header-container {
         flex-direction: column;
         gap: 12px;
