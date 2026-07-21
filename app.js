@@ -1599,7 +1599,7 @@ function updateAvatarState(state) {
     console.log("Avatar state updated to:", state);
     const video = document.getElementById('heygen-video');
     const fallback = document.getElementById('avatar-fallback');
-    if (!video || !fallback) return;
+    if (!video || !fallback) return Promise.resolve(false);
     
     video.setAttribute('data-state', state);
     
@@ -1661,14 +1661,27 @@ function updateAvatarState(state) {
     video.classList.remove('hidden');
     fallback.classList.add('hidden');
     
-    return video.play().then(() => {
-        return true;
-    }).catch(err => {
-        console.warn("Pre-recorded video play failed or not found, falling back to static avatar.", err);
+    try {
+        const playPromise = video.play();
+        if (playPromise !== undefined && typeof playPromise.then === 'function') {
+            return playPromise.then(() => {
+                return true;
+            }).catch(err => {
+                console.warn("Pre-recorded video play failed or not found, falling back to static avatar.", err);
+                video.classList.add('hidden');
+                fallback.classList.remove('hidden');
+                return false;
+            });
+        } else {
+            // Older browsers or webviews where play() returns undefined
+            return Promise.resolve(true);
+        }
+    } catch (e) {
+        console.warn("video.play() synchronous exception caught:", e);
         video.classList.add('hidden');
         fallback.classList.remove('hidden');
-        return false;
-    });
+        return Promise.resolve(false);
+    }
 }
 
 // 7. Parent Dashboard: Render Progress Chart
@@ -2620,9 +2633,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     initialLoadDone = true;
     
     // Initial avatar greeting video play (shows greeting instead of lesson)
-    updateAvatarState('greeting').then(played => {
-        greetingPlayed = played;
-    });
+    const greetPromise = updateAvatarState('greeting');
+    if (greetPromise && typeof greetPromise.then === 'function') {
+        greetPromise.then(played => {
+            greetingPlayed = played;
+        });
+    } else {
+        greetingPlayed = true;
+    }
     
     // Start parent schedule verification checker (runs every 30 seconds)
     setInterval(checkLessonSchedule, 30000);
