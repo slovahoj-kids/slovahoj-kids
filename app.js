@@ -186,6 +186,12 @@ function handleUserInteraction() {
     return true;
 }
 
+// Explicit global window bindings for inline HTML handlers
+window.handleUserInteraction = handleUserInteraction;
+window.playGreetingVideo = playGreetingVideo;
+window.triggerFirstActionIfNeeded = triggerFirstActionIfNeeded;
+window.confirmLessonSelection = confirmLessonSelection;
+
 async function loadEnv() {
     if (envKeys) return envKeys;
     try {
