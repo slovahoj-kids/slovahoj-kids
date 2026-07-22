@@ -1884,12 +1884,44 @@ function resetFeedback() {
 
 const VIDEO_BASE_URL = './videos/';
 
+function bindVideoStateHandlers() {
+    const video = document.getElementById('heygen-video');
+    if (!video) return;
+
+    const handleClipEnd = () => {
+        const currentState = video.getAttribute('data-state');
+        console.log("Video clip finished playing. Current state:", currentState);
+        if (currentState === 'greeting' || currentState === 'greet') {
+            if (typeof triggerFirstActionIfNeeded === 'function') {
+                triggerFirstActionIfNeeded();
+            }
+        }
+        if (currentState !== 'idle') {
+            updateAvatarState('idle');
+        }
+    };
+
+    video.onended = handleClipEnd;
+
+    if (!video.dataset.eventsBound) {
+        video.dataset.eventsBound = 'true';
+        video.addEventListener('ended', handleClipEnd);
+        video.addEventListener('pause', () => {
+            if (video.ended && video.getAttribute('data-state') !== 'idle') {
+                handleClipEnd();
+            }
+        });
+    }
+}
+
 function updateAvatarState(state) {
     console.log("Avatar state updated to:", state);
     const video = document.getElementById('heygen-video');
     const fallback = document.getElementById('avatar-fallback');
     const subtitleEl = document.getElementById('tutor-speech-text');
     if (!video || !fallback) return Promise.resolve(false);
+    
+    bindVideoStateHandlers();
     
     video.setAttribute('data-state', state);
     
@@ -1969,8 +2001,10 @@ function updateAvatarState(state) {
 
     if (state === 'idle') {
         video.loop = true;
+        video.setAttribute('loop', 'true');
     } else {
         video.loop = false;
+        video.removeAttribute('loop');
     }
     
     const absoluteUrl = new URL(VIDEO_BASE_URL + videoFile, window.location.href).href;
@@ -3020,17 +3054,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const fallback = document.getElementById('avatar-fallback');
     const videoContainer = document.getElementById('avatar-video-container');
     
-    if (video) {
-        video.onended = () => {
-            const currentState = video.getAttribute('data-state');
-            if (currentState === 'greeting' || currentState === 'greet') {
-                triggerFirstActionIfNeeded();
-            }
-            if (currentState !== 'idle') {
-                updateAvatarState('idle');
-            }
-        };
-    }
+    bindVideoStateHandlers();
     
     if (videoContainer) {
         videoContainer.addEventListener('click', () => {
