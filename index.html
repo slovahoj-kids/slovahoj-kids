@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=4.5">
+    <link rel="stylesheet" href="style.css?v=4.6">
 </head>
 <body>
 
@@ -47,22 +47,18 @@
             </div>
             
             <nav class="nav-controls">
-                <!-- Tab Toggles -->
+                <!-- Tab Toggles: Left (Playground), Center (Registration), Right (Parent Cabinet) -->
                 <button id="btn-show-playground" class="nav-tab-btn active" onclick="switchView('playground')">
                     <i class="fa-solid fa-gamepad"></i> <span data-i18n="nav_playground">Ігровий простір</span>
                 </button>
-                <button id="btn-show-cabinet" class="nav-tab-btn" onclick="checkParentAccess()">
-                    <i class="fa-solid fa-user-shield"></i> <span data-i18n="nav_parent_cabinet">Батьківський кабінет</span>
-                </button>
+                
                 <button id="btn-auth-header" class="nav-tab-btn auth-header-btn" onclick="openRegistrationModal()">
                     <i class="fa-solid fa-user-lock"></i> <span id="auth-btn-text" data-i18n="nav_auth">Увійти / Зареєструватися</span>
                 </button>
 
-                <!-- Language Switcher -->
-                <div class="lang-switcher">
-                    <button id="lang-btn-ua" class="lang-btn active" onclick="switchLanguage('ua')">UA</button>
-                    <button id="lang-btn-ru" class="lang-btn hidden" onclick="switchLanguage('ru')" style="display: none;">RU</button>
-                </div>
+                <button id="btn-show-cabinet" class="nav-tab-btn" onclick="checkParentAccess()">
+                    <i class="fa-solid fa-user-shield"></i> <span data-i18n="nav_parent_cabinet">Батьківський кабінет</span>
+                </button>
             </nav>
         </div>
     </header>
@@ -719,6 +715,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=4.5"></script>
+    <script src="app.js?v=4.6"></script>
 </body>
 </html>
