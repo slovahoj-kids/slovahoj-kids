@@ -168,6 +168,10 @@ function triggerFirstActionIfNeeded() {
     if (!firstActionTriggered) {
         firstActionTriggered = true;
         updateAvatarState('level_' + currentScenario);
+        const confirmBtn = document.getElementById('btn-confirm-lesson');
+        if (confirmBtn) {
+            confirmBtn.classList.add('blinking-btn');
+        }
     }
 }
 
@@ -817,7 +821,7 @@ const translations = {
         plan_free_duration: "/ 7 днів",
         plan_free_total: "Всього: €0 на 7 днів",
         btn_start_trial: "Спробувати безкоштовно",
-        click_me: "Натисни мене",
+        click_me: "Натисни тут",
         btn_confirm_lesson: "Підтвердити",
         stat_track_select_label: "Віковий трек дитини:",
         trial_active_title: "Ваш пробний період активний!",
@@ -910,7 +914,7 @@ const translations = {
         plan_free_duration: "/ 7 дней",
         plan_free_total: "Всего: €0 на 7 дней",
         btn_start_trial: "Попробовать бесплатно",
-        click_me: "Нажми меня",
+        click_me: "Нажми тут",
         btn_confirm_lesson: "Подтвердить",
         stat_track_select_label: "Возрастной трек ребенка:",
         trial_active_title: "Ваш пробный период активен!",
