@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const errDiv = document.createElement('div');
+            errDiv.style.position = 'fixed';
+            errDiv.style.top = '0';
+            errDiv.style.left = '0';
+            errDiv.style.width = '100%';
+            errDiv.style.background = '#f87171';
+            errDiv.style.color = '#fff';
+            errDiv.style.padding = '15px';
+            errDiv.style.zIndex = '999999';
+            errDiv.style.fontFamily = 'monospace';
+            errDiv.style.fontSize = '14px';
+            errDiv.style.whiteSpace = 'pre-wrap';
+            errDiv.innerHTML = `<strong>JavaScript Error:</strong><br>${message}<br>at ${source}:${lineno}:${colno}`;
+            (document.body || document.documentElement).appendChild(errDiv);
+            return false;
+        };
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlovAhoj Kids — Дитячий ігровий простір словацької мови</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Parent Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Microsoft Cognitive Services Speech SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <link rel="stylesheet" href="style.css?v=2.7">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-paw"></i></div>
+                <div class="logo-text">
+                    <span class="brand-name">SlovAhoj</span>
+                    <span class="brand-badge">Kids</span>
+                </div>
+            </div>
+            
+            <nav class="nav-controls">
+                <!-- Tab Toggles -->
+                <button id="btn-show-playground" class="nav-tab-btn active" onclick="switchView('playground')">
+                    <i class="fa-solid fa-gamepad"></i> <span data-i18n="nav_playground">Ігровий простір</span>
+                </button>
+                <button id="btn-show-cabinet" class="nav-tab-btn" onclick="checkParentAccess()">
+                    <i class="fa-solid fa-user-shield"></i> <span data-i18n="nav_parent_cabinet">Батьківський кабінет</span>
+                </button>
+
+                <!-- Language Switcher -->
+                <div class="lang-switcher">
+                    <button id="lang-btn-ua" class="lang-btn active" onclick="switchLanguage('ua')">UA</button>
+                    <button id="lang-btn-ru" class="lang-btn hidden" onclick="switchLanguage('ru')" style="display: none;">RU</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-container">
+
+        <!-- PLAYGROUND VIEW -->
+        <section id="playground-view" class="view-section">
+            <div class="playground-grid">
+                
+                <!-- Left Column: Avatar & Chat -->
+                <div class="avatar-panel card">
+                    <div class="character-selector compact">
+                        <div class="selector-item">
+                            <select id="month-select" onchange="changeMonth(this.value)" class="compact-select">
+                                <option value="1">Місяць 1: Знайомство</option>
+                                <option value="2">Місяць 2: Сім'я та дім</option>
+                                <option value="3">Місяць 3: Школа</option>
+                                <option value="4">Місяць 4: Їжа</option>
+                                <option value="5">Місяць 5: Моє місто</option>
+                                <option value="6">Місяць 6: Тварини</option>
+                                <option value="7">Місяць 7: Час та розклад</option>
+                                <option value="8">Місяць 8: Професії</option>
+                                <option value="9">Місяць 9: Моє дозвілля</option>
+                                <option value="10">Місяць 10: Подорожі</option>
+                                <option value="11">Місяць 11: Природа</option>
+                                <option value="12">Місяць 12: Свята</option>
+                            </select>
+                        </div>
+                        
+                        <div class="selector-item">
+                            <select id="week-select" onchange="changeWeek(this.value)" class="compact-select">
+                                <option value="1">Тиждень 1</option>
+                                <option value="2">Тиждень 2</option>
+                                <option value="3">Тиждень 3</option>
+                                <option value="4">Тиждень 4 (🛡️ Безпека)</option>
+                            </select>
+                        </div>
+
+                        <div class="selector-item">
+                            <select id="lesson-select" onchange="selectLessonDay(parseInt(this.value))" class="compact-select">
+                                <option value="1">Заняття 1 (День 1)</option>
+                                <option value="2">Заняття 2 (День 2)</option>
+                                <option value="3">Заняття 3 (День 3)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="selector-item selector-confirm-item" style="width: 100%; margin-top: 4px;">
+                            <button id="btn-confirm-lesson" class="btn-confirm-lesson" onclick="confirmLessonSelection()">
+                                <i class="fa-solid fa-circle-check"></i> <span data-i18n="btn_confirm_lesson">Підтвердити</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- WebRTC Stream Video Screen -->
+                    <div class="avatar-screen-wrapper">
+                        <div class="ai-status-badge">
+                            <i class="fa-solid fa-robot"></i> <span data-i18n="ai_assistant_badge">ІІ-Помічник</span>
+                        </div>
+                        
+                        <div id="avatar-video-container" class="avatar-video-container" onclick="handleUserInteraction()" style="cursor: pointer; position: relative;">
+                            <!-- Ukrainian Click Me Badge -->
+                            <div id="click-me-badge" class="click-me-badge">
+                                <i class="fa-solid fa-hand-pointer"></i> <span data-i18n="click_me">Натисни мене</span>
+                            </div>
+                            <!-- Live Avatar Stream -->
+                            <video id="heygen-video" class="avatar-video hidden" autoplay playsinline></video>
+                            <!-- Static/Interactive Video Mock (Fallback) -->
+                            <div id="avatar-fallback" class="avatar-mock-animation">
+                                <div class="pulse-ring"></div>
+                                <img id="char-avatar-img" class="avatar-img" src="tutor_girl.jpg" alt="Tutor Avatar">
+                                <div class="play-overlay" id="avatar-play-overlay">
+                                    <div class="play-btn-circle">
+                                        <i class="fa-solid fa-play"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtitle Overlay -->
+                        <div id="avatar-subtitles" class="subtitle-overlay">
+                            <p id="tutor-speech-text">Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!</p>
+                        </div>
+                    </div>
+
+                    <!-- Pronunciation Assessment UI (Moved here so it sits under the avatar) -->
+                    <div class="pronunciation-widget">
+                        <div class="phrase-target">
+                            <span class="target-label" data-i18n="target_phrase">Потрібно вимовити:</span>
+                            <div id="phrase-phoneme-container" class="phoneme-word-container">
+                                <!-- Words/phonemes will be rendered dynamically with colors -->
+                                <span class="phoneme-word">Dobrý</span>
+                                <span class="phoneme-word">deň,</span>
+                                <span class="phoneme-word">ako</span>
+                                <span class="phoneme-word">sa</span>
+                                <span class="phoneme-word">máš?</span>
+                            </div>
+                        </div>
+
+                        <!-- Pronunciation Tip -->
+                        <div class="tip-box">
+                            <div class="tip-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                            <div class="tip-content">
+                                <h4 data-i18n="tip_title">Підказка від Вовчика:</h4>
+                                <p id="pronunciation-tip-text" data-i18n="tip_content_default">Словацька буква 'ň' вимовляється м'яко, як українська 'нь'.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Speech Recorder Trigger (Moved here so the microphone button is directly under Oksana) -->
+                    <div class="record-section">
+                        <div id="recording-wave" class="recording-wave hidden">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+
+                        <button id="btn-record-speech" class="btn-record-speech" onclick="toggleSpeechRecording()">
+                            <i id="record-icon" class="fa-solid fa-microphone"></i>
+                        </button>
+                        
+                        <p id="record-status-text" class="record-status" data-i18n="press_mic">Натисни мікрофон та говори словацькою</p>
+                    </div>
+
+                    <!-- Feedback / Score Result (Moved here directly under microphone) -->
+                    <div id="speech-feedback-card" class="speech-feedback-card hidden">
+                        <div class="score-circle">
+                            <span id="pronunciation-score-val">85%</span>
+                            <span class="score-label" data-i18n="accuracy_label">точність</span>
+                        </div>
+                        <div class="feedback-details">
+                            <h3 id="feedback-headline" class="success-text" data-i18n="feedback_success">Чудова вимова!</h3>
+                            <p id="feedback-subtext" data-i18n="feedback_subtext_success">Ти правильно вимовив усі звуки. Рухаємося далі!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Chat History & Written Task Panel -->
+                <div class="controls-panel card">
+                    <div class="panel-header">
+                        <h2 data-i18n="exercise_title">Твоє завдання: Привітайся зі словацьким другом</h2>
+                        <p class="exercise-task" id="current-task-desc" data-i18n="task_desc">Повтори фразу: "Dobrý deň, ako sa máš?"</p>
+                        
+                        <!-- Scenario Switcher -->
+                        <div class="scenario-switcher">
+                            <span class="scenario-switcher-label" data-i18n="select_scenario">Обери життєвий сценарій:</span>
+                            <div class="scenario-buttons">
+                                <button id="scenario-btn-1" class="scenario-btn active" onclick="selectScenario(1)">1</button>
+                                <button id="scenario-btn-2" class="scenario-btn" onclick="selectScenario(2)">2</button>
+                                <button id="scenario-btn-3" class="scenario-btn" onclick="selectScenario(3)">3</button>
+                                <button id="scenario-btn-4" class="scenario-btn" onclick="selectScenario(4)">4</button>
+                                <button id="scenario-btn-5" class="scenario-btn" onclick="selectScenario(5)">5</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat History (Recent dialogue bubbles) (Moved here below the tasks list) -->
+                    <div id="dialogue-chat" class="dialogue-chat">
+                        <div class="bubble tutor-bubble">
+                            <div class="bubble-meta" data-i18n="char_human">Оксана (Oksana)</div>
+                            <div class="bubble-text">Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka! (Привіт! Мене звати Оксана. Давай разом вивчати словацькі слова!)</div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Field (Moved here at the bottom of the card) -->
+                    <div class="chat-input-wrapper">
+                        <input type="text" id="chat-input-field" class="chat-input" placeholder="Напиши відповідь словацькою..." onkeydown="handleChatSubmit(event)">
+                        <button id="btn-send-chat" class="btn-send-chat" onclick="sendChatMessage()">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PARENT CABINET VIEW (Dashboard) -->
+        <section id="cabinet-view" class="view-section hidden">
+            <div class="cabinet-welcome card">
+                <div class="welcome-header">
+                    <div class="parent-avatar"><i class="fa-solid fa-shield-cat"></i></div>
+                    <div class="welcome-text">
+                        <h2 data-i18n="cabinet_welcome_title">Кабінет безпечного контролю: Батьківський дашборд</h2>
+                        <p data-i18n="cabinet_welcome_sub">Тут ви можете бачити статистику прогресу навчання, соціальні досягнення дитини та налаштування конфіденційності GDPR.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <!-- Card 1: Sessions Weekly -->
+                <div class="stat-card card">
+                    <div class="stat-icon time-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label" data-i18n="stat_sessions">Заняття за тиждень</span>
+                        <h3 id="stat-sessions-val">1 / 3</h3>
+                    </div>
+                </div>
+
+                <!-- Card 2: Vocabulary learned -->
+                <div class="stat-card card">
+                    <div class="stat-icon vocab-icon"><i class="fa-solid fa-book-open"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label" data-i18n="stat_vocab_size">Вивчено словацьких слів</span>
+                        <h3 id="stat-vocab-val">0 слів</h3>
+                    </div>
+                </div>
+
+                <!-- Card 3: Track Level (Age selector moved here) -->
+                <div class="stat-card card">
+                    <div class="stat-icon social-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="stat-info" style="width: 100%;">
+                        <span class="stat-label" data-i18n="stat_track_select_label">Віковий трек дитини:</span>
+                        <select id="track-select" onchange="selectTrack(this.value)" class="compact-select" style="margin-top: 5px; width: 100%; font-size: 13.5px; font-weight: 600; padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--primary-color);">
+                            <option value="junior">🟢 Молодший (6-8 років)</option>
+                            <option value="middle">🟡 Середній (9-11 років)</option>
+                            <option value="senior">🔵 Старший (12-14 років)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Card 4: Safety Phrases Mastered -->
+                <div class="stat-card card">
+                    <div class="stat-icon safety-icon" style="color: var(--secondary-color);"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label" data-i18n="stat_safety_phrases">Фраз безпеки засвоєно</span>
+                        <h3 id="stat-safety-val">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Analysis Section -->
+            <div class="dashboard-details-grid">
+                
+                <!-- Left: Progress Chart -->
+                <div class="chart-container card">
+                    <h3 data-i18n="chart_title">Динаміка занять по днях (хвилини)</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Right: Adaptation Milestones & Feedback -->
+                <div class="milestones-container card">
+                    <h3 data-i18n="milestones_title">Практичні досягнення дитини</h3>
+                    <ul class="milestone-list">
+                        <li id="milestone-1" class="milestone-item completed">
+                            <div class="milestone-checkbox" id="milestone-check-1"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="milestone-info">
+                                <h4 data-i18n="milestone_1_title">Знайомство на дитячому майданчику</h4>
+                                <p data-i18n="milestone_1_desc">Дитина вміє представитися, запитати ім'я та запропонувати пограти.</p>
+                            </div>
+                        </li>
+                        <li id="milestone-2" class="milestone-item completed">
+                            <div class="milestone-checkbox" id="milestone-check-2"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="milestone-info">
+                                <h4 data-i18n="milestone_2_title">Похід у словацький магазин</h4>
+                                <p data-i18n="milestone_2_desc">Дитина може самостійно ввічливо попросити товар та запитати ціну.</p>
+                            </div>
+                        </li>
+                        <li id="milestone-3" class="milestone-item completed">
+                            <div class="milestone-checkbox" id="milestone-check-3"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="milestone-info">
+                                <h4 data-i18n="milestone_3_title">Безпечна відмова стороннім</h4>
+                                <p data-i18n="milestone_3_desc">Вміння твердо сказати "Nie, ďakujem" на пропозицію незнайомця.</p>
+                            </div>
+                        </li>
+                        <li id="milestone-4" class="milestone-item locked">
+                            <div class="milestone-checkbox" id="milestone-check-4"><i class="fa-solid fa-lock"></i></div>
+                            <div class="milestone-info">
+                                <h4 data-i18n="milestone_4_title">У словацькій школі / садочку</h4>
+                                <p data-i18n="milestone_4_desc">Розуміння базових команд вчителя, прохання про допомогу чи вихід.</p>
+                            </div>
+                        </li>
+                        <li id="milestone-5" class="milestone-item locked">
+                            <div class="milestone-checkbox" id="milestone-check-5"><i class="fa-solid fa-lock"></i></div>
+                            <div class="milestone-info">
+                                <h4 data-i18n="milestone_5_title">Поїздка у громадському транспорті</h4>
+                                <p data-i18n="milestone_5_desc">Спілкування з контролером, купівля та валідація квитка.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Pricing Plans Section -->
+            <div class="pricing-section card">
+                <div class="pricing-header">
+                    <h3 data-i18n="pricing_title">Тарифні плани</h3>
+                    <p data-i18n="pricing_sub">Оберіть відповідний пакет для повноцінного навчання дитини з ІІ-наставником.</p>
+                </div>
+                
+                <div class="pricing-grid">
+                    <!-- Plan 0: Free Trial -->
+                    <div class="plan-card">
+                        <div class="plan-badge" data-i18n="plan_free_badge" style="visibility: hidden;">Популярний</div>
+                        <h4 class="plan-name" data-i18n="plan_free_trial">Пробний період</h4>
+                        <div class="plan-price">
+                            <span class="price-currency">€</span><span class="price-value">0</span>
+                            <span class="price-period" data-i18n="plan_free_duration">/ 7 днів</span>
+                        </div>
+                        <div class="plan-total" data-i18n="plan_free_total">Всього: €0 на 7 днів</div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
+                        </ul>
+                        <button class="btn-plan-select" onclick="startFreeTrial()" data-i18n="btn_start_trial">Спробувати безкоштовно</button>
+                    </div>
+
+                    <!-- Plan 1: 1 Month -->
+                    <div class="plan-card">
+                        <div class="plan-badge" data-i18n="plan_popular_1" style="visibility: hidden;">Популярний</div>
+                        <h4 class="plan-name" data-i18n="plan_1_month">1 місяць</h4>
+                        <div class="plan-price">
+                            <span class="price-currency">€</span><span class="price-value">10</span>
+                            <span class="price-period" data-i18n="plan_period_month">/ міс</span>
+                        </div>
+                        <div class="plan-total" style="visibility: hidden;">&nbsp;</div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
+                        </ul>
+                        <button class="btn-plan-select" onclick="openPaymentModal(10, '1 місяць')" data-i18n="btn_choose_plan">Обрати тариф</button>
+                    </div>
+
+                    <!-- Plan 2: 3 Months -->
+                    <div class="plan-card featured">
+                        <div class="plan-badge" data-i18n="plan_popular">Популярний</div>
+                        <h4 class="plan-name" data-i18n="plan_3_months">3 місяці</h4>
+                        <div class="plan-price">
+                            <span class="price-currency">€</span><span class="price-value">8</span>
+                            <span class="price-period" data-i18n="plan_period_month">/ міс</span>
+                        </div>
+                        <div class="plan-total" data-i18n="plan_3_total">Всього: €24</div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
+                        </ul>
+                        <button class="btn-plan-select" onclick="openPaymentModal(24, '3 місяці')" data-i18n="btn_choose_plan">Обрати тариф</button>
+                    </div>
+
+                    <!-- Plan 3: 6 Months -->
+                    <div class="plan-card">
+                        <div class="plan-badge" data-i18n="plan_popular_2" style="visibility: hidden;">Популярний</div>
+                        <h4 class="plan-name" data-i18n="plan_6_months">6 місяців</h4>
+                        <div class="plan-price">
+                            <span class="price-currency">€</span><span class="price-value">5</span>
+                            <span class="price-period" data-i18n="plan_period_month">/ міс</span>
+                        </div>
+                        <div class="plan-total" data-i18n="plan_6_total">Всього: €30</div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
+                        </ul>
+                        <button class="btn-plan-select" onclick="openPaymentModal(30, '6 місяців')" data-i18n="btn_choose_plan">Обрати тариф</button>
+                    </div>
+
+                    <!-- Plan 4: Premium -->
+                    <div class="plan-card featured-premium">
+                        <div class="plan-badge" data-i18n="plan_premium_badge">Преміум-ІІ</div>
+                        <h4 class="plan-name" data-i18n="plan_premium">Преміум (Оксана)</h4>
+                        <div class="plan-price">
+                            <span class="price-currency">€</span><span class="price-value">50</span>
+                            <span class="price-period" data-i18n="plan_period_month">/ міс</span>
+                        </div>
+                        <div class="plan-total" data-i18n="plan_premium_total">Всього: €50 на місяць</div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_1">Повна програма навчання (12 місяців)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_2">Персональний ІІ-наставник Оксана</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_3">Безлімітний розмовний тренажер</span></li>
+                        </ul>
+                        <button class="btn-plan-select btn-premium" onclick="openPaymentModal(50, 'Преміум (Оксана)')" data-i18n="btn_choose_plan">Обрати тариф</button>
+                    </div>
+                </div>
+
+                <!-- Active Subscription Status Banner -->
+                <div id="subscription-status-banner" class="subscription-banner hidden">
+                    <div class="sub-banner-icon"><i class="fa-solid fa-gem"></i></div>
+                    <div class="sub-banner-text">
+                        <span class="sub-title" data-i18n="sub_active_title">Ваша підписка активна!</span>
+                        <span class="sub-details" id="sub-active-details">Тарифний план: 3 місяці. Дійсний до 18 жовтня 2026.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lesson Scheduler Section -->
+            <div class="gdpr-settings-card card" style="margin-top: 20px; border: 1px solid rgba(11, 71, 166, 0.15);">
+                <div class="gdpr-header" style="display: flex; gap: 15px; align-items: center;">
+                    <div style="font-size: 32px; color: var(--primary-color);"><i class="fa-solid fa-calendar-days"></i></div>
+                    <div class="gdpr-title">
+                        <h3 style="color: var(--primary-color);">Планування занять та нагадування</h3>
+                        <p style="color: #64748b; font-size: 13.5px; margin-top: 5px;">Оберіть зручні дні та час для навчання. Наша система автоматично надсилатиме вам нагадування перед початком занять, щоб дитина не пропускала уроки словацької мови з Оксаною.</p>
+                    </div>
+                </div>
+                
+                <div class="schedule-settings" style="margin-top: 20px;">
+                    <!-- Days of Week Selector -->
+                    <span class="selector-label" style="display: block; margin-bottom: 8px;"><i class="fa-solid fa-calendar-week"></i> Дні занять:</span>
+                    <div class="schedule-days-selector" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                        <button id="day-btn-1" class="day-select-btn" onclick="toggleScheduleDay(1)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Понеділок</button>
+                        <button id="day-btn-2" class="day-select-btn" onclick="toggleScheduleDay(2)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Вівторок</button>
+                        <button id="day-btn-3" class="day-select-btn" onclick="toggleScheduleDay(3)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Середа</button>
+                        <button id="day-btn-4" class="day-select-btn" onclick="toggleScheduleDay(4)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Четвер</button>
+                        <button id="day-btn-5" class="day-select-btn" onclick="toggleScheduleDay(5)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">П'ятниця</button>
+                        <button id="day-btn-6" class="day-select-btn" onclick="toggleScheduleDay(6)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Субота</button>
+                        <button id="day-btn-7" class="day-select-btn" onclick="toggleScheduleDay(7)" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">Неділя</button>
+                    </div>
+                    
+                    <!-- Time Selector and Actions -->
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; border-top: 1px solid var(--card-border); padding-top: 15px;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label for="schedule-time" style="font-weight: 600; display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-dark);"><i class="fa-solid fa-clock"></i> Час початку занять:</label>
+                            <input type="time" id="schedule-time" class="modal-input" style="width: 150px; font-size: 16px; padding: 8px; border: 1.5px solid #cbd5e1;" onchange="saveParentSchedule()">
+                        </div>
+                        
+                        <div style="flex: 2; min-width: 280px;">
+                            <span style="font-weight: 600; display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-dark);"><i class="fa-solid fa-bell"></i> Отримувати нагадування:</span>
+                            <div style="display: flex; gap: 15px; align-items: center; margin-top: 8px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text-dark); font-weight: 500;">
+                                    <input type="checkbox" id="notify-browser-chk" onchange="toggleNotificationsPermission()" style="width: 18px; height: 18px; cursor: pointer;">
+                                    <span>Браузерні push-сповіщення</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 12px; border-top: 1px solid var(--card-border); padding-top: 15px;">
+                        <button class="btn-gdpr-secondary" onclick="testNotificationReminder()" style="border-color: var(--primary-color); color: var(--primary-color); padding: 10px 20px; font-weight: 700;">
+                            <i class="fa-solid fa-paper-plane"></i> Надіслати тестове нагадування
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GDPR & Privacy Center -->
+            <div class="gdpr-settings-card card">
+                <div class="gdpr-header">
+                    <div class="gdpr-shield"><i class="fa-solid fa-user-lock"></i></div>
+                    <div class="gdpr-title">
+                        <h3 data-i18n="gdpr_title">Центр конфіденційності GDPR-K</h3>
+                        <p data-i18n="gdpr_sub">Ми піклуємося про безпеку вашої дитини. Відповідно до регламентів ЄС, записи голосу не зберігаються на наших серверах.</p>
+                    </div>
+                </div>
+                <div class="gdpr-actions">
+                    <button class="btn-gdpr-secondary" onclick="exportGDPRData()">
+                        <i class="fa-solid fa-file-export"></i> <span data-i18n="btn_export_data">Експортувати дані прогресу</span>
+                    </button>
+                    <button class="btn-gdpr-danger" onclick="deleteGDPRProfile()">
+                        <i class="fa-solid fa-trash-can"></i> <span data-i18n="btn_delete_profile">Видалити профіль дитини</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subscription Control Simulator (Testing Panel) -->
+            <div class="gdpr-settings-card card" style="margin-top: 20px; border: 1.5px dashed var(--secondary-color); background: rgba(255, 152, 0, 0.03);">
+                <div class="gdpr-header" style="display: flex; gap: 15px; align-items: center;">
+                    <div style="font-size: 32px; color: var(--secondary-color);"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div class="gdpr-title">
+                        <h3 style="color: var(--text-dark);">Панель симулятора підписки (Тестування)</h3>
+                        <p style="color: #64748b; font-size: 13px;">Тестуйте закінчення пробного/платного періоду та перевіряйте екрани блокування гри дитини.</p>
+                    </div>
+                </div>
+                <div class="gdpr-actions" style="margin-top: 15px;">
+                    <button class="btn-gdpr-secondary" onclick="simulateSubscriptionExpiration()" style="border-color: var(--secondary-color); color: var(--secondary-color); font-weight: 700;">
+                        <i class="fa-solid fa-clock"></i> Симулювати закінчення терміну
+                    </button>
+                    <button class="btn-gdpr-secondary" onclick="resetAllAuthData()" style="border-color: var(--danger-color); color: var(--danger-color); font-weight: 700;">
+                        <i class="fa-solid fa-trash-arrow-up"></i> Скинути авторизацію (Повна очистка)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Area -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <div class="footer-legal">
+                <p>&copy; 2026 SlovAhoj. <span data-i18n="footer_legal_text">Усі права захищені. Платформа відповідає нормам GDPR-K та EU AI Act по роботі з дітьми.</span></p>
+                <div class="footer-legal-links">
+                    <a href="gdpr.html" target="_blank" class="footer-link">Ochrana osobných údajov (GDPR)</a> | 
+                    <a href="vop.html" target="_blank" class="footer-link">Všeobecné obchodné podmienky (VOP)</a> | 
+                    <a href="reklamacia.html" target="_blank" class="footer-link">Reklamačný poriadok</a>
+                </div>
+            </div>
+            <div class="affiliate-area">
+                <a href="https://dagny.sk/" target="_blank" class="footer-affiliate-link">
+                    <i class="fa-solid fa-globe"></i> <span data-i18n="footer_sponsor_text">спонсор - Експертний блог по безпеці бізнесу в Європі</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Parent Gate Verification Modal (PIN Based) -->
+    <div id="parent-gate-modal" class="modal-overlay hidden">
+        <div class="modal-card parent-gate-card">
+            <button class="modal-close-btn" onclick="closeParentGate()">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" style="background: rgba(11, 71, 166, 0.1); color: var(--primary-color);"><i class="fa-solid fa-user-lock"></i></div>
+                <h3 data-i18n="parent_gate_title">Доступ лише для батьків</h3>
+                <p data-i18n="parent_gate_sub">Будь ласка, введіть ваш батьківський ПІН-код.</p>
+            </div>
+            <div class="modal-body">
+                <input type="password" id="parent-gate-answer" class="modal-input" placeholder="Введіть 4-значний ПІН" maxlength="8" style="text-align: center; font-size: 20px; letter-spacing: 5px;" onkeydown="handleParentGateKey(event)">
+                <p id="parent-gate-error" class="modal-error hidden" data-i18n="parent_gate_error_msg">Неправильний ПІН-код, спробуйте ще раз.</p>
+                <div style="margin-top: 15px; font-size: 11px; color: #64748b; text-align: center;">
+                    <span>Немає ПІН-коду? Пройдіть пробне завдання, щоб зареєструватися.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-primary" onclick="verifyParentAnswer()" data-i18n="btn_confirm">Підтвердити</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Registration Modal -->
+    <div id="registration-modal" class="modal-overlay hidden">
+        <div class="modal-card registration-card">
+            <button class="modal-close-btn" onclick="closeRegistrationModal()">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-color);"><i class="fa-solid fa-envelope-open-text"></i></div>
+                <h3>Реєстрація батьківського кабінету</h3>
+                <p>Введіть ваш Email для створення дитячого та батьківського ПІН-кодів.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="reg-email">Ваш Email</label>
+                    <input type="email" id="reg-email" class="modal-input" placeholder="parent@example.com" required>
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="reg-child-age">Вік дитини (років від 6 до 14)</label>
+                    <input type="number" id="reg-child-age" class="modal-input" placeholder="Наприклад: 8" min="6" max="14" required>
+                </div>
+                <div id="reg-error" class="modal-error hidden">Будь ласка, введіть коректний Email та вік дитини (від 6 до 14 років).</div>
+                
+                <!-- Email Confirmation Simulation Result (Hidden initially) -->
+                <div id="reg-success-details" class="reg-success-details hidden">
+                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--accent-color); padding: 15px; border-radius: 12px; margin-top: 15px; text-align: left;">
+                        <h4 style="color: #047857; margin-bottom: 8px;"><i class="fa-solid fa-circle-check"></i> ПІН-коди надіслано на Email!</h4>
+                        <p style="font-size: 12px; color: #1e293b; margin-bottom: 10px;">Для зручності тестування ми показуємо згенеровані коди тут:</p>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600;">
+                            <div>👶 Дитячий ПІН (тільки гра): <span id="reg-child-pin" style="color: var(--primary-color); font-size: 16px; font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #ddd;"></span></div>
+                            <div>🔑 Батьківський ПІН (кабінет): <span id="reg-parent-pin" style="color: var(--secondary-color); font-size: 16px; font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #ddd;"></span></div>
+                            <div style="font-size: 11px; font-weight: normal; color: #64748b; margin-top: 5px;">* (Також працює універсальний адмін-код: <strong>9999</strong>)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="reg-modal-footer">
+                <button class="btn-modal-primary" onclick="processRegistration()">Зареєструватися</button>
+            </div>
+            <div class="modal-footer hidden" id="reg-modal-footer-success">
+                <button class="btn-modal-primary" onclick="proceedToDashboardAfterReg()">Увійти в кабінет та обрати тариф</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post-Trial Invite Modal -->
+    <div id="post-trial-modal" class="modal-overlay hidden">
+        <div class="modal-card invite-card">
+            <div class="modal-header">
+                <div class="modal-icon" style="background: rgba(255, 152, 0, 0.1); color: var(--secondary-color);"><i class="fa-solid fa-graduation-cap"></i></div>
+                <h3>Пробне завдання завершено!</h3>
+                <p>Ти чудово впорався! Поклич когось із дорослих, щоб допомогти продовжити навчання або введи діючий ПІН-код.</p>
+            </div>
+            <div class="modal-body">
+                <input type="password" id="child-gate-pin-input" class="modal-input" placeholder="Введіть ПІН-код дитини" maxlength="8" style="text-align: center; font-size: 18px; letter-spacing: 4px; font-family: monospace;" onkeydown="handleChildPinKey(event)">
+                <p id="child-gate-pin-error" class="modal-error hidden">Неправильний ПІН-код або термін підписки закінчився.</p>
+            </div>
+            <div class="modal-footer" style="flex-direction: column; gap: 10px; width: 100%;">
+                <button class="btn-modal-primary" onclick="verifyChildPin()" style="width: 100%;">Активувати гру кодом</button>
+                <button class="btn-modal-secondary" onclick="openRegModalFromInvite()" style="width: 100%; background: #e2e8f0; color: var(--text-dark); border: none;">Покликати дорослого (Реєстрація)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Expired Lock Modal -->
+    <div id="sub-expired-lock-modal" class="modal-overlay hidden">
+        <div class="modal-card expired-lock-card">
+            <div class="modal-header">
+                <div class="modal-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger-color);"><i class="fa-solid fa-lock"></i></div>
+                <h3>Час навчання минув</h3>
+                <p>Термін дії вашої підписки або безкоштовного періоду закінчився.</p>
+                <p style="font-weight: 600; margin-top: 8px;">Введи пинкод. Якщо пинкод не працює, попроси дорослого зайти в родительский кабинет з його пинкодом.</p>
+            </div>
+            <div class="modal-body">
+                <input type="password" id="expired-child-pin-input" class="modal-input" placeholder="Введіть ПІН-код дитини" maxlength="8" style="text-align: center; font-size: 18px; letter-spacing: 4px; font-family: monospace;" onkeydown="handleExpiredChildPinKey(event)">
+                <p id="expired-child-pin-error" class="modal-error hidden">Неправильний ПІН-код або термін підписки не продовжено.</p>
+            </div>
+            <div class="modal-footer" style="flex-direction: column; gap: 10px; width: 100%;">
+                <button class="btn-modal-primary" onclick="verifyExpiredChildPin()" style="width: 100%;">Активувати новим кодом</button>
+                <button class="btn-modal-secondary" onclick="checkParentAccessFromLock()" style="width: 100%; background: #e2e8f0; color: var(--text-dark); border: none;">Увійти як дорослий (Продовжити)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parent Subscription Expired Modal -->
+    <div id="parent-expiry-modal" class="modal-overlay hidden">
+        <div class="modal-card parent-expiry-card">
+            <button class="modal-close-btn" onclick="closeParentExpiryModal()">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger-color);"><i class="fa-solid fa-circle-exclamation"></i></div>
+                <h3>Період навчання завершився</h3>
+                <p>Платний чи безкоштовний період навчання вашої дитини закінчився. Будь ласка, продовжіть підписку, щоб зберегти весь накопичений прогрес вихованця.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-primary" onclick="scrollToPricingAndClose()" style="width: 100%;">Перейти до вибору тарифу</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Subscription Lock Modal -->
+    <div id="premium-lock-modal" class="modal-overlay hidden">
+        <div class="modal-card premium-lock-card">
+            <button class="modal-close-btn" onclick="closePremiumLockModal()">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fa-solid fa-gem"></i></div>
+                <h3 data-i18n="premium_lock_title">Потрібен Преміум-тариф</h3>
+                <p data-i18n="premium_lock_sub">Для спілкування з людьми-наставниками (Оксана, Тарас, Дідусь) в реальному часі потрібен Преміум-тариф. У вашому поточному пакеті доступні всі 4 тварини-маскоти без обмежень!</p>
+            </div>
+            <div class="modal-footer" style="flex-direction: column; gap: 10px; width: 100%;">
+                <button class="btn-modal-primary btn-premium" onclick="upgradeToPremiumFromModal()" style="width: 100%; background: linear-gradient(135deg, #8b5cf6, #d946ef); color: #fff; border: none;" data-i18n="btn_upgrade_premium">Перейти на Преміум (€50/міс)</button>
+                <button class="btn-modal-secondary" onclick="closePremiumLockModal()" style="width: 100%; background: #e2e8f0; color: var(--text-dark); border: none;" data-i18n="btn_continue_standard">Продовжити з тваринами</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal (Stripe Simulator) -->
+    <div id="payment-modal" class="modal-overlay hidden">
+        <div class="modal-card payment-card">
+            <button class="modal-close-btn" onclick="closePaymentModal()">&times;</button>
+            <div id="payment-main-form">
+                <div class="modal-header">
+                    <div class="modal-icon"><i class="fa-solid fa-credit-card"></i></div>
+                    <h3 data-i18n="payment_modal_title">Оплата банківською картою</h3>
+                    <p><span data-i18n="payment_modal_sub">Оплата за тарифом</span> <strong id="payment-plan-name">3 місяці</strong></p>
+                    <div class="payment-amount-display">€<span id="payment-amount-value">24</span></div>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Stripe Form Simulator -->
+                    <div class="stripe-form">
+                        <div class="form-group">
+                            <label for="card-holder" data-i18n="card_holder_label">Власник карти</label>
+                            <input type="text" id="card-holder" class="modal-input" placeholder="IVAN HORVAT" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="card-number" data-i18n="card_number_label">Номер карти</label>
+                            <div class="card-number-wrapper">
+                                <input type="text" id="card-number" class="modal-input" placeholder="4444 4444 4444 4444" maxlength="19" required oninput="formatCardNumber(this)">
+                                <div class="card-brand-icon" id="card-brand-icon"><i class="fa-solid fa-credit-card"></i></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="card-expiry" data-i18n="card_expiry_label">Термін дії</label>
+                                <input type="text" id="card-expiry" class="modal-input" placeholder="MM/YY" maxlength="5" required oninput="formatExpiry(this)">
+                            </div>
+                            <div class="form-group">
+                                <label for="card-cvv">CVV / CVC</label>
+                                <input type="password" id="card-cvv" class="modal-input" placeholder="123" maxlength="3" required>
+                            </div>
+                        </div>
+
+                        <div id="payment-error" class="modal-error hidden" data-i18n="payment_error_msg">Помилка авторизації карти. Перевірте дані.</div>
+                    </div>
+                </div>
+                <div class="modal-footer" id="payment-modal-footer">
+                    <button class="btn-modal-primary" id="btn-submit-payment" onclick="processPayment()" data-i18n="btn_pay">Сплатити</button>
+                </div>
+            </div>
+
+            <!-- Success Screen Inside Modal (will be toggled) -->
+            <div id="payment-success-screen" class="payment-success-screen hidden">
+                <div class="success-checkmark">
+                    <div class="check-icon">
+                        <span class="icon-line line-tip"></span>
+                        <span class="icon-line line-long"></span>
+                        <div class="icon-circle"></div>
+                        <div class="icon-fix"></div>
+                    </div>
+                </div>
+                <h3 data-i18n="payment_success_title">Оплата успішна!</h3>
+                <p data-i18n="payment_success_sub">Дякуємо! Доступ до преміум функцій відкрито.</p>
+                <div class="modal-footer">
+                    <button class="btn-modal-primary" onclick="closePaymentModal()" data-i18n="btn_close">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Script -->
+    <script src="app.js?v=2.7"></script>
+</body>
+</html>
