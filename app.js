@@ -1545,40 +1545,22 @@ function evaluateSpokenPhrase(spokenText, targetPhrase) {
             };
         }
 
-        // 2. Fuzzy Levenshtein Match (only for words with length >= 3)
-        if (cleanTargetWord.length >= 3) {
+        // 2. Strict Levenshtein Match ONLY for target words with length >= 4
+        // (Short words require EXACT match to prevent false positives)
+        if (cleanTargetWord.length >= 4) {
             matchIdx = cleanSpokenWords.findIndex((spk, sIdx) => {
                 if (usedSpokenIndices.has(sIdx)) return false;
-                if (spk.length < 2) return false;
-                const maxDist = cleanTargetWord.length <= 4 ? 1 : 2;
+                if (Math.abs(spk.length - cleanTargetWord.length) > 1) return false;
+                const maxDist = cleanTargetWord.length <= 5 ? 1 : 2;
                 return calculateLevenshtein(spk, cleanTargetWord) <= maxDist;
             });
 
             if (matchIdx !== -1) {
                 usedSpokenIndices.add(matchIdx);
-                matchedPoints += 0.75;
+                matchedPoints += 0.7; // Fuzzy match scores 70%
                 return {
                     word: origWord,
-                    accuracyScore: 72,
-                    errorType: "Mispronunciation"
-                };
-            }
-        }
-
-        // 3. Substring match ONLY if both spoken and target words are long (>= 4 chars)
-        if (cleanTargetWord.length >= 4) {
-            matchIdx = cleanSpokenWords.findIndex((spk, sIdx) => {
-                if (usedSpokenIndices.has(sIdx)) return false;
-                if (spk.length < 4) return false;
-                return spk.includes(cleanTargetWord) || cleanTargetWord.includes(spk);
-            });
-
-            if (matchIdx !== -1) {
-                usedSpokenIndices.add(matchIdx);
-                matchedPoints += 0.6;
-                return {
-                    word: origWord,
-                    accuracyScore: 65,
+                    accuracyScore: 70,
                     errorType: "Mispronunciation"
                 };
             }
@@ -1594,8 +1576,9 @@ function evaluateSpokenPhrase(spokenText, targetPhrase) {
 
     let overallScore = Math.round((matchedPoints / originalTargetWords.length) * 100);
     
-    // Penalize if spoken phrase has far fewer words than target phrase
-    if (cleanSpokenWords.length < Math.max(1, Math.floor(cleanTargetWords.length / 2))) {
+    // Penalize if spoken phrase has far fewer or far more words than target phrase
+    const wordCountRatio = cleanSpokenWords.length / cleanTargetWords.length;
+    if (wordCountRatio < 0.5 || wordCountRatio > 2.0) {
         overallScore = Math.round(overallScore * 0.7);
     }
     
