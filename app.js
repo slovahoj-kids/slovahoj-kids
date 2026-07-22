@@ -150,7 +150,6 @@ function confirmLessonSelection() {
     
     const sc = scenarios[currentScenario];
     if (sc) {
-        speakSlovak(sc.phrase);
         updateAvatarState('lesson_intro');
     }
     
@@ -168,8 +167,6 @@ function playGreetingVideo() {
 function triggerFirstActionIfNeeded() {
     if (!firstActionTriggered) {
         firstActionTriggered = true;
-        const sc = scenarios[currentScenario];
-        speakSlovak(sc.phrase);
         updateAvatarState('level_' + currentScenario);
     }
 }
@@ -1261,7 +1258,6 @@ function updateScenarioUI() {
     document.getElementById('speech-feedback-card').classList.add('hidden');
     
     if (initialLoadDone && firstActionTriggered) {
-        speakSlovak(sc.phrase);
         updateAvatarState('level_' + currentScenario);
     }
     
@@ -1729,56 +1725,13 @@ function stopSpeechRecording() {
     wave.classList.add('hidden');
 
     if (isSimulatedSpeech) {
-        // Simulate Azure Pronunciation API response for fallback
         setTimeout(() => {
-            simulateSpeechResult();
+            handleSpeechResult({
+                success: false,
+                error: "Speech not recognized. Please try again."
+            });
         }, 1000);
     }
-}
-
-function simulateSpeechResult() {
-    attemptCount++;
-    const sc = scenarios[currentScenario];
-    
-    let result = {};
-    if (attemptCount % 3 === 1) {
-        // Attempt 1: Low score (< 60)
-        result = {
-            success: true,
-            accuracyScore: 48,
-            pronunciationScore: 48,
-            words: sc.words.map((w, idx) => ({
-                word: w,
-                accuracyScore: idx === 0 ? 90 : 40,
-                errorType: idx === 0 ? "None" : "Mispronunciation"
-            }))
-        };
-    } else if (attemptCount % 3 === 2) {
-        // Attempt 2: Medium score (60-84)
-        result = {
-            success: true,
-            accuracyScore: 75,
-            pronunciationScore: 75,
-            words: sc.words.map((w, idx) => ({
-                word: w,
-                accuracyScore: idx === 0 ? 95 : 65,
-                errorType: idx === 0 ? "None" : "Mispronunciation"
-            }))
-        };
-    } else {
-        // Attempt 3: High score (>= 85)
-        result = {
-            success: true,
-            accuracyScore: 96,
-            pronunciationScore: 96,
-            words: sc.words.map(w => ({
-                word: w,
-                accuracyScore: 95,
-                errorType: "None"
-            }))
-        };
-    }
-    handleSpeechResult(result);
 }
 
 function handleSpeechResult(result) {
@@ -1929,44 +1882,60 @@ function updateAvatarState(state) {
     console.log("Avatar state updated to:", state);
     const video = document.getElementById('heygen-video');
     const fallback = document.getElementById('avatar-fallback');
+    const subtitleEl = document.getElementById('tutor-speech-text');
     if (!video || !fallback) return Promise.resolve(false);
     
     video.setAttribute('data-state', state);
     
-    // Maps avatar states to reaction video names
     let videoFile = '';
+    let subtitleText = '';
+    
     switch(state) {
         case 'thinking':
             videoFile = 'reaction_thinking.mp4';
+            subtitleText = currentLang === 'uk' ? 'Розмірковую...' : 'Размышляю...';
             break;
         case 'success':
             videoFile = 'reaction_praise.mp4';
+            subtitleText = 'Výborne! Veľmi dobre ti to ide!';
             break;
         case 'retry':
             videoFile = 'reaction_soft_correction.mp4';
+            subtitleText = 'Skús to znova, ty to zvládneš!';
             break;
         case 'listening':
             videoFile = 'reaction_listening.mp4';
+            subtitleText = currentLang === 'uk' ? 'Слухаю тебе... говори!' : 'Слушаю тебя... говори!';
             break;
         case 'greeting':
         case 'greet':
             videoFile = 'reaction_greeting.mp4';
+            subtitleText = 'Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!';
             break;
         case 'farewell':
         case 'bye':
             videoFile = 'reaction_goodbye.mp4';
+            subtitleText = 'Dovidenia! Teším sa na budúce!';
             break;
         case 'laugh':
             videoFile = 'reaction_laugh.mp4';
+            subtitleText = 'Hahaha!';
             break;
         case 'surprise':
             videoFile = 'reaction_surprise.mp4';
+            subtitleText = 'Páni! To je super!';
             break;
         case 'idle':
             videoFile = 'reaction_idle.mp4';
+            if (scenarios[currentScenario]) {
+                subtitleText = scenarios[currentScenario].phrase;
+            } else {
+                subtitleText = 'Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!';
+            }
             break;
         case 'achievement':
             videoFile = 'reaction_achievement.mp4';
+            subtitleText = 'Fantastické! Gratulujem!';
             break;
         case 'lesson_intro':
         case 'level_1':
@@ -1977,16 +1946,29 @@ function updateAvatarState(state) {
             const padMonth = String(currentMonth).padStart(2, '0');
             const padWeek = String(currentWeek).padStart(2, '0');
             videoFile = `m${padMonth}_w${padWeek}_${currentTrack}.mp4`;
+            if (scenarios[currentScenario]) {
+                subtitleText = scenarios[currentScenario].phrase;
+            }
             break;
         }
         default:
             videoFile = 'reaction_idle.mp4';
+            subtitleText = 'Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!';
             break;
+    }
+    
+    if (subtitleEl && subtitleText) {
+        subtitleEl.innerHTML = subtitleText;
+    }
+
+    if (state === 'idle') {
+        video.loop = true;
+    } else {
+        video.loop = false;
     }
     
     const absoluteUrl = new URL(VIDEO_BASE_URL + videoFile, window.location.href).href;
     
-    // Play the video stream
     if (video.src !== absoluteUrl) {
         video.src = absoluteUrl;
     }
@@ -1999,19 +1981,36 @@ function updateAvatarState(state) {
             return playPromise.then(() => {
                 return true;
             }).catch(err => {
-                console.warn("Pre-recorded video play failed or not found, falling back to static avatar.", err);
-                video.classList.add('hidden');
-                fallback.classList.remove('hidden');
+                console.warn("Pre-recorded video play failed or not found, falling back to idle or static avatar.", err);
+                if (state !== 'idle') {
+                    video.src = new URL(VIDEO_BASE_URL + 'reaction_idle.mp4', window.location.href).href;
+                    video.loop = true;
+                    video.play().catch(() => {
+                        video.classList.add('hidden');
+                        fallback.classList.remove('hidden');
+                    });
+                } else {
+                    video.classList.add('hidden');
+                    fallback.classList.remove('hidden');
+                }
                 return false;
             });
         } else {
-            // Older browsers or webviews where play() returns undefined
             return Promise.resolve(true);
         }
     } catch (e) {
         console.warn("video.play() synchronous exception caught:", e);
-        video.classList.add('hidden');
-        fallback.classList.remove('hidden');
+        if (state !== 'idle') {
+            video.src = new URL(VIDEO_BASE_URL + 'reaction_idle.mp4', window.location.href).href;
+            video.loop = true;
+            video.play().catch(() => {
+                video.classList.add('hidden');
+                fallback.classList.remove('hidden');
+            });
+        } else {
+            video.classList.add('hidden');
+            fallback.classList.remove('hidden');
+        }
         return Promise.resolve(false);
     }
 }
@@ -3019,10 +3018,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         video.onended = () => {
             const currentState = video.getAttribute('data-state');
             if (currentState === 'greeting' || currentState === 'greet') {
-                video.classList.add('hidden');
-                if (fallback) fallback.classList.remove('hidden');
-                // Trigger demo / trial task after greeting video ends 1 time
                 triggerFirstActionIfNeeded();
+            }
+            if (currentState !== 'idle') {
+                updateAvatarState('idle');
             }
         };
     }
