@@ -517,6 +517,12 @@ body {
     border-color: #a7f3d0;
 }
 
+.phoneme-word.warning {
+    color: #d97706;
+    background: #fef3c7;
+    border-color: #fde68a;
+}
+
 .phoneme-word.incorrect {
     color: var(--danger-color);
     background: #fee2e2;
