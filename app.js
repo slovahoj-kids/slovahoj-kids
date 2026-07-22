@@ -148,12 +148,19 @@ function confirmLessonSelection() {
     }
     dropdownSeqStep = 0;
     
-    const sc = scenarios[currentScenario];
-    if (sc) {
-        updateAvatarState('lesson_intro');
+    // Ensure current scenario is completed and automatically advance to next scenario phrase
+    if (!completedScenarios.includes(currentScenario)) {
+        completedScenarios.push(currentScenario);
+        saveCompletedScenarios();
+    }
+
+    if (currentScenario < 5) {
+        selectScenario(currentScenario + 1);
+    } else {
+        updateScenarioUI();
     }
     
-    const msg = currentLang === 'uk' ? 'Урок розпочато! Успіхів!' : 'Урок начат! Успехов!';
+    const msg = currentLang === 'uk' ? 'Чудово! Переходимо до наступного завдання!' : 'Отлично! Переходим к следующему заданию!';
     appendChatBubble('tutor', msg);
 }
 
