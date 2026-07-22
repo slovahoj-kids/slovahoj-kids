@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=2.7">
+    <link rel="stylesheet" href="style.css?v=3.0">
 </head>
 <body>
 
@@ -74,26 +74,6 @@
                 <!-- Left Column: Avatar & Chat -->
                 <div class="avatar-panel card">
                     <div class="character-selector compact">
-                        <!-- Row 1: Labelled items -->
-                        <div class="selector-item">
-                            <span class="selector-label"><i class="fa-solid fa-graduation-cap"></i> Віковий трек:</span>
-                            <select id="track-select" onchange="selectTrack(this.value)" class="compact-select">
-                                <option value="junior">🟢 Молодший (6-8)</option>
-                                <option value="middle">🟡 Середній (9-11)</option>
-                                <option value="senior">🔵 Старший (12-14)</option>
-                            </select>
-                        </div>
-
-                        <div class="selector-item">
-                            <span class="selector-label"><i class="fa-solid fa-circle-play"></i> Заняття:</span>
-                            <select id="lesson-select" onchange="selectLessonDay(parseInt(this.value))" class="compact-select">
-                                <option value="1">Заняття 1 (День 1)</option>
-                                <option value="2">Заняття 2 (День 2)</option>
-                                <option value="3">Заняття 3 (День 3)</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Row 2: Unlabelled items -->
                         <div class="selector-item">
                             <select id="month-select" onchange="changeMonth(this.value)" class="compact-select">
                                 <option value="1">Місяць 1: Знайомство</option>
@@ -119,6 +99,20 @@
                                 <option value="4">Тиждень 4 (🛡️ Безпека)</option>
                             </select>
                         </div>
+
+                        <div class="selector-item">
+                            <select id="lesson-select" onchange="selectLessonDay(parseInt(this.value))" class="compact-select">
+                                <option value="1">Заняття 1 (День 1)</option>
+                                <option value="2">Заняття 2 (День 2)</option>
+                                <option value="3">Заняття 3 (День 3)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="selector-item selector-confirm-item" style="width: 100%; margin-top: 4px;">
+                            <button id="btn-confirm-lesson" class="btn-confirm-lesson" onclick="confirmLessonSelection()">
+                                <i class="fa-solid fa-circle-check"></i> <span data-i18n="btn_confirm_lesson">Підтвердити</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- WebRTC Stream Video Screen -->
@@ -127,7 +121,11 @@
                             <i class="fa-solid fa-robot"></i> <span data-i18n="ai_assistant_badge">ІІ-Помічник</span>
                         </div>
                         
-                        <div id="avatar-video-container" class="avatar-video-container" onclick="handleUserInteraction()" style="cursor: pointer;">
+                        <div id="avatar-video-container" class="avatar-video-container" onclick="handleUserInteraction()" style="cursor: pointer; position: relative;">
+                            <!-- Ukrainian Click Me Badge -->
+                            <div id="click-me-badge" class="click-me-badge">
+                                <i class="fa-solid fa-hand-pointer"></i> <span data-i18n="click_me">Натисни мене</span>
+                            </div>
                             <!-- Live Avatar Stream -->
                             <video id="heygen-video" class="avatar-video hidden" autoplay playsinline></video>
                             <!-- Static/Interactive Video Mock (Fallback) -->
@@ -273,12 +271,16 @@
                     </div>
                 </div>
 
-                <!-- Card 3: Track Level -->
+                <!-- Card 3: Track Level (Age selector moved here) -->
                 <div class="stat-card card">
                     <div class="stat-icon social-icon"><i class="fa-solid fa-graduation-cap"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-label" data-i18n="stat_track">Віковий трек</span>
-                        <h3 id="stat-track-val">Молодший</h3>
+                    <div class="stat-info" style="width: 100%;">
+                        <span class="stat-label" data-i18n="stat_track_select_label">Віковий трек дитини:</span>
+                        <select id="track-select" onchange="selectTrack(this.value)" class="compact-select" style="margin-top: 5px; width: 100%; font-size: 13.5px; font-weight: 600; padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--primary-color);">
+                            <option value="junior">🟢 Молодший (6-8 років)</option>
+                            <option value="middle">🟡 Середній (9-11 років)</option>
+                            <option value="senior">🔵 Старший (12-14 років)</option>
+                        </select>
                     </div>
                 </div>
 
@@ -759,6 +761,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=2.7"></script>
+    <script src="app.js?v=3.0"></script>
 </body>
 </html>

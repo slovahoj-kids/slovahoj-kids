@@ -38,8 +38,130 @@ let initialLoadDone = false;
 let firstActionTriggered = false;
 let greetingPlayed = false;
 
+// Progress tracking state variables
+let maxUnlockedMonth = parseInt(localStorage.getItem('slovahoj_kids_max_month')) || 1;
+let maxUnlockedWeek = parseInt(localStorage.getItem('slovahoj_kids_max_week')) || 1;
+let maxUnlockedDay = parseInt(localStorage.getItem('slovahoj_kids_max_day')) || 1;
+
+let dropdownSeqStep = 0; // 0: inactive, 1: month blinking, 2: week blinking, 3: day blinking, 4: confirm blinking
+
+function saveProgressState() {
+    localStorage.setItem('slovahoj_kids_max_month', maxUnlockedMonth.toString());
+    localStorage.setItem('slovahoj_kids_max_week', maxUnlockedWeek.toString());
+    localStorage.setItem('slovahoj_kids_max_day', maxUnlockedDay.toString());
+}
+
+function updateDropdownLockState() {
+    const monthSelect = document.getElementById('month-select');
+    const weekSelect = document.getElementById('week-select');
+    const lessonSelect = document.getElementById('lesson-select');
+
+    if (monthSelect) {
+        Array.from(monthSelect.options).forEach(opt => {
+            const m = parseInt(opt.value);
+            const isLocked = m > maxUnlockedMonth;
+            opt.disabled = isLocked;
+            let text = opt.text.replace(/ 🔒/g, '');
+            opt.text = isLocked ? text + ' 🔒' : text;
+        });
+    }
+
+    if (weekSelect) {
+        Array.from(weekSelect.options).forEach(opt => {
+            const w = parseInt(opt.value);
+            let isLocked = false;
+            if (currentMonth > maxUnlockedMonth) {
+                isLocked = true;
+            } else if (currentMonth === maxUnlockedMonth) {
+                isLocked = w > maxUnlockedWeek;
+            }
+            opt.disabled = isLocked;
+            let text = opt.text.replace(/ 🔒/g, '');
+            opt.text = isLocked ? text + ' 🔒' : text;
+        });
+    }
+
+    if (lessonSelect) {
+        Array.from(lessonSelect.options).forEach(opt => {
+            const d = parseInt(opt.value);
+            let isLocked = false;
+            if (currentMonth > maxUnlockedMonth) {
+                isLocked = true;
+            } else if (currentMonth === maxUnlockedMonth) {
+                if (currentWeek > maxUnlockedWeek) {
+                    isLocked = true;
+                } else if (currentWeek === maxUnlockedWeek) {
+                    isLocked = d > maxUnlockedDay;
+                }
+            }
+            opt.disabled = isLocked;
+            let text = opt.text.replace(/ 🔒/g, '');
+            opt.text = isLocked ? text + ' 🔒' : text;
+        });
+    }
+}
+
+function advanceLessonProgress() {
+    if (currentMonth === maxUnlockedMonth && currentWeek === maxUnlockedWeek && currentLessonDay === maxUnlockedDay) {
+        if (maxUnlockedDay < 3) {
+            maxUnlockedDay++;
+        } else {
+            maxUnlockedDay = 1;
+            if (maxUnlockedWeek < 4) {
+                maxUnlockedWeek++;
+            } else {
+                maxUnlockedWeek = 1;
+                if (maxUnlockedMonth < 12) {
+                    maxUnlockedMonth++;
+                }
+            }
+        }
+        saveProgressState();
+    }
+    updateDropdownLockState();
+}
+
+function startDropdownSequence() {
+    dropdownSeqStep = 1;
+    resetDropdownStyles();
+    const monthSelect = document.getElementById('month-select');
+    if (monthSelect) {
+        monthSelect.classList.add('blinking-dropdown');
+    }
+}
+
+function resetDropdownStyles() {
+    ['month-select', 'week-select', 'lesson-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('blinking-dropdown', 'selected-dropdown-green');
+        }
+    });
+    const btn = document.getElementById('btn-confirm-lesson');
+    if (btn) btn.classList.remove('blinking-btn');
+}
+
+function confirmLessonSelection() {
+    const confirmBtn = document.getElementById('btn-confirm-lesson');
+    if (confirmBtn) {
+        confirmBtn.classList.remove('blinking-btn');
+    }
+    dropdownSeqStep = 0;
+    
+    const sc = scenarios[currentScenario];
+    if (sc) {
+        speakSlovak(sc.phrase);
+        updateAvatarState('lesson_intro');
+    }
+    
+    const msg = currentLang === 'uk' ? 'Урок розпочато! Успіхів!' : 'Урок начат! Успехов!';
+    appendChatBubble('tutor', msg);
+}
+
 function playGreetingVideo() {
     greetingPlayed = true;
+    const badge = document.getElementById('click-me-badge');
+    if (badge) badge.classList.add('hidden');
     updateAvatarState('greeting');
 }
 
@@ -53,6 +175,9 @@ function triggerFirstActionIfNeeded() {
 }
 
 function handleUserInteraction() {
+    const badge = document.getElementById('click-me-badge');
+    if (badge) badge.classList.add('hidden');
+
     if (!greetingPlayed) {
         playGreetingVideo();
         return false;
@@ -689,6 +814,9 @@ const translations = {
         plan_free_duration: "/ 7 днів",
         plan_free_total: "Всього: €0 на 7 днів",
         btn_start_trial: "Спробувати безкоштовно",
+        click_me: "Натисни мене",
+        btn_confirm_lesson: "Підтвердити",
+        stat_track_select_label: "Віковий трек дитини:",
         trial_active_title: "Ваш пробний період активний!",
         trial_success_msg: "Вітаємо! Ви успішно активували безкоштовний пробний доступ на 7 днів.",
         plan_premium: "Преміум (Оксана)",
@@ -779,6 +907,9 @@ const translations = {
         plan_free_duration: "/ 7 дней",
         plan_free_total: "Всего: €0 на 7 дней",
         btn_start_trial: "Попробовать бесплатно",
+        click_me: "Нажми меня",
+        btn_confirm_lesson: "Подтвердить",
+        stat_track_select_label: "Возрастной трек ребенка:",
         trial_active_title: "Ваш пробный период активен!",
         trial_success_msg: "Поздравляем! Вы успешно активировали бесплатный пробный доступ на 7 дней.",
         plan_premium: "Премиум (Оксана)",
@@ -1555,8 +1686,9 @@ function handleSpeechResult(result) {
         // Reset tip
         document.getElementById('pronunciation-tip-text').innerHTML = scenarios[currentScenario].tip[currentLang];
 
-        // Unlock current milestone
+        // Unlock current milestone & advance progress
         unlockMilestone(currentScenario);
+        advanceLessonProgress();
 
         // Vocal feedback
         speakSlovak("Výborne! Veľmi dobre.");
@@ -1566,6 +1698,11 @@ function handleSpeechResult(result) {
 
         // Check level progress
         checkLevelProgress();
+
+        // Trigger sequence after trial/demo task
+        if (currentScenario === 1) {
+            startDropdownSequence();
+        }
 
         // New trial access rules hook
         if (!isSubscriptionActive() && !childAuthenticated && currentScenario === 1) {
@@ -2507,6 +2644,9 @@ function selectTrack(track) {
     if (middleBtn) middleBtn.classList.toggle('active', track === 'middle');
     if (seniorBtn) seniorBtn.classList.toggle('active', track === 'senior');
     
+    const trackSelect = document.getElementById('track-select');
+    if (trackSelect) trackSelect.value = track;
+    
     updateScenarioUI();
     updateAvatarState('lesson_intro');
 }
@@ -2514,32 +2654,99 @@ function selectTrack(track) {
 function changeMonth(value) {
     firstActionTriggered = true;
     currentMonth = parseInt(value);
+    
+    if (currentMonth > maxUnlockedMonth) {
+        currentMonth = maxUnlockedMonth;
+        document.getElementById('month-select').value = currentMonth;
+        alert(currentLang === 'uk' ? "Цей місяць заблокований. Пройди попередні уроки!" : "Этот месяц заблокирован. Пройди предыдущие уроки!");
+        return;
+    }
+
+    if (currentMonth === maxUnlockedMonth && currentWeek > maxUnlockedWeek) {
+        currentWeek = maxUnlockedWeek;
+    }
+    if (currentMonth === maxUnlockedMonth && currentWeek === maxUnlockedWeek && currentLessonDay > maxUnlockedDay) {
+        currentLessonDay = maxUnlockedDay;
+    }
+
+    updateDropdownLockState();
     updateScenarioUI();
-    updateAvatarState('lesson_intro');
+
+    const monthSelect = document.getElementById('month-select');
+    const weekSelect = document.getElementById('week-select');
+
+    if (dropdownSeqStep > 0) {
+        if (monthSelect) {
+            monthSelect.classList.remove('blinking-dropdown');
+            monthSelect.classList.add('selected-dropdown-green');
+        }
+        dropdownSeqStep = 2;
+        if (weekSelect) {
+            weekSelect.classList.add('blinking-dropdown');
+        }
+    }
 }
 
 function changeWeek(value) {
     firstActionTriggered = true;
     currentWeek = parseInt(value);
+
+    if (currentMonth === maxUnlockedMonth && currentWeek > maxUnlockedWeek) {
+        currentWeek = maxUnlockedWeek;
+        document.getElementById('week-select').value = currentWeek;
+        alert(currentLang === 'uk' ? "Цей тиждень заблокований. Пройди попередні уроки!" : "Эта неделя заблокирована. Пройди предыдущие уроки!");
+        return;
+    }
+
+    if (currentMonth === maxUnlockedMonth && currentWeek === maxUnlockedWeek && currentLessonDay > maxUnlockedDay) {
+        currentLessonDay = maxUnlockedDay;
+    }
+
+    updateDropdownLockState();
     updateScenarioUI();
-    updateAvatarState('lesson_intro');
+
+    const weekSelect = document.getElementById('week-select');
+    const lessonSelect = document.getElementById('lesson-select');
+
+    if (dropdownSeqStep > 0) {
+        if (weekSelect) {
+            weekSelect.classList.remove('blinking-dropdown');
+            weekSelect.classList.add('selected-dropdown-green');
+        }
+        dropdownSeqStep = 3;
+        if (lessonSelect) {
+            lessonSelect.classList.add('blinking-dropdown');
+        }
+    }
 }
 
 function selectLessonDay(day) {
     firstActionTriggered = true;
-    currentLessonDay = day;
-    
-    // Toggle active state on day lesson buttons
-    const day1Btn = document.getElementById('day-btn-lesson-1');
-    const day2Btn = document.getElementById('day-btn-lesson-2');
-    const day3Btn = document.getElementById('day-btn-lesson-3');
-    
-    if (day1Btn) day1Btn.classList.toggle('active', day === 1);
-    if (day2Btn) day2Btn.classList.toggle('active', day === 2);
-    if (day3Btn) day3Btn.classList.toggle('active', day === 3);
-    
+    currentLessonDay = parseInt(day);
+
+    if (currentMonth === maxUnlockedMonth && currentWeek === maxUnlockedWeek && currentLessonDay > maxUnlockedDay) {
+        currentLessonDay = maxUnlockedDay;
+        document.getElementById('lesson-select').value = currentLessonDay;
+        alert(currentLang === 'uk' ? "Це заняття заблоковане. Пройди попередні уроки!" : "Это занятие заблокировано. Пройди предыдущие уроки!");
+        return;
+    }
+
+    updateDropdownLockState();
     updateScenarioUI();
-    updateAvatarState('lesson_intro');
+
+    const lessonSelect = document.getElementById('lesson-select');
+    const confirmBtn = document.getElementById('btn-confirm-lesson');
+
+    if (dropdownSeqStep > 0) {
+        if (lessonSelect) {
+            lessonSelect.classList.remove('blinking-dropdown');
+            lessonSelect.classList.add('selected-dropdown-green');
+        }
+        dropdownSeqStep = 4;
+        if (confirmBtn) {
+            confirmBtn.classList.add('blinking-btn');
+        }
+    }
 }
 
 function exportGDPRData() {
@@ -2633,6 +2840,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (currentState === 'greeting' || currentState === 'greet') {
                 video.classList.add('hidden');
                 if (fallback) fallback.classList.remove('hidden');
+                // Trigger demo / trial task after greeting video ends 1 time
+                triggerFirstActionIfNeeded();
             }
         };
     }
@@ -2647,15 +2856,17 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Set initialLoadDone to true now that static rendering is done
     initialLoadDone = true;
     
-    // Initial avatar greeting video play (shows greeting instead of lesson)
-    const greetPromise = updateAvatarState('greeting');
-    if (greetPromise && typeof greetPromise.then === 'function') {
-        greetPromise.then(played => {
-            greetingPlayed = played;
-        });
-    } else {
-        greetingPlayed = true;
-    }
+    // Auto-propose lesson according to progress on each visit
+    currentMonth = maxUnlockedMonth;
+    currentWeek = maxUnlockedWeek;
+    currentLessonDay = maxUnlockedDay;
+    updateDropdownLockState();
+
+    // Reset badge state on load so click-me is visible
+    greetingPlayed = false;
+    firstActionTriggered = false;
+    const clickBadge = document.getElementById('click-me-badge');
+    if (clickBadge) clickBadge.classList.remove('hidden');
     
     // Start parent schedule verification checker (runs every 30 seconds)
     setInterval(checkLessonSchedule, 30000);
