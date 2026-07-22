@@ -288,7 +288,7 @@ const curriculumCatalog = {
                     }
                 },
                 scenarios: [
-                    { id: 1, title_icon: "🛝", title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
+                    { id: 1, title_icon: "🎈", title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
                     { id: 2, title_icon: "🐱", title: { uk: "Побачив сусідського кота і привітався жартома", ru: "Увидел соседского кота и поздоровался в шутку" } },
                     { id: 3, title_icon: "🏫", title: { uk: "Зайшов до класу вранці", ru: "Вошел в класс утром" } },
                     { id: 4, title_icon: "👩‍🏫", title: { uk: "Зустрів вчительку в коридорі", ru: "Встретил учительницу в коридоре" } },
@@ -1284,12 +1284,29 @@ function updateScenarioButtonsContent() {
         if (!btn) continue;
         
         const sc = data.scenarios[i - 1];
+        const isLocked = i !== 1 && !completedScenarios.includes(i - 1);
+
         if (currentTrack === 'junior') {
-            btn.innerHTML = sc && sc.title_icon ? sc.title_icon : i;
+            let iconHtml = sc && sc.title_icon ? sc.title_icon : i;
+            if (iconHtml === "🛝" || !iconHtml || iconHtml === "1") {
+                iconHtml = '<i class="fa-solid fa-child-reaching"></i>';
+            }
+            if (isLocked) {
+                btn.innerHTML = `${iconHtml}<i class="fa-solid fa-lock scenario-lock-badge"></i>`;
+            } else {
+                btn.innerHTML = iconHtml;
+            }
             btn.style.fontSize = '20px';
         } else {
-            btn.innerHTML = i;
+            btn.innerHTML = isLocked ? `${i}<i class="fa-solid fa-lock scenario-lock-badge"></i>` : i;
             btn.style.fontSize = '16px';
+        }
+
+        btn.classList.toggle('disabled', isLocked);
+        if (isLocked) {
+            btn.title = currentLang === 'uk' ? 'Сценарій заблоковано. Пройди попередній!' : 'Сценарий заблокирован. Пройди предыдущий!';
+        } else {
+            btn.title = sc ? sc.title[currentLang] : '';
         }
     }
 }

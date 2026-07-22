@@ -417,10 +417,14 @@ body {
 
 /* Chat bubble dialogue block */
 .dialogue-chat {
-    margin-top: 15px;
-    max-height: 150px;
+    margin-top: 20px;
+    min-height: 380px;
+    max-height: 540px;
     overflow-y: auto;
-    padding-right: 5px;
+    padding-right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .bubble {
@@ -1837,21 +1841,44 @@ body {
 }
 
 .scenario-badge:hover, .scenario-btn:hover {
-    background: rgba(255, 255, 255, 0.9);
+    background: #ffffff;
+    border-color: var(--primary-color);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .scenario-badge.active, .scenario-btn.active {
     background: var(--primary-color);
-    color: var(--text-light);
+    color: #ffffff;
     border-color: var(--primary-color);
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
 }
 
 .scenario-badge.disabled, .scenario-btn.disabled, .scenario-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.55;
     cursor: not-allowed;
-    background: rgba(0, 0, 0, 0.05);
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #94a3b8;
     transform: none;
+    box-shadow: none;
+}
+
+.scenario-lock-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 10px;
+    background: #ef4444;
+    color: #ffffff;
+    border-radius: 50%;
+    width: 17px;
+    height: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+    z-index: 5;
 }
 
 /* Constrain video to parent container to prevent mobile overflows */
@@ -1915,6 +1942,11 @@ body {
     
     .avatar-screen-wrapper {
         aspect-ratio: 16 / 11; /* ratio for small screens */
+    }
+
+    .dialogue-chat {
+        min-height: 220px;
+        max-height: 340px;
     }
 
     /* Prevent mobile input zooming on focus */
