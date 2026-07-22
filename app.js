@@ -1414,12 +1414,10 @@ function checkLevelProgress() {
         currentLevel = targetLevel;
         updateCharacterLevelImage();
         
-        setTimeout(() => {
-            const msg = currentLang === 'uk' 
-                ? `Вітаємо! Твій наставник виріс до рівня ${currentLevel}!` 
-                : `Поздравляем! Твой наставник вырос до уровня ${currentLevel}!`;
-            alert(msg);
-        }, 1500);
+        const msg = currentLang === 'uk' 
+            ? `🎉 Вітаємо! Твій наставник виріс до рівня ${currentLevel}!` 
+            : `🎉 Поздравляем! Твой наставник вырос до уровня ${currentLevel}!`;
+        appendChatBubble('tutor', msg);
     }
 }
 
