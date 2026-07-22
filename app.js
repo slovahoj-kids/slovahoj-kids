@@ -1460,6 +1460,7 @@ function removeTypingIndicator(element) {
 // 6. Voice Recording & Pronunciation Evaluation
 let recognizer = null;
 let activeBrowserRecognition = null;
+let currentSpeechSessionId = 0;
 
 function calculateLevenshtein(a, b) {
     if (a.length === 0) return b.length;
@@ -1589,7 +1590,7 @@ function evaluateSpokenPhrase(spokenText, targetPhrase) {
     };
 }
 
-function startBrowserSpeechRecognition(targetPhrase, callback) {
+function startBrowserSpeechRecognition(targetPhrase, sessionId, callback) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
         return false;
@@ -1597,7 +1598,13 @@ function startBrowserSpeechRecognition(targetPhrase, callback) {
 
     try {
         if (activeBrowserRecognition) {
-            try { activeBrowserRecognition.abort(); } catch(e){}
+            try {
+                activeBrowserRecognition.onresult = null;
+                activeBrowserRecognition.onerror = null;
+                activeBrowserRecognition.onend = null;
+                activeBrowserRecognition.abort();
+            } catch(e){}
+            activeBrowserRecognition = null;
         }
 
         const recognition = new SpeechRecognition();
@@ -1606,19 +1613,26 @@ function startBrowserSpeechRecognition(targetPhrase, callback) {
         recognition.maxAlternatives = 1;
 
         recognition.onresult = (event) => {
+            if (sessionId !== currentSpeechSessionId) {
+                console.warn(`[Session ${sessionId}] Ignored stale speech result (active session is ${currentSpeechSessionId})`);
+                return;
+            }
             const transcript = event.results && event.results[0] && event.results[0][0] ? event.results[0][0].transcript.trim() : '';
-            console.log("Web Speech Recognition Result:", transcript);
+            console.log(`[Session ${sessionId}] Web Speech Recognition Result: "${transcript}"`);
             const evalResult = evaluateSpokenPhrase(transcript, targetPhrase);
             callback(evalResult);
         };
 
         recognition.onerror = (event) => {
-            console.warn("Web Speech Recognition Error:", event.error);
+            if (sessionId !== currentSpeechSessionId) return;
+            console.warn(`[Session ${sessionId}] Web Speech Recognition Error:`, event.error);
             callback({ success: false, error: event.error });
         };
 
         recognition.onend = () => {
-            activeBrowserRecognition = null;
+            if (activeBrowserRecognition === recognition) {
+                activeBrowserRecognition = null;
+            }
         };
 
         activeBrowserRecognition = recognition;
@@ -1630,10 +1644,10 @@ function startBrowserSpeechRecognition(targetPhrase, callback) {
     }
 }
 
-async function runAzurePronunciationAssessment(targetPhrase, callback) {
+async function runAzurePronunciationAssessment(targetPhrase, sessionId, callback) {
     const keys = await loadEnv();
     if (!keys || !keys.AZURE_SPEECH_KEY || !keys.AZURE_SPEECH_REGION) {
-        console.warn("Azure Speech credentials missing. Falling back to simulation.");
+        console.warn("Azure Speech credentials missing. Falling back to Browser WebSpeech.");
         return false;
     }
 
@@ -1641,10 +1655,8 @@ async function runAzurePronunciationAssessment(targetPhrase, callback) {
         const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(keys.AZURE_SPEECH_KEY, keys.AZURE_SPEECH_REGION);
         speechConfig.speechRecognitionLanguage = "sk-SK";
 
-        // Setup audio config using microphone stream
         const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
 
-        // Create Pronunciation Assessment configuration
         const pronConfig = new SpeechSDK.PronunciationAssessmentConfig(
             targetPhrase,
             SpeechSDK.PronunciationAssessmentGradingSystem.HundredMark,
@@ -1657,6 +1669,14 @@ async function runAzurePronunciationAssessment(targetPhrase, callback) {
 
         recognizer.recognizeOnceAsync(
             result => {
+                if (sessionId !== currentSpeechSessionId) {
+                    console.warn(`[Session ${sessionId}] Ignored stale Azure result (active session is ${currentSpeechSessionId})`);
+                    if (recognizer) {
+                        try { recognizer.close(); } catch(e){}
+                        recognizer = null;
+                    }
+                    return;
+                }
                 if (recognizer) {
                     recognizer.close();
                     recognizer = null;
@@ -1683,8 +1703,9 @@ async function runAzurePronunciationAssessment(targetPhrase, callback) {
                 }
             },
             err => {
+                if (sessionId !== currentSpeechSessionId) return;
                 if (recognizer) {
-                    recognizer.close();
+                    try { recognizer.close(); } catch(e){}
                     recognizer = null;
                 }
                 console.error("Azure Speech Recognition Error:", err);
@@ -1708,6 +1729,13 @@ async function toggleSpeechRecording() {
     const wave = document.getElementById('recording-wave');
 
     if (!isRecording) {
+        // Increment session ID to cancel any pending previous recognition callbacks
+        currentSpeechSessionId++;
+        const sessionId = currentSpeechSessionId;
+
+        // Hide previous feedback card
+        document.getElementById('speech-feedback-card').classList.add('hidden');
+
         // Start Recording State
         isRecording = true;
         recordBtn.classList.add('recording');
@@ -1718,22 +1746,28 @@ async function toggleSpeechRecording() {
         const targetPhrase = scenarios[currentScenario].phrase;
         
         // 1. Attempt real Azure speech assessment
-        const startedAzure = await runAzurePronunciationAssessment(targetPhrase, (result) => {
-            isSimulatedSpeech = false;
-            handleSpeechResult(result);
+        const startedAzure = await runAzurePronunciationAssessment(targetPhrase, sessionId, (result) => {
+            if (sessionId === currentSpeechSessionId) {
+                isSimulatedSpeech = false;
+                handleSpeechResult(result);
+            }
         });
 
         // 2. Fallback to Browser Web Speech API (real microphone voice evaluation)
         if (!startedAzure) {
-            const startedWebSpeech = startBrowserSpeechRecognition(targetPhrase, (result) => {
-                isSimulatedSpeech = false;
-                handleSpeechResult(result);
+            const startedWebSpeech = startBrowserSpeechRecognition(targetPhrase, sessionId, (result) => {
+                if (sessionId === currentSpeechSessionId) {
+                    isSimulatedSpeech = false;
+                    handleSpeechResult(result);
+                }
             });
 
             if (!startedWebSpeech) {
                 isSimulatedSpeech = true;
                 recordTimer = setTimeout(() => {
-                    stopSpeechRecording();
+                    if (sessionId === currentSpeechSessionId) {
+                        stopSpeechRecording();
+                    }
                 }, 3000);
             } else {
                 isSimulatedSpeech = false;
@@ -1742,13 +1776,18 @@ async function toggleSpeechRecording() {
             isSimulatedSpeech = false;
         }
     } else {
-        // Force Stop
+        // Force Stop current recording
         if (recognizer) {
             try { recognizer.close(); } catch (e) {}
             recognizer = null;
         }
         if (activeBrowserRecognition) {
-            try { activeBrowserRecognition.stop(); } catch (e) {}
+            try {
+                activeBrowserRecognition.onresult = null;
+                activeBrowserRecognition.onerror = null;
+                activeBrowserRecognition.onend = null;
+                activeBrowserRecognition.abort();
+            } catch (e) {}
             activeBrowserRecognition = null;
         }
         if (recordTimer) {
