@@ -789,7 +789,6 @@ const translations = {
         btn_delete_profile: "Видалити профіль дитини",
         footer_legal_text: "Усі права захищені. Платформа відповідає нормам GDPR-K та EU AI Act по роботі з дітьми.",
         chart_days: ["Пн", "Вв", "Ср", "Чт", "Пт", "Сб", "Нд"],
-
         parent_gate_title: "Доступ лише для батьків",
         parent_gate_sub: "Будь ласка, введіть ваш батьківський ПІН-код.",
         parent_gate_error_msg: "Неправильний ПІН-код, спробуйте ще раз.",
@@ -2177,16 +2176,7 @@ function initParentChart() {
         }
     });
 }
- function closePremiumLockModal() {
-    document.getElementById('premium-lock-modal').classList.add('hidden');
-}
 
-function upgradeToPremiumFromModal() {
-    document.getElementById('premium-lock-modal').classList.add('hidden');
-    // Open payment modal for Premium
-    const planName = currentLang === 'uk' ? 'Преміум (Оксана)' : 'Премиум (Оксана)';
-    openPaymentModal(50, planName);
-}
 
 function formatCardNumber(input) {
     let value = input.value.replace(/\D/g, '');
@@ -2270,33 +2260,41 @@ function processPayment() {
 }
 
 function startFreeTrial() {
-    const message = currentLang === 'uk'
-        ? 'Вітаємо! Ви успішно активували безкоштовний пробний доступ на 7 днів.'
-        : 'Поздравляем! Вы успешно активировали бесплатный пробный доступ на 7 дней.';
-        
-    alert(message);
-    
-    // Set trial state (Preserves child's progress!)
+    // Set 7-day trial state
     subscriptionStart = Date.now();
     subscriptionEnd = subscriptionStart + (7 * 24 * 60 * 60 * 1000);
     subscriptionType = 'trial';
     saveSubState();
     
-    // Clean lock screens
-    document.getElementById('sub-expired-lock-modal').classList.add('hidden');
-    document.getElementById('parent-expiry-modal').classList.add('hidden');
+    // Clean any open lock screens
+    const lockModal = document.getElementById('sub-expired-lock-modal');
+    if (lockModal) lockModal.classList.add('hidden');
+    const parentExpModal = document.getElementById('parent-expiry-modal');
+    if (parentExpModal) parentExpModal.classList.add('hidden');
+
+    // Update UI components
+    updateAuthHeaderUI();
+    renderScenarioSelector();
  
-    // Activate subscription banner as trial active
+    // Activate subscription status banner in Parent Cabinet
     const banner = document.getElementById('subscription-status-banner');
-    banner.querySelector('.sub-title').setAttribute('data-i18n', 'trial_active_title');
-    banner.querySelector('.sub-title').innerText = currentLang === 'uk' ? 'Ваш пробний період активний!' : 'Ваш пробный период активен!';
-    
-    const expDate = new Date(subscriptionEnd);
-    const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
-    banner.querySelector('.sub-details').innerText = currentLang === 'uk'
-        ? `Пробний період дійсний до ${expString}.`
-        : `Пробный период действителен до ${expString}.`;
-    banner.classList.remove('hidden');
+    if (banner) {
+        const titleEl = banner.querySelector('.sub-title');
+        if (titleEl) {
+            titleEl.setAttribute('data-i18n', 'trial_active_title');
+            titleEl.innerText = currentLang === 'uk' ? 'Ваш пробний 7-денний період активний! 🎁' : 'Ваш пробный 7-дневный период активен! 🎁';
+        }
+        
+        const detailsEl = banner.querySelector('.sub-details');
+        if (detailsEl) {
+            const expDate = new Date(subscriptionEnd);
+            const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
+            detailsEl.innerText = currentLang === 'uk'
+                ? `Пробний доступ активовано. Дійсний до ${expString}. Всі 60 сценаріїв та уроки словацької відкрито!`
+                : `Пробный доступ активирован. Действителен до ${expString}. Все 60 сценариев и уроки словацкого открыты!`;
+        }
+        banner.classList.remove('hidden');
+    }
 }
  
 // Init App (Defined at the end of the file)

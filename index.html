@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=4.4">
+    <link rel="stylesheet" href="style.css?v=4.5">
 </head>
 <body>
 
@@ -368,79 +368,45 @@
                         </div>
                         <div class="plan-total" data-i18n="plan_free_total">Всього: €0 на 7 днів</div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (відео уроки словацької)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
                         </ul>
                         <button class="btn-plan-select" onclick="startFreeTrial()" data-i18n="btn_start_trial">Спробувати безкоштовно</button>
                     </div>
 
-                    <!-- Plan 1: 1 Month -->
+                    <!-- Plan 1: 1 Month (€15) -->
                     <div class="plan-card">
                         <div class="plan-badge" data-i18n="plan_popular_1" style="visibility: hidden;">Популярний</div>
                         <h4 class="plan-name" data-i18n="plan_1_month">1 місяць</h4>
                         <div class="plan-price">
-                            <span class="price-currency">€</span><span class="price-value">10</span>
+                            <span class="price-currency">€</span><span class="price-value">15</span>
                             <span class="price-period" data-i18n="plan_period_month">/ міс</span>
                         </div>
-                        <div class="plan-total" style="visibility: hidden;">&nbsp;</div>
+                        <div class="plan-total" data-i18n="plan_1_total">Всього: €15 на місяць</div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (відео уроки словацької)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
                         </ul>
-                        <button class="btn-plan-select" onclick="openPaymentModal(10, '1 місяць')" data-i18n="btn_choose_plan">Обрати тариф</button>
+                        <button class="btn-plan-select" onclick="openPaymentModal(15, '1 місяць')" data-i18n="btn_choose_plan">Обрати тариф</button>
                     </div>
 
-                    <!-- Plan 2: 3 Months -->
+                    <!-- Plan 2: 3 Months (€35) -->
                     <div class="plan-card featured">
                         <div class="plan-badge" data-i18n="plan_popular">Популярний</div>
                         <h4 class="plan-name" data-i18n="plan_3_months">3 місяці</h4>
                         <div class="plan-price">
-                            <span class="price-currency">€</span><span class="price-value">8</span>
-                            <span class="price-period" data-i18n="plan_period_month">/ міс</span>
+                            <span class="price-currency">€</span><span class="price-value">35</span>
+                            <span class="price-period" data-i18n="plan_period_month">/ 3 міс</span>
                         </div>
-                        <div class="plan-total" data-i18n="plan_3_total">Всього: €24</div>
+                        <div class="plan-total" data-i18n="plan_3_total">Всього: €35 на 3 місяці</div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
+                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (відео уроки словацької)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
                             <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
                         </ul>
-                        <button class="btn-plan-select" onclick="openPaymentModal(24, '3 місяці')" data-i18n="btn_choose_plan">Обрати тариф</button>
-                    </div>
-
-                    <!-- Plan 3: 6 Months -->
-                    <div class="plan-card">
-                        <div class="plan-badge" data-i18n="plan_popular_2" style="visibility: hidden;">Популярний</div>
-                        <h4 class="plan-name" data-i18n="plan_6_months">6 місяців</h4>
-                        <div class="plan-price">
-                            <span class="price-currency">€</span><span class="price-value">5</span>
-                            <span class="price-period" data-i18n="plan_period_month">/ міс</span>
-                        </div>
-                        <div class="plan-total" data-i18n="plan_6_total">Всього: €30</div>
-                        <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_1">Оксана (пре-рекордед відео уроки)</span></li>
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_2">Аналіз вимови (Speech API)</span></li>
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_3">Батьківський контроль та планувальник</span></li>
-                        </ul>
-                        <button class="btn-plan-select" onclick="openPaymentModal(30, '6 місяців')" data-i18n="btn_choose_plan">Обрати тариф</button>
-                    </div>
-
-                    <!-- Plan 4: Premium -->
-                    <div class="plan-card featured-premium">
-                        <div class="plan-badge" data-i18n="plan_premium_badge">Преміум-ІІ</div>
-                        <h4 class="plan-name" data-i18n="plan_premium">Преміум (Оксана)</h4>
-                        <div class="plan-price">
-                            <span class="price-currency">€</span><span class="price-value">50</span>
-                            <span class="price-period" data-i18n="plan_period_month">/ міс</span>
-                        </div>
-                        <div class="plan-total" data-i18n="plan_premium_total">Всього: €50 на місяць</div>
-                        <ul class="plan-features">
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_1">Повна програма навчання (12 місяців)</span></li>
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_2">Персональний ІІ-наставник Оксана</span></li>
-                            <li><i class="fa-solid fa-circle-check"></i> <span data-i18n="feature_premium_3">Безлімітний розмовний тренажер</span></li>
-                        </ul>
-                        <button class="btn-plan-select btn-premium" onclick="openPaymentModal(50, 'Преміум (Оксана)')" data-i18n="btn_choose_plan">Обрати тариф</button>
+                        <button class="btn-plan-select" onclick="openPaymentModal(35, '3 місяці')" data-i18n="btn_choose_plan">Обрати тариф</button>
                     </div>
                 </div>
 
@@ -684,21 +650,7 @@
         </div>
     </div>
 
-    <!-- Premium Subscription Lock Modal -->
-    <div id="premium-lock-modal" class="modal-overlay hidden">
-        <div class="modal-card premium-lock-card">
-            <button class="modal-close-btn" onclick="closePremiumLockModal()">&times;</button>
-            <div class="modal-header">
-                <div class="modal-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fa-solid fa-gem"></i></div>
-                <h3 data-i18n="premium_lock_title">Потрібен Преміум-тариф</h3>
-                <p data-i18n="premium_lock_sub">Для спілкування з людьми-наставниками (Оксана, Тарас, Дідусь) в реальному часі потрібен Преміум-тариф. У вашому поточному пакеті доступні всі 4 тварини-маскоти без обмежень!</p>
-            </div>
-            <div class="modal-footer" style="flex-direction: column; gap: 10px; width: 100%;">
-                <button class="btn-modal-primary btn-premium" onclick="upgradeToPremiumFromModal()" style="width: 100%; background: linear-gradient(135deg, #8b5cf6, #d946ef); color: #fff; border: none;" data-i18n="btn_upgrade_premium">Перейти на Преміум (€50/міс)</button>
-                <button class="btn-modal-secondary" onclick="closePremiumLockModal()" style="width: 100%; background: #e2e8f0; color: var(--text-dark); border: none;" data-i18n="btn_continue_standard">Продовжити з тваринами</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Payment Modal (Stripe Simulator) -->
     <div id="payment-modal" class="modal-overlay hidden">
@@ -767,6 +719,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=4.4"></script>
+    <script src="app.js?v=4.5"></script>
 </body>
 </html>
