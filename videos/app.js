@@ -150,7 +150,6 @@ function confirmLessonSelection() {
     
     const sc = scenarios[currentScenario];
     if (sc) {
-        speakSlovak(sc.phrase);
         updateAvatarState('lesson_intro');
     }
     
@@ -168,8 +167,6 @@ function playGreetingVideo() {
 function triggerFirstActionIfNeeded() {
     if (!firstActionTriggered) {
         firstActionTriggered = true;
-        const sc = scenarios[currentScenario];
-        speakSlovak(sc.phrase);
         updateAvatarState('level_' + currentScenario);
     }
 }
@@ -1261,7 +1258,6 @@ function updateScenarioUI() {
     document.getElementById('speech-feedback-card').classList.add('hidden');
     
     if (initialLoadDone && firstActionTriggered) {
-        speakSlovak(sc.phrase);
         updateAvatarState('level_' + currentScenario);
     }
     
@@ -1457,6 +1453,135 @@ function removeTypingIndicator(element) {
 
 // 6. Voice Recording & Pronunciation Evaluation
 let recognizer = null;
+let activeBrowserRecognition = null;
+
+function calculateLevenshtein(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    const matrix = [];
+    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                );
+            }
+        }
+    }
+    return matrix[b.length][a.length];
+}
+
+function evaluateSpokenPhrase(spokenText, targetPhrase) {
+    if (!spokenText) {
+        return { success: false, error: "No speech heard" };
+    }
+    
+    const cleanSpokenWords = spokenText.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").split(/\s+/).filter(Boolean);
+    const originalTargetWords = targetPhrase.split(/\s+/).filter(Boolean);
+
+    let matchedCount = 0;
+    const wordResults = originalTargetWords.map((origWord) => {
+        const cleanTargetWord = origWord.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "");
+        
+        const exactIdx = cleanSpokenWords.findIndex(spk => spk === cleanTargetWord);
+        if (exactIdx !== -1) {
+            matchedCount += 1.0;
+            return {
+                word: origWord,
+                accuracyScore: 95,
+                errorType: "None"
+            };
+        }
+
+        const fuzzyIdx = cleanSpokenWords.findIndex(spk => {
+            if (cleanTargetWord.length >= 3 && calculateLevenshtein(spk, cleanTargetWord) <= 1) return true;
+            return false;
+        });
+
+        if (fuzzyIdx !== -1) {
+            matchedCount += 0.8;
+            return {
+                word: origWord,
+                accuracyScore: 72,
+                errorType: "Mispronunciation"
+            };
+        }
+
+        const partialIdx = cleanSpokenWords.findIndex(spk => spk.includes(cleanTargetWord) || cleanTargetWord.includes(spk));
+        if (partialIdx !== -1) {
+            matchedCount += 0.6;
+            return {
+                word: origWord,
+                accuracyScore: 65,
+                errorType: "Mispronunciation"
+            };
+        }
+
+        return {
+            word: origWord,
+            accuracyScore: 40,
+            errorType: "Mispronunciation"
+        };
+    });
+
+    let overallScore = Math.round((matchedCount / originalTargetWords.length) * 100);
+    overallScore = Math.max(0, Math.min(100, overallScore));
+
+    return {
+        success: true,
+        accuracyScore: overallScore,
+        pronunciationScore: overallScore,
+        spokenText: spokenText,
+        words: wordResults
+    };
+}
+
+function startBrowserSpeechRecognition(targetPhrase, callback) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        return false;
+    }
+
+    try {
+        if (activeBrowserRecognition) {
+            try { activeBrowserRecognition.abort(); } catch(e){}
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'sk-SK';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+            const transcript = event.results && event.results[0] && event.results[0][0] ? event.results[0][0].transcript.trim() : '';
+            console.log("Web Speech Recognition Result:", transcript);
+            const evalResult = evaluateSpokenPhrase(transcript, targetPhrase);
+            callback(evalResult);
+        };
+
+        recognition.onerror = (event) => {
+            console.warn("Web Speech Recognition Error:", event.error);
+            callback({ success: false, error: event.error });
+        };
+
+        recognition.onend = () => {
+            activeBrowserRecognition = null;
+        };
+
+        activeBrowserRecognition = recognition;
+        recognition.start();
+        return true;
+    } catch (e) {
+        console.error("Failed to initialize Web Speech Recognition:", e);
+        return false;
+    }
+}
 
 async function runAzurePronunciationAssessment(targetPhrase, callback) {
     const keys = await loadEnv();
@@ -1545,28 +1670,39 @@ async function toggleSpeechRecording() {
         
         const targetPhrase = scenarios[currentScenario].phrase;
         
-        // Attempt real Azure speech assessment
-        const startedReal = await runAzurePronunciationAssessment(targetPhrase, (result) => {
+        // 1. Attempt real Azure speech assessment
+        const startedAzure = await runAzurePronunciationAssessment(targetPhrase, (result) => {
             isSimulatedSpeech = false;
             handleSpeechResult(result);
         });
 
-        if (!startedReal) {
-            isSimulatedSpeech = true;
-            // Mock recording timer (Azure Speech API call takes 3 seconds)
-            recordTimer = setTimeout(() => {
-                stopSpeechRecording();
-            }, 3000);
+        // 2. Fallback to Browser Web Speech API (real microphone voice evaluation)
+        if (!startedAzure) {
+            const startedWebSpeech = startBrowserSpeechRecognition(targetPhrase, (result) => {
+                isSimulatedSpeech = false;
+                handleSpeechResult(result);
+            });
+
+            if (!startedWebSpeech) {
+                isSimulatedSpeech = true;
+                recordTimer = setTimeout(() => {
+                    stopSpeechRecording();
+                }, 3000);
+            } else {
+                isSimulatedSpeech = false;
+            }
         } else {
             isSimulatedSpeech = false;
         }
     } else {
         // Force Stop
         if (recognizer) {
-            try {
-                recognizer.close();
-            } catch (e) {}
+            try { recognizer.close(); } catch (e) {}
             recognizer = null;
+        }
+        if (activeBrowserRecognition) {
+            try { activeBrowserRecognition.stop(); } catch (e) {}
+            activeBrowserRecognition = null;
         }
         if (recordTimer) {
             clearTimeout(recordTimer);
@@ -1589,48 +1725,13 @@ function stopSpeechRecording() {
     wave.classList.add('hidden');
 
     if (isSimulatedSpeech) {
-        // Simulate Azure Pronunciation API response for fallback
         setTimeout(() => {
-            simulateSpeechResult();
+            handleSpeechResult({
+                success: false,
+                error: "Speech not recognized. Please try again."
+            });
         }, 1000);
     }
-}
-
-function simulateSpeechResult() {
-    attemptCount++;
-    const sc = scenarios[currentScenario];
-    
-    let result = {};
-    if (attemptCount === 1) {
-        // Simulation: First attempt is a retry with a specific word error
-        result = {
-            success: true,
-            accuracyScore: 78,
-            pronunciationScore: 78,
-            words: sc.words.map(w => {
-                const clean = w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"");
-                const isError = (clean.toLowerCase() === sc.audioCorrection.toLowerCase());
-                return {
-                    word: w,
-                    accuracyScore: isError ? 45 : 95,
-                    errorType: isError ? "Mispronunciation" : "None"
-                };
-            })
-        };
-    } else {
-        // Success attempt
-        result = {
-            success: true,
-            accuracyScore: 96,
-            pronunciationScore: 96,
-            words: sc.words.map(w => ({
-                word: w,
-                accuracyScore: 95,
-                errorType: "None"
-            }))
-        };
-    }
-    handleSpeechResult(result);
 }
 
 function handleSpeechResult(result) {
@@ -1641,7 +1742,7 @@ function handleSpeechResult(result) {
     const phonemeContainer = document.getElementById('phrase-phoneme-container');
     const statusText = document.getElementById('record-status-text');
 
-    // Reset recording UI just in case
+    // Reset recording UI state
     isRecording = false;
     document.getElementById('btn-record-speech').classList.remove('recording');
     document.getElementById('record-icon').className = 'fa-solid fa-microphone';
@@ -1655,6 +1756,7 @@ function handleSpeechResult(result) {
         headline.innerHTML = currentLang === 'uk' ? 'Спробуй ще раз' : 'Попробуй еще раз';
         headline.className = 'retry-text';
         subtext.innerHTML = currentLang === 'uk' ? 'Не вдалося розпізнати мову. Перевір мікрофон.' : 'Не удалось распознать речь. Проверь микрофон.';
+        updateAvatarState('retry');
         return;
     }
 
@@ -1673,58 +1775,89 @@ function handleSpeechResult(result) {
         phonemeContainer.appendChild(span);
     });
 
-    const score = Math.round(result.pronunciationScore || result.accuracyScore);
+    const score = Math.round(result.pronunciationScore || result.accuracyScore || 0);
     scoreVal.innerHTML = `${score}%`;
 
-    const minScoreToPass = 85;
-    if (score >= minScoreToPass) {
-        // Success
-        headline.innerHTML = translations[currentLang].feedback_success;
+    // 3 Tiers according to Developer Technical Specification Section 5:
+    if (score >= 85) {
+        // TIER 1: Score >= 85 (High quality -> reaction_praise.mp4)
+        headline.innerHTML = currentLang === 'uk' ? 'Чудово! Відмінна вимова!' : 'Отлично! Прекрасное произношение!';
         headline.className = 'success-text';
         subtext.innerHTML = translations[currentLang].feedback_subtext_success;
 
-        // Reset tip
         document.getElementById('pronunciation-tip-text').innerHTML = scenarios[currentScenario].tip[currentLang];
 
-        // Unlock current milestone & advance progress
         unlockMilestone(currentScenario);
         advanceLessonProgress();
 
-        // Vocal feedback
-        speakSlovak("Výborne! Veľmi dobre.");
-        updateAvatarState('success');
-        
+        // Play Avatar video reaction (reaction_praise.mp4 contains Oksana's voice, NO synthetic TTS!)
+        const videoPlayedPromise = updateAvatarState('success');
+        if (videoPlayedPromise && typeof videoPlayedPromise.then === 'function') {
+            videoPlayedPromise.then(played => {
+                if (!played) {
+                    // Fallback to TTS only if video failed to play
+                    speakSlovak("Výborne! Veľmi dobre.");
+                }
+            });
+        }
+
         appendChatBubble('tutor', `Výborne! Veľmi dobre. (${currentLang === 'uk' ? 'Чудово! Дуже добре.' : 'Отлично! Очень хорошо.'})`);
 
-        // Check level progress
         checkLevelProgress();
 
-        // Trigger sequence after trial/demo task
         if (currentScenario === 1) {
             startDropdownSequence();
         }
 
-        // New trial access rules hook
         if (!isSubscriptionActive() && !childAuthenticated && currentScenario === 1) {
             tutorTrialPassed[currentCharacter] = true;
             saveTutorTrials();
-            
             setTimeout(() => {
                 showPostTrialModal();
             }, 1800);
         }
-    } else {
-        // Retry
-        headline.innerHTML = translations[currentLang].feedback_retry;
-        headline.className = 'retry-text';
-        subtext.innerHTML = translations[currentLang].feedback_subtext_retry;
+    } else if (score >= 60) {
+        // TIER 2: Score 60-84 (Medium quality -> reaction_soft_correction.mp4)
+        headline.innerHTML = currentLang === 'uk' ? 'Майже вийшло!' : 'Почти получилось!';
+        headline.className = 'warning-text';
+        subtext.innerHTML = currentLang === 'uk' 
+            ? 'Майже, спробуй ще раз! Зверни увагу на виділені помаранчевим слова.' 
+            : 'Почти получилось, попробуй еще раз! Обрати внимание на выделенные оранжевым слова.';
 
-        // Update tip to show phonetic feedback
         document.getElementById('pronunciation-tip-text').innerHTML = scenarios[currentScenario].phoneticTip[currentLang];
-            
-        // Speak correction
-        speakSlovak(scenarios[currentScenario].audioCorrection);
-        updateAvatarState('retry');
+
+        // Play Avatar video reaction (reaction_soft_correction.mp4 contains Oksana's voice, NO synthetic TTS!)
+        const videoPlayedPromise = updateAvatarState('retry');
+        if (videoPlayedPromise && typeof videoPlayedPromise.then === 'function') {
+            videoPlayedPromise.then(played => {
+                if (!played) {
+                    speakSlovak("Skús to ešte raz.");
+                }
+            });
+        }
+
+        appendChatBubble('tutor', `Skús to ešte raz. (${currentLang === 'uk' ? 'Майже, спробуй ще раз.' : 'Почти, попробуй еще раз.'})`);
+    } else {
+        // TIER 3: Score < 60 (Low quality -> reaction_soft_correction.mp4)
+        headline.innerHTML = currentLang === 'uk' ? 'Спробуй ще раз!' : 'Попробуй еще раз!';
+        headline.className = 'retry-text';
+        subtext.innerHTML = currentLang === 'uk'
+            ? 'Послухай, як вимовляє Оксана, та повтори повільніше.'
+            : 'Послушай, как произносит Оксана, и повтори медленнее.';
+
+        document.getElementById('pronunciation-tip-text').innerHTML = scenarios[currentScenario].phoneticTip[currentLang];
+
+        // Play Avatar video reaction (reaction_soft_correction.mp4 contains Oksana's voice, NO synthetic TTS!)
+        const videoPlayedPromise = updateAvatarState('retry');
+        if (videoPlayedPromise && typeof videoPlayedPromise.then === 'function') {
+            videoPlayedPromise.then(played => {
+                if (!played) {
+                    speakSlovak("Skús to ešte raz.");
+                }
+            });
+        }
+
+        appendChatBubble('tutor', `Skús to ešte raz. (${currentLang === 'uk' ? 'Послухай та повтори ще раз.' : 'Послушай и повтори еще раз.'})`);
     }
 }
 
@@ -1749,44 +1882,60 @@ function updateAvatarState(state) {
     console.log("Avatar state updated to:", state);
     const video = document.getElementById('heygen-video');
     const fallback = document.getElementById('avatar-fallback');
+    const subtitleEl = document.getElementById('tutor-speech-text');
     if (!video || !fallback) return Promise.resolve(false);
     
     video.setAttribute('data-state', state);
     
-    // Maps avatar states to reaction video names
     let videoFile = '';
+    let subtitleText = '';
+    
     switch(state) {
         case 'thinking':
             videoFile = 'reaction_thinking.mp4';
+            subtitleText = currentLang === 'uk' ? 'Розмірковую...' : 'Размышляю...';
             break;
         case 'success':
             videoFile = 'reaction_praise.mp4';
+            subtitleText = 'Výborne! Veľmi dobre ti to ide!';
             break;
         case 'retry':
             videoFile = 'reaction_soft_correction.mp4';
+            subtitleText = 'Skús to znova, ty to zvládneš!';
             break;
         case 'listening':
             videoFile = 'reaction_listening.mp4';
+            subtitleText = currentLang === 'uk' ? 'Слухаю тебе... говори!' : 'Слушаю тебя... говори!';
             break;
         case 'greeting':
         case 'greet':
             videoFile = 'reaction_greeting.mp4';
+            subtitleText = 'Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!';
             break;
         case 'farewell':
         case 'bye':
             videoFile = 'reaction_goodbye.mp4';
+            subtitleText = 'Dovidenia! Teším sa na budúce!';
             break;
         case 'laugh':
             videoFile = 'reaction_laugh.mp4';
+            subtitleText = 'Hahaha!';
             break;
         case 'surprise':
             videoFile = 'reaction_surprise.mp4';
+            subtitleText = 'Páni! To je super!';
             break;
         case 'idle':
             videoFile = 'reaction_idle.mp4';
+            if (scenarios[currentScenario]) {
+                subtitleText = scenarios[currentScenario].phrase;
+            } else {
+                subtitleText = 'Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!';
+            }
             break;
         case 'achievement':
             videoFile = 'reaction_achievement.mp4';
+            subtitleText = 'Fantastické! Gratulujem!';
             break;
         case 'lesson_intro':
         case 'level_1':
@@ -1797,16 +1946,29 @@ function updateAvatarState(state) {
             const padMonth = String(currentMonth).padStart(2, '0');
             const padWeek = String(currentWeek).padStart(2, '0');
             videoFile = `m${padMonth}_w${padWeek}_${currentTrack}.mp4`;
+            if (scenarios[currentScenario]) {
+                subtitleText = scenarios[currentScenario].phrase;
+            }
             break;
         }
         default:
             videoFile = 'reaction_idle.mp4';
+            subtitleText = 'Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!';
             break;
+    }
+    
+    if (subtitleEl && subtitleText) {
+        subtitleEl.innerHTML = subtitleText;
+    }
+
+    if (state === 'idle') {
+        video.loop = true;
+    } else {
+        video.loop = false;
     }
     
     const absoluteUrl = new URL(VIDEO_BASE_URL + videoFile, window.location.href).href;
     
-    // Play the video stream
     if (video.src !== absoluteUrl) {
         video.src = absoluteUrl;
     }
@@ -1819,19 +1981,36 @@ function updateAvatarState(state) {
             return playPromise.then(() => {
                 return true;
             }).catch(err => {
-                console.warn("Pre-recorded video play failed or not found, falling back to static avatar.", err);
-                video.classList.add('hidden');
-                fallback.classList.remove('hidden');
+                console.warn("Pre-recorded video play failed or not found, falling back to idle or static avatar.", err);
+                if (state !== 'idle') {
+                    video.src = new URL(VIDEO_BASE_URL + 'reaction_idle.mp4', window.location.href).href;
+                    video.loop = true;
+                    video.play().catch(() => {
+                        video.classList.add('hidden');
+                        fallback.classList.remove('hidden');
+                    });
+                } else {
+                    video.classList.add('hidden');
+                    fallback.classList.remove('hidden');
+                }
                 return false;
             });
         } else {
-            // Older browsers or webviews where play() returns undefined
             return Promise.resolve(true);
         }
     } catch (e) {
         console.warn("video.play() synchronous exception caught:", e);
-        video.classList.add('hidden');
-        fallback.classList.remove('hidden');
+        if (state !== 'idle') {
+            video.src = new URL(VIDEO_BASE_URL + 'reaction_idle.mp4', window.location.href).href;
+            video.loop = true;
+            video.play().catch(() => {
+                video.classList.add('hidden');
+                fallback.classList.remove('hidden');
+            });
+        } else {
+            video.classList.add('hidden');
+            fallback.classList.remove('hidden');
+        }
         return Promise.resolve(false);
     }
 }
@@ -2580,14 +2759,15 @@ async function speakSlovakAzure(text) {
 
     try {
         const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(keys.AZURE_SPEECH_KEY, keys.AZURE_SPEECH_REGION);
-        speechConfig.speechSynthesisVoiceName = "sk-SK-ViktoriaNeural"; // Encouraging Slovak teacher voice
+        const voiceName = (keys && keys.AZURE_SPEECH_VOICE_NAME) ? keys.AZURE_SPEECH_VOICE_NAME : "sk-SK-ViktoriaNeural";
+        speechConfig.speechSynthesisVoiceName = voiceName;
         
         const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig);
         synthesizer.speakTextAsync(
             text,
             result => {
                 if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
-                    console.log("Azure TTS synthesis completed successfully.");
+                    console.log("Azure TTS synthesis completed successfully with voice:", voiceName);
                 } else {
                     console.error("Azure TTS synthesis failed:", result.errorDetails);
                     speakSlovakBrowser(text);
@@ -2838,10 +3018,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         video.onended = () => {
             const currentState = video.getAttribute('data-state');
             if (currentState === 'greeting' || currentState === 'greet') {
-                video.classList.add('hidden');
-                if (fallback) fallback.classList.remove('hidden');
-                // Trigger demo / trial task after greeting video ends 1 time
                 triggerFirstActionIfNeeded();
+            }
+            if (currentState !== 'idle') {
+                updateAvatarState('idle');
             }
         };
     }

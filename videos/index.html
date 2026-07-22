@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=2.7">
+    <link rel="stylesheet" href="style.css?v=3.0">
 </head>
 <body>
 
@@ -127,9 +127,9 @@
                                 <i class="fa-solid fa-hand-pointer"></i> <span data-i18n="click_me">Натисни мене</span>
                             </div>
                             <!-- Live Avatar Stream -->
-                            <video id="heygen-video" class="avatar-video hidden" autoplay playsinline></video>
+                            <video id="heygen-video" class="avatar-video" autoplay playsinline loop src="./videos/reaction_idle.mp4" data-state="idle"></video>
                             <!-- Static/Interactive Video Mock (Fallback) -->
-                            <div id="avatar-fallback" class="avatar-mock-animation">
+                            <div id="avatar-fallback" class="avatar-mock-animation hidden">
                                 <div class="pulse-ring"></div>
                                 <img id="char-avatar-img" class="avatar-img" src="tutor_girl.jpg" alt="Tutor Avatar">
                                 <div class="play-overlay" id="avatar-play-overlay">
@@ -761,6 +761,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=2.7"></script>
+    <script src="app.js?v=3.0"></script>
 </body>
 </html>
