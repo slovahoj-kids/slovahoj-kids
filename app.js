@@ -272,21 +272,21 @@ const curriculumCatalog = {
                 },
                 tracks: {
                     junior: {
-                        phrase: "Ahoj!",
-                        translation: "Привіт!",
-                        words: ["Ahoj"],
+                        phrase: "Dobrý deň, ako sa máš?",
+                        translation: "Добрий день, як справи?",
+                        words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
                         intro: "Ahoj! Ja som Oksana. Poďme sa spolu zahrať!"
                     },
                     middle: {
-                        phrase: "Ahoj! Ako sa voláš?",
-                        translation: "Привіт! Як тебе звати?",
-                        words: ["Ahoj", "Ako", "sa", "voláš"],
+                        phrase: "Dobrý deň, ako sa máš?",
+                        translation: "Добрий день, як справи?",
+                        words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
                         intro: "Ahoj! Ako sa voláš? Ja som Oksana."
                     },
                     senior: {
-                        phrase: "Ahoj, ako sa voláš? Ja som student. Odkiaľ si?",
-                        translation: "Привіт, як тебе звати? Я — студент. Звідки ти?",
-                        words: ["Ahoj", "ako sa voláš", "Ja som", "Odkiaľ si"],
+                        phrase: "Dobrý deň, ako sa máš?",
+                        translation: "Добрий день, як справи?",
+                        words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
                         intro: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?"
                     }
                 },
