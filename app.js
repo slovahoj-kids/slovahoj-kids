@@ -195,6 +195,9 @@ window.handleUserInteraction = handleUserInteraction;
 window.playGreetingVideo = playGreetingVideo;
 window.triggerFirstActionIfNeeded = triggerFirstActionIfNeeded;
 window.confirmLessonSelection = confirmLessonSelection;
+window.openRegistrationModal = openRegistrationModal;
+window.closeChildProtectionModal = closeChildProtectionModal;
+window.updateAuthHeaderUI = updateAuthHeaderUI;
 
 async function loadEnv() {
     if (envKeys) return envKeys;
@@ -1211,15 +1214,15 @@ function updateChatHistoryLanguage() {
 
 // 4.5. Scenario & Milestone Operations
 function selectScenario(num) {
-    if (!isSubscriptionActive() && !childAuthenticated && num !== 1) {
-        if (!isRegistered && tutorTrialPassed[currentCharacter]) {
-            document.getElementById('post-trial-modal').classList.remove('hidden');
-        } else if (isRegistered) {
-            document.getElementById('sub-expired-lock-modal').classList.remove('hidden');
-        } else {
-            alert(currentLang === 'uk' ? "У пробному режимі доступне лише перше завдання." : "В пробном режиме доступно только первое задание.");
+    if (num !== 1) {
+        if (!isRegistered) {
+            document.getElementById('registration-modal').classList.remove('hidden');
+            return;
         }
-        return;
+        if (!isSubscriptionActive() && !childAuthenticated) {
+            document.getElementById('sub-expired-lock-modal').classList.remove('hidden');
+            return;
+        }
     }
 
     if (num !== 1 && !completedScenarios.includes(num - 1)) {
@@ -2316,7 +2319,17 @@ function startFreeTrial() {
 // Init App (Defined at the end of the file)
 
 
+function generateRandomPin(length = 4) {
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += Math.floor(Math.random() * 10).toString();
+    }
+    return result;
+}
+
 function processRegistration() {
+    const nameInput = document.getElementById('reg-parent-name');
+    const parentName = nameInput ? nameInput.value.trim() : '';
     const email = document.getElementById('reg-email').value.trim();
     const ageInput = document.getElementById('reg-child-age');
     const ageVal = ageInput ? ageInput.value.trim() : '';
@@ -2324,19 +2337,19 @@ function processRegistration() {
     if (email === ADMIN_PIN) {
         currentUserEmail = "admin@test.com";
         isRegistered = true;
-        parentPin = "9999";
+        parentPin = "999999";
         childPin = "1111";
         subscriptionType = "premium";
         subscriptionStart = Date.now();
         subscriptionEnd = subscriptionStart + (365 * 24 * 60 * 60 * 1000); // 1 year active
-        currentTrack = 'middle'; // default for admin
+        currentTrack = 'middle';
         saveSubState();
         
-        // Directly proceed to cabinet dashboard
         closeRegistrationModal();
         setParentVerified(true);
         switchView('cabinet');
         checkCabinetExpiryAlert();
+        updateAuthHeaderUI();
         return;
     }
 
@@ -2351,10 +2364,9 @@ function processRegistration() {
     
     currentUserEmail = email;
     isRegistered = true;
-    parentPin = generateRandomPin();
-    childPin = generateRandomPin();
+    childPin = generateRandomPin(4);
+    parentPin = generateRandomPin(6);
     
-    // Auto-assign track based on age
     if (age >= 12) {
         currentTrack = 'senior';
     } else if (age >= 9) {
@@ -2363,12 +2375,12 @@ function processRegistration() {
         currentTrack = 'junior';
     }
     
-    // Save age in localStorage
     localStorage.setItem('slovahoj_kids_child_age', age.toString());
+    if (parentName) {
+        localStorage.setItem('slovahoj_kids_parent_name', parentName);
+    }
     
     saveSubState();
-    
-    // Select the auto-assigned track in UI
     selectTrack(currentTrack);
     
     document.getElementById('reg-child-pin').innerText = childPin;
@@ -2378,7 +2390,30 @@ function processRegistration() {
     document.getElementById('reg-modal-footer').classList.add('hidden');
     document.getElementById('reg-modal-footer-success').classList.remove('hidden');
     
-    console.log(`Registered successfully. Child PIN: ${childPin}, Parent PIN: ${parentPin}, Age: ${age}, Track: ${currentTrack}`);
+    updateAuthHeaderUI();
+    console.log(`Registered successfully. Parent: ${parentName}, Email: ${email}, Child PIN: ${childPin}, Parent PIN: ${parentPin}`);
+}
+
+function updateAuthHeaderUI() {
+    const authBtnText = document.getElementById('auth-btn-text');
+    if (!authBtnText) return;
+    if (isRegistered) {
+        if (isSubscriptionActive()) {
+            authBtnText.innerText = currentLang === 'uk' ? 'Підписка активна (ПІН)' : 'Подписка активна (ПИН)';
+        } else {
+            authBtnText.innerText = currentLang === 'uk' ? 'Поклич дорослих (Оплата)' : 'Позови взрослых (Оплата)';
+        }
+    } else {
+        authBtnText.innerText = currentLang === 'uk' ? 'Увійти / Зареєструватися' : 'Войти / Зарегистрироваться';
+    }
+}
+
+function openRegistrationModal() {
+    document.getElementById('registration-modal').classList.remove('hidden');
+}
+
+function closeChildProtectionModal() {
+    document.getElementById('sub-expired-lock-modal').classList.add('hidden');
 }
 
 function proceedToDashboardAfterReg() {

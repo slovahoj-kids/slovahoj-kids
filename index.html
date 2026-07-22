@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Microsoft Cognitive Services Speech SDK -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <link rel="stylesheet" href="style.css?v=4.1">
+    <link rel="stylesheet" href="style.css?v=4.2">
 </head>
 <body>
 
@@ -53,6 +53,9 @@
                 </button>
                 <button id="btn-show-cabinet" class="nav-tab-btn" onclick="checkParentAccess()">
                     <i class="fa-solid fa-user-shield"></i> <span data-i18n="nav_parent_cabinet">Батьківський кабінет</span>
+                </button>
+                <button id="btn-auth-header" class="nav-tab-btn auth-header-btn" onclick="openRegistrationModal()">
+                    <i class="fa-solid fa-user-lock"></i> <span id="auth-btn-text" data-i18n="nav_auth">Увійти / Зареєструватися</span>
                 </button>
 
                 <!-- Language Switcher -->
@@ -587,39 +590,42 @@
         <div class="modal-card registration-card">
             <button class="modal-close-btn" onclick="closeRegistrationModal()">&times;</button>
             <div class="modal-header">
-                <div class="modal-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-color);"><i class="fa-solid fa-envelope-open-text"></i></div>
-                <h3>Реєстрація батьківського кабінету</h3>
-                <p>Введіть ваш Email для створення дитячого та батьківського ПІН-кодів.</p>
+                <div class="modal-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-color);"><i class="fa-solid fa-user-plus"></i></div>
+                <h3 data-i18n="reg_modal_title">Реєстрація та отримання ПІН-кодів</h3>
+                <p data-i18n="reg_modal_sub">Введіть ваші дані для створення дитячого та батьківського ПІН-кодів.</p>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="reg-email">Ваш Email</label>
+                    <label for="reg-parent-name" data-i18n="reg_parent_name_label">Ім'я батька / матері</label>
+                    <input type="text" id="reg-parent-name" class="modal-input" placeholder="Наприклад: Олена" required>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="reg-email" data-i18n="reg_email_label">Email батьків</label>
                     <input type="email" id="reg-email" class="modal-input" placeholder="parent@example.com" required>
                 </div>
-                <div class="form-group" style="margin-top: 15px;">
-                    <label for="reg-child-age">Вік дитини (років від 6 до 14)</label>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="reg-child-age" data-i18n="reg_child_age_label">Вік дитини (років від 6 до 14)</label>
                     <input type="number" id="reg-child-age" class="modal-input" placeholder="Наприклад: 8" min="6" max="14" required>
                 </div>
-                <div id="reg-error" class="modal-error hidden">Будь ласка, введіть коректний Email та вік дитини (від 6 до 14 років).</div>
+                <div id="reg-error" class="modal-error hidden">Будь ласка, введіть ім'я, коректний Email та вік дитини (від 6 до 14 років).</div>
                 
                 <!-- Email Confirmation Simulation Result (Hidden initially) -->
                 <div id="reg-success-details" class="reg-success-details hidden">
                     <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--accent-color); padding: 15px; border-radius: 12px; margin-top: 15px; text-align: left;">
                         <h4 style="color: #047857; margin-bottom: 8px;"><i class="fa-solid fa-circle-check"></i> ПІН-коди надіслано на Email!</h4>
-                        <p style="font-size: 12px; color: #1e293b; margin-bottom: 10px;">Для зручності тестування ми показуємо згенеровані коди тут:</p>
+                        <p style="font-size: 12px; color: #1e293b; margin-bottom: 10px;">Лист із кодами відправлено на ваші надіслані контактні дані. Коди також доступні нижче:</p>
                         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600;">
-                            <div>👶 Дитячий ПІН (тільки гра): <span id="reg-child-pin" style="color: var(--primary-color); font-size: 16px; font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #ddd;"></span></div>
-                            <div>🔑 Батьківський ПІН (кабінет): <span id="reg-parent-pin" style="color: var(--secondary-color); font-size: 16px; font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #ddd;"></span></div>
-                            <div style="font-size: 11px; font-weight: normal; color: #64748b; margin-top: 5px;">* (Також працює універсальний адмін-код: <strong>9999</strong>)</div>
+                            <div>👶 Дитячий ПІН (4 цифри): <span id="reg-child-pin" style="color: var(--primary-color); font-size: 18px; font-family: monospace; background: #fff; padding: 2px 8px; border-radius: 6px; border: 1px solid #ddd;"></span></div>
+                            <div>🔑 Батьківський ПІН (6 цифр): <span id="reg-parent-pin" style="color: var(--secondary-color); font-size: 18px; font-family: monospace; background: #fff; padding: 2px 8px; border-radius: 6px; border: 1px solid #ddd;"></span></div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer" id="reg-modal-footer">
-                <button class="btn-modal-primary" onclick="processRegistration()">Зареєструватися</button>
+                <button class="btn-modal-primary" onclick="processRegistration()" data-i18n="btn_register">Зареєструватися та отримати коди</button>
             </div>
             <div class="modal-footer hidden" id="reg-modal-footer-success">
-                <button class="btn-modal-primary" onclick="proceedToDashboardAfterReg()">Увійти в кабінет та обрати тариф</button>
+                <button class="btn-modal-primary" onclick="proceedToDashboardAfterReg()" data-i18n="btn_proceed_cabinet">Перейти в кабінет та обрати тариф</button>
             </div>
         </div>
     </div>
@@ -643,22 +649,22 @@
         </div>
     </div>
 
-    <!-- Subscription Expired Lock Modal -->
+    <!-- Subscription Expired / Child Protection Lock Modal -->
     <div id="sub-expired-lock-modal" class="modal-overlay hidden">
         <div class="modal-card expired-lock-card">
+            <button class="modal-close-btn" onclick="closeChildProtectionModal()">&times;</button>
             <div class="modal-header">
-                <div class="modal-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger-color);"><i class="fa-solid fa-lock"></i></div>
-                <h3>Час навчання минув</h3>
-                <p>Термін дії вашої підписки або безкоштовного періоду закінчився.</p>
-                <p style="font-weight: 600; margin-top: 8px;">Введи пинкод. Якщо пинкод не працює, попроси дорослого зайти в родительский кабинет з його пинкодом.</p>
+                <div class="modal-icon" style="background: rgba(255, 152, 0, 0.15); color: #f59e0b; font-size: 32px;"><i class="fa-solid fa-child-reaching"></i></div>
+                <h3 style="font-size: 20px; color: var(--primary-color);">Для продовження занять поклич когось із дорослих 🎈</h3>
+                <p style="font-size: 14px; margin-top: 8px;">Твій новий урок вже чекає на тебе! Попроси маму або тата ввести ПІН-код батьків для продовження навчання.</p>
             </div>
             <div class="modal-body">
-                <input type="password" id="expired-child-pin-input" class="modal-input" placeholder="Введіть ПІН-код дитини" maxlength="8" style="text-align: center; font-size: 18px; letter-spacing: 4px; font-family: monospace;" onkeydown="handleExpiredChildPinKey(event)">
-                <p id="expired-child-pin-error" class="modal-error hidden">Неправильний ПІН-код або термін підписки не продовжено.</p>
+                <input type="password" id="expired-child-pin-input" class="modal-input" placeholder="Введіть ПІН-код батьків (6 цифр)" maxlength="8" style="text-align: center; font-size: 18px; letter-spacing: 4px; font-family: monospace;" onkeydown="handleExpiredChildPinKey(event)">
+                <p id="expired-child-pin-error" class="modal-error hidden">Неправильний ПІН-код або термін підписки закінчився.</p>
             </div>
             <div class="modal-footer" style="flex-direction: column; gap: 10px; width: 100%;">
-                <button class="btn-modal-primary" onclick="verifyExpiredChildPin()" style="width: 100%;">Активувати новим кодом</button>
-                <button class="btn-modal-secondary" onclick="checkParentAccessFromLock()" style="width: 100%; background: #e2e8f0; color: var(--text-dark); border: none;">Увійти як дорослий (Продовжити)</button>
+                <button class="btn-modal-primary" onclick="checkParentAccessFromLock()" style="width: 100%;"><i class="fa-solid fa-user-shield"></i> Увійти як дорослий (Оплатити)</button>
+                <button class="btn-modal-secondary" onclick="verifyExpiredChildPin()" style="width: 100%; background: #e2e8f0; color: var(--text-dark); border: none;"><i class="fa-solid fa-key"></i> Ввести ПІН-код</button>
             </div>
         </div>
     </div>
@@ -761,6 +767,6 @@
     </div>
 
     <!-- App Script -->
-    <script src="app.js?v=4.1"></script>
+    <script src="app.js?v=4.2"></script>
 </body>
 </html>
