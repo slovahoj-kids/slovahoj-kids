@@ -1484,20 +1484,37 @@ function calculateLevenshtein(a, b) {
 }
 
 function evaluateSpokenPhrase(spokenText, targetPhrase) {
-    if (!spokenText) {
+    if (!spokenText || typeof spokenText !== 'string' || !spokenText.trim()) {
         return { success: false, error: "No speech heard" };
     }
     
-    const cleanSpokenWords = spokenText.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").split(/\s+/).filter(Boolean);
-    const originalTargetWords = targetPhrase.split(/\s+/).filter(Boolean);
-
-    let matchedCount = 0;
-    const wordResults = originalTargetWords.map((origWord) => {
-        const cleanTargetWord = origWord.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "");
+    const cleanSpokenWords = spokenText.toLowerCase()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?¡¿"']/g, "")
+        .split(/\s+/)
+        .filter(Boolean);
         
-        const exactIdx = cleanSpokenWords.findIndex(spk => spk === cleanTargetWord);
-        if (exactIdx !== -1) {
-            matchedCount += 1.0;
+    const originalTargetWords = targetPhrase.split(/\s+/).filter(Boolean);
+    const cleanTargetWords = originalTargetWords.map(w => 
+        w.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?¡¿"']/g, "")
+    );
+
+    if (cleanSpokenWords.length === 0 || cleanTargetWords.length === 0) {
+        return { success: false, error: "No valid words" };
+    }
+
+    let matchedPoints = 0;
+    const usedSpokenIndices = new Set();
+
+    const wordResults = originalTargetWords.map((origWord, idx) => {
+        const cleanTargetWord = cleanTargetWords[idx];
+
+        // 1. Exact Match
+        let matchIdx = cleanSpokenWords.findIndex((spk, sIdx) => 
+            !usedSpokenIndices.has(sIdx) && spk === cleanTargetWord
+        );
+        if (matchIdx !== -1) {
+            usedSpokenIndices.add(matchIdx);
+            matchedPoints += 1.0;
             return {
                 word: origWord,
                 accuracyScore: 95,
@@ -1505,39 +1522,63 @@ function evaluateSpokenPhrase(spokenText, targetPhrase) {
             };
         }
 
-        const fuzzyIdx = cleanSpokenWords.findIndex(spk => {
-            if (cleanTargetWord.length >= 3 && calculateLevenshtein(spk, cleanTargetWord) <= 1) return true;
-            return false;
-        });
+        // 2. Fuzzy Levenshtein Match (only for words with length >= 3)
+        if (cleanTargetWord.length >= 3) {
+            matchIdx = cleanSpokenWords.findIndex((spk, sIdx) => {
+                if (usedSpokenIndices.has(sIdx)) return false;
+                if (spk.length < 2) return false;
+                const maxDist = cleanTargetWord.length <= 4 ? 1 : 2;
+                return calculateLevenshtein(spk, cleanTargetWord) <= maxDist;
+            });
 
-        if (fuzzyIdx !== -1) {
-            matchedCount += 0.8;
-            return {
-                word: origWord,
-                accuracyScore: 72,
-                errorType: "Mispronunciation"
-            };
+            if (matchIdx !== -1) {
+                usedSpokenIndices.add(matchIdx);
+                matchedPoints += 0.75;
+                return {
+                    word: origWord,
+                    accuracyScore: 72,
+                    errorType: "Mispronunciation"
+                };
+            }
         }
 
-        const partialIdx = cleanSpokenWords.findIndex(spk => spk.includes(cleanTargetWord) || cleanTargetWord.includes(spk));
-        if (partialIdx !== -1) {
-            matchedCount += 0.6;
-            return {
-                word: origWord,
-                accuracyScore: 65,
-                errorType: "Mispronunciation"
-            };
+        // 3. Substring match ONLY if both spoken and target words are long (>= 4 chars)
+        if (cleanTargetWord.length >= 4) {
+            matchIdx = cleanSpokenWords.findIndex((spk, sIdx) => {
+                if (usedSpokenIndices.has(sIdx)) return false;
+                if (spk.length < 4) return false;
+                return spk.includes(cleanTargetWord) || cleanTargetWord.includes(spk);
+            });
+
+            if (matchIdx !== -1) {
+                usedSpokenIndices.add(matchIdx);
+                matchedPoints += 0.6;
+                return {
+                    word: origWord,
+                    accuracyScore: 65,
+                    errorType: "Mispronunciation"
+                };
+            }
         }
 
+        // Unmatched / Incorrect word
         return {
             word: origWord,
-            accuracyScore: 40,
+            accuracyScore: 30,
             errorType: "Mispronunciation"
         };
     });
 
-    let overallScore = Math.round((matchedCount / originalTargetWords.length) * 100);
+    let overallScore = Math.round((matchedPoints / originalTargetWords.length) * 100);
+    
+    // Penalize if spoken phrase has far fewer words than target phrase
+    if (cleanSpokenWords.length < Math.max(1, Math.floor(cleanTargetWords.length / 2))) {
+        overallScore = Math.round(overallScore * 0.7);
+    }
+    
     overallScore = Math.max(0, Math.min(100, overallScore));
+
+    console.log(`Evaluated speech: "${spokenText}" against target: "${targetPhrase}" -> Score: ${overallScore}%`);
 
     return {
         success: true,
