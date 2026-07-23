@@ -529,25 +529,25 @@ const curriculumCatalog = {
                 topic: "Привіт і знайомство",
                 is_safety: false,
                 hint: {
-                    uk: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко, як 'нь'!",
-                    ru: "«Dobrý deň» — это вежливое приветствие «Добрый день», а буква 'ň' в слове 'deň' произносится мягко, как 'нь'!"
+                    uk: "«Ahoj!» — це найпопулярніше словацьке привітання «Привіт!», а «Ako sa máš?» — «Як справи?»",
+                    ru: "«Ahoj!» — это самое популярное словацкое приветствие «Привет!», а «Ako sa máš?» — «Как дела?»"
                 },
                 tracks: {
                     junior: {
-                        phrase: "Dobrý deň, ako sa máš?",
-                        translation: "Добрий день, як справи?",
-                        words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
+                        phrase: "Ahoj! Ako sa máš?",
+                        translation: "Привіт! Як справи?",
+                        words: ["Ahoj!", "ako", "sa", "máš?"],
                         intro: "Ahoj! Ja som Oksana. Poďme sa spolu zahrať!"
                     },
                     middle: {
-                        phrase: "Dobrý deň, ako sa máš?",
-                        translation: "Добрий день, як справи?",
-                        words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
+                        phrase: "Ahoj! Ako sa máš?",
+                        translation: "Привіт! Як справи?",
+                        words: ["Ahoj!", "ako", "sa", "máš?"],
                         intro: "Ahoj! Ako sa voláš? Ja som Oksana."
                     },
                     senior: {
-                        phrase: "Dobrý deň, ako sa máš?",
-                        translation: "Добрий день, як справи?",
+                        phrase: "Ahoj! Ako sa máš?",
+                        translation: "Привіт! Як справи?",
                         words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
                         intro: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?"
                     }
@@ -987,9 +987,9 @@ const scenarios = new Proxy({}, {
         if (currentMonth === 1 && currentWeek === 1) {
             const m1w1Scenarios = [
                 {
-                    phrase: "Dobrý deň, ako sa máš?",
-                    words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
-                    tip: { uk: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко, як 'нь'!", ru: "«Dobrý deň» — это вежливое приветствие «Добрый день», а буква 'ň' в слове 'deň' произносится мягко, как 'нь'!" }
+                    phrase: "Ahoj! Ako sa máš?",
+                    words: ["Ahoj!", "Ako", "sa", "máš?"],
+                    tip: { uk: "«Ahoj!» — це найпопулярніше словацьке привітання «Привіт!», а «Ako sa máš?» — «Як справи?»", ru: "«Ahoj!» — это самое популярное словацкое приветствие «Привет!», а «Ako sa máš?» — «Как дела?»" }
                 },
                 {
                     phrase: "Ďakujem, mám sa veľmi dobre!",
