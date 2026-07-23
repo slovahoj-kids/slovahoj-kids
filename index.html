@@ -159,12 +159,16 @@
                             </div>
                         </div>
 
-                        <!-- Pronunciation Tip -->
-                        <div class="tip-box">
-                            <div class="tip-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                        <!-- Pronunciation Tip (Convex Audio Button for Accessibility / Low Vision) -->
+                        <div id="tip-box-clickable" class="tip-box convex-tip-btn" onclick="playTipAudio()" role="button" tabindex="0" title="Натисни, щоб послухати підказку">
+                            <div class="tip-icon"><i class="fa-solid fa-bullhorn"></i></div>
                             <div class="tip-content">
                                 <h4 data-i18n="tip_title">Підказка від Оксани:</h4>
                                 <p id="pronunciation-tip-text" data-i18n="tip_content_default">«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко, як 'нь'!</p>
+                            </div>
+                            <div class="tip-audio-badge">
+                                <i class="fa-solid fa-volume-high"></i>
+                                <span class="tip-audio-label" data-i18n="tip_listen_label">Слухати</span>
                             </div>
                         </div>
                     </div>
@@ -202,18 +206,24 @@
                 <!-- Right Column: Chat History & Written Task Panel -->
                 <div class="controls-panel card">
                     <div class="panel-header">
-                        <h2 data-i18n="exercise_title">Твоє завдання: Привітайся зі словацьким другом</h2>
+                        <div class="task-title-row">
+                            <h2 id="current-task-title" data-i18n="exercise_title">Твоє завдання: Привітайся зі словацьким другом</h2>
+                            <button id="btn-read-task" class="btn-read-task convex-audio-btn" onclick="playTaskAudio()" role="button" tabindex="0" title="Натисни, щоб послухати завдання голосом">
+                                <i class="fa-solid fa-volume-high"></i>
+                                <span data-i18n="btn_listen_task">Послухати</span>
+                            </button>
+                        </div>
                         <p class="exercise-task" id="current-task-desc" data-i18n="task_desc">Повтори фразу: "Dobrý deň, ako sa máš?"</p>
                         
                         <!-- Scenario Switcher -->
                         <div class="scenario-switcher">
-                            <span class="scenario-switcher-label" data-i18n="select_scenario">Обери життєвий сценарій:</span>
+                            <span class="scenario-switcher-label" id="scenario-switcher-label" data-i18n="select_scenario">Обери життєвий сценарій:</span>
                             <div class="scenario-buttons">
-                                <button id="scenario-btn-1" class="scenario-btn active" onclick="selectScenario(1)"><i class="fa-solid fa-child-reaching"></i></button>
-                                <button id="scenario-btn-2" class="scenario-btn" onclick="selectScenario(2)"><i class="fa-solid fa-cat"></i></button>
-                                <button id="scenario-btn-3" class="scenario-btn" onclick="selectScenario(3)"><i class="fa-solid fa-school"></i></button>
-                                <button id="scenario-btn-4" class="scenario-btn" onclick="selectScenario(4)"><i class="fa-solid fa-chalkboard-user"></i></button>
-                                <button id="scenario-btn-5" class="scenario-btn disabled" onclick="selectScenario(5)"><i class="fa-solid fa-video"></i> <i class="fa-solid fa-lock scenario-lock-badge"></i></button>
+                                <button id="scenario-btn-1" class="scenario-btn active" onclick="selectScenario(1)" title="Сценарій 1"><span class="scenario-icon">🎈</span></button>
+                                <button id="scenario-btn-2" class="scenario-btn" onclick="selectScenario(2)" title="Сценарій 2"><span class="scenario-icon">🐱</span></button>
+                                <button id="scenario-btn-3" class="scenario-btn" onclick="selectScenario(3)" title="Сценарій 3"><span class="scenario-icon">🏫</span></button>
+                                <button id="scenario-btn-4" class="scenario-btn" onclick="selectScenario(4)" title="Сценарій 4"><span class="scenario-icon">👩‍🏫</span></button>
+                                <button id="scenario-btn-5" class="scenario-btn disabled" onclick="selectScenario(5)" title="Сценарій заблоковано"><span class="scenario-icon">👴</span> <i class="fa-solid fa-lock scenario-lock-badge"></i></button>
                             </div>
                         </div>
                     </div>

@@ -197,6 +197,84 @@ function handleUserInteraction() {
     return true;
 }
 
+function playTipAudio() {
+    const tipTextEl = document.getElementById('pronunciation-tip-text');
+    if (!tipTextEl) return;
+    const text = tipTextEl.innerText || tipTextEl.textContent;
+    if (!text) return;
+
+    const tipBox = document.getElementById('tip-box-clickable');
+    if (tipBox) {
+        tipBox.classList.add('playing');
+    }
+
+    // Accessibility TTS audio readout: SpeechSynthesis leaves the video player in its idle loop!
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = currentLang === 'uk' ? 'uk-UA' : 'ru-RU';
+        utterance.rate = 0.88;
+        utterance.pitch = 1.15;
+
+        utterance.onend = function() {
+            if (tipBox) tipBox.classList.remove('playing');
+        };
+
+        utterance.onerror = function() {
+            if (tipBox) tipBox.classList.remove('playing');
+        };
+
+        window.speechSynthesis.speak(utterance);
+    } else {
+        if (tipBox) {
+            setTimeout(() => tipBox.classList.remove('playing'), 3000);
+        }
+    }
+}
+
+function playTaskAudio() {
+    const titleEl = document.getElementById('current-task-title');
+    const descEl = document.getElementById('current-task-desc');
+    const scenarioLabelEl = document.getElementById('scenario-switcher-label');
+
+    const titleText = titleEl ? (titleEl.innerText || titleEl.textContent) : '';
+    const descText = descEl ? (descEl.innerText || descEl.textContent) : '';
+    const scenarioLabelText = scenarioLabelEl ? (scenarioLabelEl.innerText || scenarioLabelEl.textContent) : '';
+
+    const fullText = `${titleText}. ${descText}. ${scenarioLabelText}`;
+    if (!fullText.trim()) return;
+
+    const btn = document.getElementById('btn-read-task');
+    if (btn) {
+        btn.classList.add('playing');
+    }
+
+    // SpeechSynthesis Audio readout for low-vision accessibility (leaves video player in idle loop)
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(fullText);
+        utterance.lang = currentLang === 'uk' ? 'uk-UA' : 'ru-RU';
+        utterance.rate = 0.88;
+        utterance.pitch = 1.15;
+
+        utterance.onend = function() {
+            if (btn) btn.classList.remove('playing');
+        };
+
+        utterance.onerror = function() {
+            if (btn) btn.classList.remove('playing');
+        };
+
+        window.speechSynthesis.speak(utterance);
+    } else {
+        if (btn) {
+            setTimeout(() => btn.classList.remove('playing'), 3000);
+        }
+    }
+}
+
 // Explicit global window bindings for inline HTML handlers
 window.handleUserInteraction = handleUserInteraction;
 window.playGreetingVideo = playGreetingVideo;
@@ -205,6 +283,8 @@ window.confirmLessonSelection = confirmLessonSelection;
 window.openRegistrationModal = openRegistrationModal;
 window.closeChildProtectionModal = closeChildProtectionModal;
 window.updateAuthHeaderUI = updateAuthHeaderUI;
+window.playTipAudio = playTipAudio;
+window.playTaskAudio = playTaskAudio;
 
 async function loadEnv() {
     if (envKeys) return envKeys;
@@ -746,10 +826,10 @@ const avatarConfig = {
         name: { uk: "Оксана (Oksana)", ru: "Оксана (Oksana)" },
         icon: "👩",
         greet: {
-            uk: "Вітаю! Мене звати Оксана. Давай разом вивчати словацькі слова та правила безпеки!",
-            ru: "Приветствую! Меня зовут Оксана. Давай вместе изучать словацкие слова и правила безопасности!"
+            uk: "Давай подивимось, у яких випадках застосовується це слово або вираз. Натисни на кольорові іконки!",
+            ru: "Давай посмотрим, в каких случаях применяется это слово или выражение. Нажми на цветные иконки!"
         },
-        greetSk: "Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka a bezpečnostné pravidlá!"
+        greetSk: "Pozrime sa, kedy sa toto slovo alebo výraz používa. Klikni na farebné ikonky!"
     }
 };
 
@@ -761,9 +841,11 @@ const translations = {
         select_tutor: "Віковий трек:",
         ai_assistant_badge: "ІІ-Помічник",
         exercise_title: "Твоє завдання:",
+        btn_listen_task: "Послухати",
         task_desc: "Повтори фразу",
         target_phrase: "Потрібно вимовити:",
         tip_title: "Підказка від Оксани:",
+        tip_listen_label: "Слухати",
         tip_content_default: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко, як 'нь'!",
         press_mic: "Натисни мікрофон та говори словацькою",
         accuracy_label: "точність",
@@ -853,9 +935,11 @@ const translations = {
         select_tutor: "Возрастной трек:",
         ai_assistant_badge: "ИИ-Помощник",
         exercise_title: "Твое задание:",
+        btn_listen_task: "Послушать",
         task_desc: "Повтори фразу",
         target_phrase: "Нужно произнести:",
         tip_title: "Подсказка от Оксаны:",
+        tip_listen_label: "Слушать",
         tip_content_default: "«Dobrý deň» — это вежливое приветствие «Добрый день», а буква 'ň' в слове 'deň' произносится мягко, как 'нь'!",
         press_mic: "Нажми микрофон и говори по-словацки",
         accuracy_label: "точность",
@@ -1294,28 +1378,19 @@ function updateScenarioButtonsContent() {
         
         const sc = data.scenarios[i - 1];
         const isLocked = i !== 1 && !completedScenarios.includes(i - 1);
+        const iconSymbol = sc && sc.title_icon ? sc.title_icon : i;
 
-        if (currentTrack === 'junior') {
-            let iconHtml = sc && sc.title_icon ? sc.title_icon : i;
-            if (iconHtml === "🛝" || !iconHtml || iconHtml === "1") {
-                iconHtml = '<i class="fa-solid fa-child-reaching"></i>';
-            }
-            if (isLocked) {
-                btn.innerHTML = `${iconHtml}<i class="fa-solid fa-lock scenario-lock-badge"></i>`;
-            } else {
-                btn.innerHTML = iconHtml;
-            }
-            btn.style.fontSize = '20px';
+        if (isLocked) {
+            btn.innerHTML = `<span class="scenario-icon">${iconSymbol}</span><i class="fa-solid fa-lock scenario-lock-badge"></i>`;
         } else {
-            btn.innerHTML = isLocked ? `${i}<i class="fa-solid fa-lock scenario-lock-badge"></i>` : i;
-            btn.style.fontSize = '16px';
+            btn.innerHTML = `<span class="scenario-icon">${iconSymbol}</span>`;
         }
 
         btn.classList.toggle('disabled', isLocked);
         if (isLocked) {
             btn.title = currentLang === 'uk' ? 'Сценарій заблоковано. Пройди попередній!' : 'Сценарий заблокирован. Пройди предыдущий!';
-        } else {
-            btn.title = sc ? sc.title[currentLang] : '';
+        } else if (sc && sc.title) {
+            btn.title = sc.title[currentLang];
         }
     }
 }
