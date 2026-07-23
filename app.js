@@ -1388,21 +1388,6 @@ function updateChatHistoryLanguage() {
 
 // 4.5. Scenario & Milestone Operations
 function selectScenario(num) {
-    if (num !== 1) {
-        if (!isRegistered) {
-            document.getElementById('registration-modal').classList.remove('hidden');
-            return;
-        }
-        if (!isSubscriptionActive() && !childAuthenticated) {
-            document.getElementById('sub-expired-lock-modal').classList.remove('hidden');
-            return;
-        }
-    }
-
-    if (num !== 1 && !completedScenarios.includes(num - 1)) {
-        alert(currentLang === 'uk' ? "Цей сценарій ще заблоковано! Пройди попередній." : "Этот сценарий еще заблокирован! Пройди предыдущий.");
-        return;
-    }
     currentScenario = num;
     attemptCount = 0;
     for (let i = 1; i <= 5; i++) {
@@ -2152,6 +2137,10 @@ function bindVideoStateHandlers() {
     };
 
     video.onended = handleClipEnd;
+    video.onerror = () => {
+        console.warn("Video clip playback error, returning avatar to idle loop");
+        updateAvatarState('idle');
+    };
 
     if (!video.dataset.eventsBound) {
         video.dataset.eventsBound = 'true';
@@ -2160,6 +2149,9 @@ function bindVideoStateHandlers() {
             if (video.ended && video.getAttribute('data-state') !== 'idle') {
                 handleClipEnd();
             }
+        });
+        video.addEventListener('error', () => {
+            updateAvatarState('idle');
         });
     }
 }
