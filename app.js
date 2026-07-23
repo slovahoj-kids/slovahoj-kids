@@ -1466,6 +1466,10 @@ function updateScenarioButtonsContent() {
     }
 }
 
+function updateScenarioButtonsVisibility() {
+    updateScenarioButtonsContent();
+}
+
 function getSafetyPhrasesMasteredCount() {
     let count = 0;
     for (let m = 1; m <= currentMonth; m++) {
@@ -2148,7 +2152,7 @@ function startFreeTrial() {
     // Update UI components & unlock controls
     updateAuthHeaderUI();
     updateDropdownLockState();
-    updateScenarioButtonsVisibility();
+    updateScenarioButtonsContent();
     updateScenarioUI();
  
     // Activate subscription status banner in Parent Cabinet
