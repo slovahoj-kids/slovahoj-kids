@@ -153,10 +153,13 @@ function startCurrentScenarioLesson() {
     const sc = scenarios[currentScenario];
     if (!sc) return;
     
-    // Cancel any synthetic TTS audio so it does not overlap with video audio
+    // Cancel any synthetic TTS audio so it does not overlap
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
     }
+
+    // Instantly update UI fields for target phrase
+    updateScenarioUI();
 
     // Trigger video playback for current scenario (video contains Oksana's audio track)
     updateAvatarState('level_' + currentScenario);
@@ -185,29 +188,29 @@ function confirmLessonSelection() {
         selectScenario(currentScenario + 1);
         const msg = currentLang === 'uk' ? 'Чудово! Переходимо до наступного завдання!' : 'Отлично! Переходим к следующему заданию!';
         appendChatBubble('tutor', msg);
-        startCurrentScenarioLesson();
     } else {
         updateScenarioUI();
-        startCurrentScenarioLesson();
     }
+
+    // For activated packages: Lesson starts ONLY AFTER pressing "Підтвердити"!
+    startCurrentScenarioLesson();
 }
 
 function playGreetingVideo() {
     greetingPlayed = true;
+    firstActionTriggered = true;
     const badge = document.getElementById('click-me-badge');
     if (badge) badge.classList.add('hidden');
     
-    // Cancel any synthetic TTS audio so it does not overlap with video audio
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
     }
 
-    // Play avatar greeting video clip (contains Oksana's cloned voice)
+    // Ensure trial lesson UI is rendered immediately on "Натисни тут"
+    updateScenarioUI();
+
+    // Instantly play avatar greeting video clip (contains Oksana's cloned voice)
     updateAvatarState('greeting');
-    
-    setTimeout(() => {
-        startCurrentScenarioLesson();
-    }, 4500);
 }
 
 function triggerFirstActionIfNeeded() {
