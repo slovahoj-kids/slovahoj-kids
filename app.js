@@ -3437,10 +3437,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Set initialLoadDone to true now that static rendering is done
     initialLoadDone = true;
     
-    // Auto-propose lesson according to progress on each visit
-    currentMonth = maxUnlockedMonth;
-    currentWeek = maxUnlockedWeek;
-    currentLessonDay = maxUnlockedDay;
+    // Always start on Month 1, Week 1, Lesson 1 (Day 1) on page reload
+    currentMonth = 1;
+    currentWeek = 1;
+    currentLessonDay = 1;
+    currentScenario = 1;
+    
     updateDropdownLockState();
 
     // Reset badge state on load so click-me is visible
@@ -3448,6 +3450,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     firstActionTriggered = false;
     const clickBadge = document.getElementById('click-me-badge');
     if (clickBadge) clickBadge.classList.remove('hidden');
+
+    // Synchronize UI texts and dropdowns, keep avatar waiting in idle mode until user action
+    applyLessonBinding(false);
+    updateAvatarState('idle');
     
     // Start parent schedule verification checker (runs every 30 seconds)
     setInterval(checkLessonSchedule, 30000);
@@ -3477,7 +3483,7 @@ window.selectTrack = selectTrack;
 // ROCK-SOLID UNIFIED LESSON BINDING (3 Dropdowns -> 4 Targets)
 // =========================================================================
 
-function applyLessonBinding() {
+function applyLessonBinding(autoplayVideo = false) {
     // 1. Sync dropdown UI elements to state
     const monthSelect = document.getElementById('month-select');
     const weekSelect = document.getElementById('week-select');
@@ -3534,8 +3540,10 @@ function applyLessonBinding() {
         if (btn) btn.classList.toggle('active', i === currentScenario);
     }
 
-    // 6. Item 4: Update Avatar Video Player
-    updateAvatarVideoPlayer();
+    // 6. Item 4: Update Avatar Video Player (ONLY if explicit autoplay requested)
+    if (autoplayVideo) {
+        updateAvatarVideoPlayer();
+    }
 }
 
 function updateAvatarVideoPlayer() {
@@ -3618,7 +3626,8 @@ function confirmLessonSelection() {
     if (trackEl) currentTrack = trackEl.value || currentTrack;
     currentScenario = currentLessonDay;
 
-    applyLessonBinding();
+    // User clicked "Підтвердити" -> Autoplay the selected lesson video
+    applyLessonBinding(true);
 }
 
 function selectTrack(t) {
