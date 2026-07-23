@@ -2488,44 +2488,6 @@ function processPayment() {
     }, 1200);
 }
 
-function startFreeTrial() {
-    // Set 7-day trial state
-    subscriptionStart = Date.now();
-    subscriptionEnd = subscriptionStart + (7 * 24 * 60 * 60 * 1000);
-    subscriptionType = 'trial';
-    saveSubState();
-    
-    // Clean any open lock screens
-    const lockModal = document.getElementById('sub-expired-lock-modal');
-    if (lockModal) lockModal.classList.add('hidden');
-    const parentExpModal = document.getElementById('parent-expiry-modal');
-    if (parentExpModal) parentExpModal.classList.add('hidden');
-
-    // Update UI components
-    updateAuthHeaderUI();
-    renderScenarioSelector();
- 
-    // Activate subscription status banner in Parent Cabinet
-    const banner = document.getElementById('subscription-status-banner');
-    if (banner) {
-        const titleEl = banner.querySelector('.sub-title');
-        if (titleEl) {
-            titleEl.setAttribute('data-i18n', 'trial_active_title');
-            titleEl.innerText = currentLang === 'uk' ? 'Ваш пробний 7-денний період активний! 🎁' : 'Ваш пробный 7-дневный период активен! 🎁';
-        }
-        
-        const detailsEl = banner.querySelector('.sub-details');
-        if (detailsEl) {
-            const expDate = new Date(subscriptionEnd);
-            const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
-            detailsEl.innerText = currentLang === 'uk'
-                ? `Пробний доступ активовано. Дійсний до ${expString}. Всі 60 сценаріїв та уроки словацької відкрито!`
-                : `Пробный доступ активирован. Действителен до ${expString}. Все 60 сценариев и уроки словацкого открыты!`;
-        }
-        banner.classList.remove('hidden');
-    }
-}
- 
 // Init App (Defined at the end of the file)
 
 
