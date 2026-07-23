@@ -879,42 +879,11 @@ const monthMetadata = {
     9: {
         theme: "Друзі, почуття, інтернет",
         weeks: {
-            1: { topic: "Емоції", phrase: "Som šťastný. Som smutný.", is_safety: false, hint: "Šťastný/smutný — емоції." },
-            2: { topic: "Дружба", phrase: "Chceš sa so mnou hraть?", is_safety: false, hint: "Просте запитання для нової дружби." },
-            3: { topic: "Онлайн-спілкування", phrase: "To je moja kamarátka z internetu", is_safety: false, hint: "Інтернет-друзі мають бути безпечними." },
-            4: { topic: "🛡️ Безпека: приватність онлайн", phrase: "Nepíšem cudzím ľuďom na internete svoju adresu ani школу", is_safety: true, hint: "Нікому не кажи особисті дані онлайн." }
-        }
-    },
-    10: {
-        theme: "Свята та культура Словаччини",
-        weeks: {
-            1: { topic: "Словацькі традиції", phrase: "Toto je slovenský sviatok.", is_safety: false, hint: "«Sviatok» — свято." },
-            2: { topic: "Пісні та ігри", phrase: "Zaspievajme spolu pieseň!", is_safety: false, hint: "Пісні допомагають вивчити мову." },
-            3: { topic: "Свято в місті", phrase: "Kde sa stretneme po programe?", is_safety: false, hint: "Домовляйся про зустріч заздалегідь." },
-            4: { topic: "🛡️ Безпека: натовп на святі", phrase: "Na sviatku vždy viem, kde sú mama a otec", is_safety: true, hint: "Тримайся ближче до батьків." }
-        }
-    },
-    11: {
-        theme: "Природа, тварини, прогулянки",
-        weeks: {
-            1: { topic: "Тварини та природа", phrase: "Pozri, aké krásne zvieratko!", is_safety: false, hint: "«Zvieratko» — тваринка." },
-            2: { topic: "Прогулянка в парку/лісі", phrase: "Ideme na prechádzku do lesa.", is_safety: false, hint: "«Les» — ліс." },
-            3: { topic: "Пікнік", phrase: "Sadneme si tu a najeme sa.", is_safety: false, hint: "Практикуй слова про їжу." },
-            4: { topic: "🛡️ Безпека: екстрені виклики", phrase: "Číslo 112 zachraňuje. Viem, ako ho vytočiť", is_safety: true, hint: "112 — екстрений виклик у Європі." }
-        }
-    },
-    12: {
-        theme: "Підсумковий: „Я вже самостійний\"",
-        weeks: {
-            1: { topic: "Повторення: привітання і знайомство", phrase: "Dobrý deň, ako sa máš?", is_safety: false, hint: "Повторення перших тем." },
-            2: { topic: "Повторення: місто, магазин, гроші", phrase: "Koľko to stojí?", is_safety: false, hint: "Покупки та розрахунки." },
-            3: { topic: "Повторення: почуття та безпека", phrase: "Moje telo patrí len mne.", is_safety: false, hint: "Повторення правил тілесної безпеки." },
-            4: { topic: "🏆 Фінальний сценарій", phrase: "Stratil som sa. Pomôžete mi?", is_safety: true, hint: "Повний підсумковий іспит безпеки!" }
+            1: { topic: "Vranči ta vvečeri", phrase: "Ráno vstávam o siedmej.", is_safety: false, hint: "Ráno = vranči" }
         }
     }
 };
 
-// Global function to get active week's lesson data
 function getLessonData(m, w) {
     if (curriculumCatalog[m] && curriculumCatalog[m].weeks[w]) {
         return curriculumCatalog[m].weeks[w];
@@ -3465,6 +3434,7 @@ function changeMonth(value) {
 
     updateDropdownLockState();
     updateScenarioUI();
+    startCurrentScenarioLesson();
 
     const monthSelect = document.getElementById('month-select');
     const weekSelect = document.getElementById('week-select');
@@ -3502,6 +3472,7 @@ function changeWeek(value) {
 
     updateDropdownLockState();
     updateScenarioUI();
+    startCurrentScenarioLesson();
 
     const weekSelect = document.getElementById('week-select');
     const lessonSelect = document.getElementById('lesson-select');
@@ -3526,6 +3497,12 @@ function selectLessonDay(day) {
     firstActionTriggered = true;
     currentLessonDay = parseInt(day);
 
+    currentScenario = currentLessonDay;
+    for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById('scenario-btn-' + i);
+        if (btn) btn.classList.toggle('active', i === currentScenario);
+    }
+
     if (currentMonth === maxUnlockedMonth && currentWeek === maxUnlockedWeek && currentLessonDay > maxUnlockedDay) {
         currentLessonDay = maxUnlockedDay;
         document.getElementById('lesson-select').value = currentLessonDay;
@@ -3535,6 +3512,7 @@ function selectLessonDay(day) {
 
     updateDropdownLockState();
     updateScenarioUI();
+    startCurrentScenarioLesson();
 
     const lessonSelect = document.getElementById('lesson-select');
     const confirmBtn = document.getElementById('btn-confirm-lesson');
