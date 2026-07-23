@@ -3662,3 +3662,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Apply translations and update chat greeting on initial load
     switchLanguage(currentLang);
 });
+
+// Explicit Global Window Bindings for HTML Event Handlers
+window.confirmLessonSelection = confirmLessonSelection;
+window.startFreeTrial = startFreeTrial;
+window.closeRegistrationModal = closeRegistrationModal;
+window.closeChildProtectionModal = closeChildProtectionModal;
+window.closePostTrialModal = closePostTrialModal;
+window.openPaymentModal = openPaymentModal;
+window.closePaymentModal = closePaymentModal;
+window.playGreetingVideo = playGreetingVideo;
+window.selectScenario = selectScenario;
