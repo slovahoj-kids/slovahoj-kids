@@ -2206,6 +2206,9 @@ function safePlayVideo(video, isIdle) {
         video.currentTime = 0;
     } catch(e) {}
 
+    // Reset video.muted to false so real recorded voice audio plays loud and clear
+    video.muted = false;
+
     const playPromise = video.play();
     if (playPromise !== undefined && typeof playPromise.then === 'function') {
         return playPromise.then(() => true).catch(err => {
@@ -3537,6 +3540,9 @@ function updateAvatarVideoPlayer() {
     const video = document.getElementById('heygen-video');
     if (!video) return;
 
+    // Reset muted state to false so avatar voice audio plays unmuted
+    video.muted = false;
+
     const padMonth = String(currentMonth).padStart(2, '0');
     const padWeek = String(currentWeek).padStart(2, '0');
     
@@ -3615,6 +3621,11 @@ function selectTrack(t) {
     firstActionTriggered = true;
     currentTrack = t;
     localStorage.setItem('slovahoj_kids_child_track', t);
+    
+    // Sync all track-select elements in DOM (Parent Cabinet & Header/Playground)
+    const trackSelects = document.querySelectorAll('#track-select, select[name="track-select"]');
+    trackSelects.forEach(el => { el.value = t; });
+
     applyLessonBinding();
 }
 
