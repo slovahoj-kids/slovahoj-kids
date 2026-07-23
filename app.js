@@ -2679,6 +2679,16 @@ function checkCabinetExpiryAlert() {
     }
 }
 
+function closeRegistrationModal() {
+    const modal = document.getElementById('registration-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function closeChildProtectionModal() {
+    const modal = document.getElementById('sub-expired-lock-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
 function closeParentExpiryModal() {
     document.getElementById('parent-expiry-modal').classList.add('hidden');
 }
