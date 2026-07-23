@@ -149,110 +149,6 @@ function resetDropdownStyles() {
     if (btn) btn.classList.remove('blinking-btn');
 }
 
-function startCurrentScenarioLesson() {
-    const sc = scenarios[currentScenario];
-    if (!sc) return;
-    
-    // Cancel any synthetic SpeechSynthesis audio so it does not overlap
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-    }
-
-    // Instantly update ALL UI fields: target phrase, tip box, task description, active scenario button
-    updateScenarioUI();
-
-    if (currentScenario === 1) {
-        // Scenario 1: Video clip contains Oksana's real video voice "Dobrý deň, ako sa máš?"
-        updateAvatarState('level_1');
-    } else {
-        // Scenarios 2-5: Mute video audio so no "Ahoj..." plays, animate avatar, and pronounce exact scenario phrase
-        const video = document.getElementById('heygen-video');
-        if (video) video.muted = true;
-
-        const reactionState = (currentScenario === 2) ? 'listening' :
-                              (currentScenario === 3) ? 'thinking' :
-                              (currentScenario === 4) ? 'surprise' : 'achievement';
-                              
-        updateAvatarState(reactionState);
-        
-        speakBilingualText(
-            sc.phrase,
-            () => {
-                updateAvatarState(reactionState);
-            },
-            () => {
-                updateAvatarState('idle');
-            }
-        );
-    }
-}
-
-function selectMonth(m) {
-    currentMonth = parseInt(m);
-    currentWeek = 1;
-    currentLessonDay = 1;
-    currentScenario = 1;
-    updateScenarioUI();
-}
-
-function selectWeek(w) {
-    currentWeek = parseInt(w);
-    currentLessonDay = 1;
-    currentScenario = 1;
-    updateScenarioUI();
-}
-
-function selectLessonDay(d) {
-    currentLessonDay = parseInt(d);
-    currentScenario = currentLessonDay;
-    for (let i = 1; i <= 5; i++) {
-        const btn = document.getElementById(`scenario-btn-${i}`);
-        if (btn) btn.classList.toggle('active', i === currentScenario);
-    }
-    updateScenarioUI();
-}
-
-function selectTrack(t) {
-    currentTrack = t;
-    localStorage.setItem('slovahoj_kids_child_track', t);
-    updateScenarioUI();
-}
-
-function confirmLessonSelection() {
-    const isPaid = isRegistered && isSubscriptionActive();
-    if (!isPaid) {
-        document.getElementById('registration-modal').classList.remove('hidden');
-        return;
-    }
-
-    const confirmBtn = document.getElementById('btn-confirm-lesson');
-    if (confirmBtn) {
-        confirmBtn.classList.remove('blinking-btn');
-    }
-    dropdownSeqStep = 0;
-
-    // Read selected values from dropdowns (Track/Age, Month, Week, Lesson Day)
-    const monthEl = document.getElementById('month-select');
-    const weekEl = document.getElementById('week-select');
-    const lessonEl = document.getElementById('lesson-select');
-    const trackEl = document.getElementById('track-select');
-
-    currentMonth = monthEl ? parseInt(monthEl.value) : currentMonth;
-    currentWeek = weekEl ? parseInt(weekEl.value) : currentWeek;
-    currentLessonDay = lessonEl ? parseInt(lessonEl.value) : currentLessonDay;
-    currentScenario = currentLessonDay; // Synchronize active scenario with chosen lesson day
-    currentTrack = trackEl ? trackEl.value : currentTrack;
-
-    for (let i = 1; i <= 5; i++) {
-        const btn = document.getElementById(`scenario-btn-${i}`);
-        if (btn) btn.classList.toggle('active', i === currentScenario);
-    }
-
-    // Update UI and start the selected lesson
-    updateScenarioUI();
-    startCurrentScenarioLesson();
-}
-
 function playGreetingVideo() {
     greetingPlayed = true;
     firstActionTriggered = true;
@@ -3569,3 +3465,180 @@ window.selectMonth = selectMonth;
 window.selectWeek = selectWeek;
 window.selectLessonDay = selectLessonDay;
 window.selectTrack = selectTrack;
+
+
+
+// =========================================================================
+// ROCK-SOLID UNIFIED LESSON BINDING (3 Dropdowns -> 4 Targets)
+// =========================================================================
+
+function applyLessonBinding() {
+    // 1. Sync dropdown UI elements to state
+    const monthSelect = document.getElementById('month-select');
+    const weekSelect = document.getElementById('week-select');
+    const lessonSelect = document.getElementById('lesson-select');
+    const trackSelect = document.getElementById('track-select');
+
+    if (monthSelect) monthSelect.value = currentMonth.toString();
+    if (weekSelect) weekSelect.value = currentWeek.toString();
+    if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
+    if (trackSelect) trackSelect.value = currentTrack;
+
+    // 2. Fetch scenario data for (currentMonth, currentWeek, currentScenario)
+    currentScenario = currentLessonDay;
+    const sc = (typeof scenarios !== 'undefined' && scenarios[currentScenario]) ? scenarios[currentScenario] : null;
+
+    // 3. Item 3: Update Right Window (Title, Description, Phrase, Scenario buttons)
+    if (sc) {
+        const taskTitleEl = document.getElementById('current-task-title');
+        if (taskTitleEl && sc.title) {
+            taskTitleEl.innerText = sc.title[currentLang] || sc.title.uk || '';
+        }
+
+        const taskDescEl = document.getElementById('current-task-desc');
+        if (taskDescEl && sc.desc) {
+            taskDescEl.innerText = sc.desc[currentLang] || sc.desc.uk || '';
+        }
+
+        const phraseContainer = document.getElementById('phrase-phoneme-container');
+        if (phraseContainer && sc.words) {
+            phraseContainer.innerHTML = '';
+            sc.words.forEach(w => {
+                const span = document.createElement('span');
+                span.className = 'phoneme-word';
+                span.innerText = w;
+                phraseContainer.appendChild(span);
+            });
+        }
+
+        // 4. Item 2: Update Pronunciation Tip Text
+        const tipTextEl = document.getElementById('pronunciation-tip-text');
+        if (tipTextEl && sc.tip) {
+            tipTextEl.innerText = typeof sc.tip === 'object' ? (sc.tip[currentLang] || sc.tip.uk || '') : sc.tip;
+        }
+
+        // 5. Item 1: Update Subtitle under Video
+        const subtitleEl = document.getElementById('tutor-speech-text');
+        if (subtitleEl) {
+            subtitleEl.innerText = sc.phrase || '';
+        }
+    }
+
+    for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById('scenario-btn-' + i);
+        if (btn) btn.classList.toggle('active', i === currentScenario);
+    }
+
+    // 6. Item 4: Update Avatar Video Player
+    updateAvatarVideoPlayer();
+}
+
+function updateAvatarVideoPlayer() {
+    const video = document.getElementById('heygen-video');
+    if (!video) return;
+
+    const padMonth = String(currentMonth).padStart(2, '0');
+    const padWeek = String(currentWeek).padStart(2, '0');
+    
+    let videoFile = `m${padMonth}_w${padWeek}_${currentTrack}.mp4`;
+    const stateName = `level_${currentScenario}`;
+
+    const absoluteUrl = new URL('./videos/' + videoFile, window.location.href).href;
+
+    video.setAttribute('data-state', stateName);
+    if (video.src !== absoluteUrl) {
+        video.src = absoluteUrl;
+    }
+    if (typeof safePlayVideo === 'function') {
+        safePlayVideo(video, false);
+    } else {
+        video.play().catch(() => {});
+    }
+}
+
+function updateScenarioUI() {
+    applyLessonBinding();
+}
+
+function startCurrentScenarioLesson() {
+    applyLessonBinding();
+}
+
+function changeMonth(value) {
+    firstActionTriggered = true;
+    currentMonth = parseInt(value) || 1;
+    currentWeek = 1;
+    currentLessonDay = 1;
+    currentScenario = 1;
+    applyLessonBinding();
+}
+
+function changeWeek(value) {
+    firstActionTriggered = true;
+    currentWeek = parseInt(value) || 1;
+    currentLessonDay = 1;
+    currentScenario = 1;
+    applyLessonBinding();
+}
+
+function selectLessonDay(day) {
+    firstActionTriggered = true;
+    currentLessonDay = parseInt(day) || 1;
+    currentScenario = currentLessonDay;
+    applyLessonBinding();
+}
+
+function selectScenario(num) {
+    firstActionTriggered = true;
+    currentScenario = parseInt(num) || 1;
+    currentLessonDay = currentScenario;
+    applyLessonBinding();
+}
+
+function confirmLessonSelection() {
+    firstActionTriggered = true;
+    const monthEl = document.getElementById('month-select');
+    const weekEl = document.getElementById('week-select');
+    const lessonEl = document.getElementById('lesson-select');
+    const trackEl = document.getElementById('track-select');
+
+    if (monthEl) currentMonth = parseInt(monthEl.value) || currentMonth;
+    if (weekEl) currentWeek = parseInt(weekEl.value) || currentWeek;
+    if (lessonEl) currentLessonDay = parseInt(lessonEl.value) || currentLessonDay;
+    if (trackEl) currentTrack = trackEl.value || currentTrack;
+    currentScenario = currentLessonDay;
+
+    applyLessonBinding();
+}
+
+function selectTrack(t) {
+    firstActionTriggered = true;
+    currentTrack = t;
+    localStorage.setItem('slovahoj_kids_child_track', t);
+    applyLessonBinding();
+}
+
+function updateDropdownLockState() {
+    ['month-select', 'week-select', 'lesson-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = false;
+            el.classList.remove('disabled-dropdown');
+            el.removeAttribute('title');
+        }
+    });
+    const confirmBtn = document.getElementById('btn-confirm-lesson');
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.classList.remove('disabled-btn');
+        confirmBtn.removeAttribute('title');
+    }
+}
+
+function selectMonth(m) {
+    changeMonth(m);
+}
+
+function selectWeek(w) {
+    changeWeek(w);
+}
