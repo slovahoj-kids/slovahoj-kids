@@ -263,11 +263,9 @@ function playGreetingVideo() {
         window.speechSynthesis.cancel();
     }
 
-    // Ensure trial lesson UI is rendered immediately on "Натисни тут"
+    // Render trial lesson UI and start Lesson 1 audio/video synchronously
     updateScenarioUI();
-
-    // Instantly play avatar greeting video clip (contains Oksana's cloned voice)
-    updateAvatarState('greeting');
+    startCurrentScenarioLesson();
 }
 
 function triggerFirstActionIfNeeded() {
