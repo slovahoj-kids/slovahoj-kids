@@ -158,25 +158,22 @@ function startCurrentScenarioLesson() {
         window.speechSynthesis.cancel();
     }
 
-    // Instantly update UI fields for target phrase, tip, task description
+    // Instantly update ALL UI fields: target phrase, tip box, task description, active scenario button
     updateScenarioUI();
 
-    if (currentScenario === 1) {
-        // Scenario 1: Video clip contains Oksana's video audio "Dobrý deň, ako sa máš?"
-        updateAvatarState('level_1');
-    } else {
-        // Scenarios 2-5: Switch to animated speech/listening video clip and pronounce the exact phrase!
-        updateAvatarState('listening');
-        speakBilingualText(
-            sc.phrase,
-            () => {
-                updateAvatarState('listening');
-            },
-            () => {
-                updateAvatarState('idle');
-            }
-        );
-    }
+    // Trigger video clip for the current scenario
+    updateAvatarState('level_' + currentScenario);
+    
+    // Pronounce the exact Slovak phrase matching the displayed text
+    speakBilingualText(
+        sc.phrase,
+        () => {
+            updateAvatarState('listening');
+        },
+        () => {
+            updateAvatarState('idle');
+        }
+    );
 }
 
 function confirmLessonSelection() {
@@ -191,8 +188,34 @@ function confirmLessonSelection() {
         confirmBtn.classList.remove('blinking-btn');
     }
     dropdownSeqStep = 0;
-    
-    // Ensure current scenario is completed and saved
+
+    // 1. Read selected values from dropdowns (Age/Track, Month, Week, Day)
+    const monthEl = document.getElementById('month-select');
+    const weekEl = document.getElementById('week-select');
+    const lessonEl = document.getElementById('lesson-select');
+    const trackEl = document.getElementById('track-select');
+
+    const selMonth = monthEl ? parseInt(monthEl.value) : currentMonth;
+    const selWeek = weekEl ? parseInt(weekEl.value) : currentWeek;
+    const selDay = lessonEl ? parseInt(lessonEl.value) : currentLessonDay;
+    const selTrack = trackEl ? trackEl.value : currentTrack;
+
+    const isDropdownNav = (selMonth !== currentMonth || selWeek !== currentWeek || selTrack !== currentTrack);
+
+    if (isDropdownNav) {
+        // User selected a past or different lesson from dropdowns for review
+        currentMonth = selMonth;
+        currentWeek = selWeek;
+        currentLessonDay = selDay;
+        currentScenario = selDay;
+        currentTrack = selTrack;
+        
+        selectScenario(currentScenario);
+        startCurrentScenarioLesson();
+        return;
+    }
+
+    // 2. Ensure current scenario is completed and saved
     if (!completedScenarios.includes(currentScenario)) {
         completedScenarios.push(currentScenario);
         saveCompletedScenarios();
@@ -203,7 +226,7 @@ function confirmLessonSelection() {
         const msg = currentLang === 'uk' ? 'Чудово! Переходимо до наступного завдання!' : 'Отлично! Переходим к следующему заданию!';
         appendChatBubble('tutor', msg);
     } else {
-        // Advance to next Week/Lesson!
+        // Advance to next Week/Month!
         if (currentWeek < 4) {
             currentWeek += 1;
         } else if (currentMonth < 12) {
@@ -211,6 +234,7 @@ function confirmLessonSelection() {
             currentWeek = 1;
         }
         currentScenario = 1;
+        currentLessonDay = 1;
         
         // Unlock new progress in localStorage
         if (currentMonth > maxUnlockedMonth || (currentMonth === maxUnlockedMonth && currentWeek > maxUnlockedWeek)) {
