@@ -1399,7 +1399,6 @@ function selectScenario(num) {
         const btn = document.getElementById(`scenario-btn-${i}`);
         if (btn) btn.classList.toggle('active', i === num);
     }
-    handleUserInteraction();
     updateScenarioUI();
 }
 
@@ -1418,25 +1417,23 @@ function updateScenarioUI() {
     if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
 
     const sc = scenarios[currentScenario];
-    document.getElementById('current-task-desc').innerText = sc.desc[currentLang];
-    const titleEl = document.querySelector('.controls-panel h2');
-    if (titleEl) titleEl.innerText = sc.title[currentLang];
-    
-    const phraseContainer = document.getElementById('phrase-phoneme-container');
-    phraseContainer.innerHTML = '';
-    sc.words.forEach(w => {
-        const span = document.createElement('span');
-        span.className = 'phoneme-word';
-        span.innerText = w;
-        phraseContainer.appendChild(span);
-    });
-    
-    document.getElementById('pronunciation-tip-text').innerText = sc.tip[currentLang];
-    document.getElementById('speech-feedback-card').classList.add('hidden');
-    
-    if (initialLoadDone && firstActionTriggered) {
-        updateAvatarState('level_' + currentScenario);
+    if (sc) {
+        document.getElementById('current-task-desc').innerText = sc.desc[currentLang];
+        const titleEl = document.querySelector('.controls-panel h2');
+        if (titleEl) titleEl.innerText = sc.title[currentLang];
+        
+        const phraseContainer = document.getElementById('phrase-phoneme-container');
+        phraseContainer.innerHTML = '';
+        sc.words.forEach(w => {
+            const span = document.createElement('span');
+            span.className = 'phoneme-word';
+            span.innerText = w;
+            phraseContainer.appendChild(span);
+        });
+        
+        document.getElementById('pronunciation-tip-text').innerText = sc.tip[currentLang];
     }
+    document.getElementById('speech-feedback-card').classList.add('hidden');
     
     // Dynamically update the emoji/label on scenario buttons
     updateScenarioButtonsContent();
