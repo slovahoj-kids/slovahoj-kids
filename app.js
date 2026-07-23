@@ -178,7 +178,7 @@ function confirmLessonSelection() {
     }
     dropdownSeqStep = 0;
     
-    // Ensure current scenario is completed and automatically advance to next scenario phrase
+    // Ensure current scenario is completed and saved
     if (!completedScenarios.includes(currentScenario)) {
         completedScenarios.push(currentScenario);
         saveCompletedScenarios();
@@ -189,10 +189,29 @@ function confirmLessonSelection() {
         const msg = currentLang === 'uk' ? 'Чудово! Переходимо до наступного завдання!' : 'Отлично! Переходим к следующему заданию!';
         appendChatBubble('tutor', msg);
     } else {
-        updateScenarioUI();
+        // Advance to next Week/Lesson!
+        if (currentWeek < 4) {
+            currentWeek += 1;
+        } else if (currentMonth < 12) {
+            currentMonth += 1;
+            currentWeek = 1;
+        }
+        currentScenario = 1;
+        
+        // Unlock new progress in localStorage
+        if (currentMonth > maxUnlockedMonth || (currentMonth === maxUnlockedMonth && currentWeek > maxUnlockedWeek)) {
+            maxUnlockedMonth = currentMonth;
+            maxUnlockedWeek = currentWeek;
+            saveProgressState();
+        }
+
+        updateDropdownLockState();
+        selectScenario(1);
+        const msg = currentLang === 'uk' ? 'Вітаємо! Ти пройшов усі завдання тижня і переходиш до нового уроку!' : 'Поздравляем! Ты прошёл все задания недели и переходишь к новому уроку!';
+        appendChatBubble('tutor', msg);
     }
 
-    // For activated packages: Lesson starts ONLY AFTER pressing "Підтвердити"!
+    // Start video & speech for the new scenario
     startCurrentScenarioLesson();
 }
 
@@ -913,27 +932,71 @@ function getLessonData(m, w) {
 const scenarios = new Proxy({}, {
     get: function(target, prop) {
         const idx = parseInt(prop);
+        if (isNaN(idx) || idx < 1 || idx > 5) return null;
+        
         const data = getLessonData(currentMonth, currentWeek);
         if (!data) return null;
-        const trackData = data.tracks[currentTrack];
-        const sc = data.scenarios[idx - 1];
+        
+        const trackData = (data.tracks && data.tracks[currentTrack]) ? data.tracks[currentTrack] : (data.tracks ? data.tracks.junior : { phrase: "Dobrý deň!", words: ["Dobrý", "deň!"] });
+        const sc = data.scenarios ? data.scenarios[idx - 1] : null;
         if (!sc) return null;
+
+        let scPhrase = sc.phrase || trackData.phrase;
+        let scWords = sc.words || trackData.words;
+        let scTip = sc.hint || data.hint;
+        
+        // Scenario-specific distinct phrase variations for Month 1 Week 1
+        if (currentMonth === 1 && currentWeek === 1) {
+            const m1w1Scenarios = [
+                {
+                    phrase: "Dobrý deň, ako sa máš?",
+                    words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
+                    tip: { uk: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко, як 'нь'!", ru: "«Dobrý deň» — это вежливое приветствие «Добрый день», а буква 'ň' в слове 'deň' произносится мягко, как 'нь'!" }
+                },
+                {
+                    phrase: "Ďakujem, mám sa veľmi dobre!",
+                    words: ["Ďakujem,", "mám", "sa", "veľmi", "dobre!"],
+                    tip: { uk: "«Ďakujem» означає «дякую» — зверни увагу на м'який звук 'ď' у слові!", ru: "«Ďakujem» означает «спасибо» — обрати внимание на мягкий звук 'ď' в слове!" }
+                },
+                {
+                    phrase: "Ahoj, ako sa voláš?",
+                    words: ["Ahoj,", "ako", "sa", "voláš?"],
+                    tip: { uk: "«Ako sa voláš?» — це дружнє запитання «Як тебе звати?»", ru: "«Ako sa voláš?» — это дружеский вопрос «Как тебя зовут?»" }
+                },
+                {
+                    phrase: "Teší ma, ja som Oksana.",
+                    words: ["Teší", "ma,", "ja", "som", "Oksana."],
+                    tip: { uk: "«Teší ma» означає «Дуже приємно познайомитися»!", ru: "«Teší ma» означает «Очень приятно познакомиться»!" }
+                },
+                {
+                    phrase: "Dovidenia, prajem pekný deň!",
+                    words: ["Dovidenia,", "prajem", "pekný", "deň!"],
+                    tip: { uk: "«Dovidenia» — ввічливе прощання «До побачення», а «pekný deň» — «гарного дня»!", ru: "«Dovidenia» — вежливое прощание «До свидания», а «pekný deň» — «хорошего дня»!" }
+                }
+            ];
+            const override = m1w1Scenarios[idx - 1];
+            if (override) {
+                scPhrase = override.phrase;
+                scWords = override.words;
+                scTip = override.tip;
+            }
+        }
 
         return {
             title: { uk: sc.title.uk, ru: sc.title.ru },
-            title_icon: sc.title_icon || prop,
+            title_icon: sc.title_icon || idx,
             desc: {
-                uk: `Завдання: ${sc.title.uk}. Повтори: "${trackData.phrase}"`,
-                ru: `Задание: ${sc.title.ru}. Повтори: "${trackData.phrase}"`
+                uk: `Завдання: ${sc.title.uk}. Вимовте: "${scPhrase}"`,
+                ru: `Задание: ${sc.title.ru}. Произнесите: "${scPhrase}"`
             },
-            phrase: trackData.phrase,
-            words: trackData.words,
-            tip: { uk: data.hint.uk, ru: data.hint.ru },
+            phrase: scPhrase,
+            words: scWords,
+            tip: { uk: (scTip ? (scTip[currentLang] || scTip.uk) : ''), ru: (scTip ? (scTip.ru || scTip.uk) : '') },
             phoneticTip: {
-                uk: `Будь уважним! Спробуй вимовити чіткіше словацькі звуки. Зверни увагу на '${trackData.words[0]}'`,
-                ru: `Будь внимателен! Попробуй произнести четче словацкие звуки. Обрати внимание на '${trackData.words[0]}'`
+                uk: `Будь уважним! Спробуй вимовити чіткіше словацькі звуки. Зверни увагу на '${scWords[0]}'`,
+                ru: `Будь внимателен! Попробуй произнести четче словацкие звуки. Обрати внимание на '${scWords[0]}'`
             },
-            audioCorrection: trackData.words[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"")
+            audioCorrection: scWords[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"")
         };
     }
 });
