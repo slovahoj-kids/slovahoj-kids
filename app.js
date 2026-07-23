@@ -153,16 +153,22 @@ function startCurrentScenarioLesson() {
     const sc = scenarios[currentScenario];
     if (!sc) return;
     
-    // Cancel any synthetic TTS audio so it does not overlap
+    // Cancel any synthetic SpeechSynthesis audio so it does not overlap
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
     }
 
-    // Instantly update UI fields for target phrase
+    // Instantly update UI fields for target phrase, tip, task description
     updateScenarioUI();
 
-    // Trigger video playback for current scenario (video contains Oksana's audio track)
-    updateAvatarState('level_' + currentScenario);
+    if (currentScenario === 1) {
+        // Scenario 1: Video clip contains Oksana's audio "Dobrý deň, ako sa máš?"
+        updateAvatarState('level_1');
+    } else {
+        // Scenarios 2-5: Pronounce the exact target phrase matching the displayed text!
+        updateAvatarState('idle');
+        speakBilingualText(sc.phrase);
+    }
 }
 
 function confirmLessonSelection() {
