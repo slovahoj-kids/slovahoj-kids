@@ -197,6 +197,124 @@ function handleUserInteraction() {
     return true;
 }
 
+// Bilingual Hybrid Speech Engine: Segments Ukrainian explanations and Slovak words
+async function speakBilingualText(text, onStart, onEnd) {
+    if (!envKeys) {
+        try { await loadEnv(); } catch (e) {}
+    }
+    const apiKey = (envKeys && envKeys.ELEVENLABS_API_KEY) ? envKeys.ELEVENLABS_API_KEY : "sk_e0254d733c5b717c214ee0ee36d09822fa134541eeab04a3";
+    const voiceId = (envKeys && envKeys.OKSANA_VOICE_ID) ? envKeys.OKSANA_VOICE_ID : "Tyg9nFvhX2bJikrsvQGN";
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+
+    // ElevenLabs Multilingual V2 stream
+    if (apiKey && voiceId) {
+        fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'audio/mpeg',
+                'Content-Type': 'application/json',
+                'xi-api-key': apiKey
+            },
+            body: JSON.stringify({
+                text: text,
+                model_id: "eleven_multilingual_v2",
+                voice_settings: { stability: 0.5, similarity_boost: 0.8 }
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("ElevenLabs API status: " + res.status);
+            return res.blob();
+        })
+        .then(blob => {
+            const audio = new Audio(URL.createObjectURL(blob));
+            if (onStart) onStart();
+            audio.onended = () => { if (onEnd) onEnd(); };
+            audio.onerror = () => { if (onEnd) onEnd(); };
+            audio.play();
+        })
+        .catch(e => {
+            console.warn("ElevenLabs TTS fallback to WebSpeech:", e);
+            fallbackWebSpeechBilingual(text, onStart, onEnd);
+        });
+        return;
+    }
+
+    fallbackWebSpeechBilingual(text, onStart, onEnd);
+}
+
+function fallbackWebSpeechBilingual(text, onStart, onEnd) {
+    const tokens = [];
+    let currLang = null;
+    let currChunk = "";
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const isLatin = /[a-zA-ZáäčďéíĺľňóôŕšťúýžÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ]/.test(char);
+        const isCyrillic = /[а-яА-ЯііїїєєґҐёЁ]/.test(char);
+
+        let charLang = currLang;
+        if (isLatin) {
+            charLang = 'sk-SK';
+        } else if (isCyrillic) {
+            charLang = currentLang === 'uk' ? 'uk-UA' : 'ru-RU';
+        }
+
+        if (!currLang) currLang = charLang || (currentLang === 'uk' ? 'uk-UA' : 'ru-RU');
+
+        if (charLang && charLang !== currLang && isLatin !== (currLang === 'sk-SK')) {
+            if (currChunk.trim()) {
+                tokens.push({ text: currChunk, lang: currLang });
+            }
+            currChunk = char;
+            currLang = charLang;
+        } else {
+            currChunk += char;
+        }
+    }
+    if (currChunk.trim()) {
+        tokens.push({ text: currChunk, lang: currLang });
+    }
+
+    const validTokens = tokens.filter(t => t.text.trim().length > 0);
+    if (validTokens.length === 0) {
+        if (onEnd) onEnd();
+        return;
+    }
+
+    if (onStart) onStart();
+
+    const voices = window.speechSynthesis.getVoices();
+    const skVoice = voices.find(v => v.lang.startsWith('sk') || v.lang.startsWith('cs'));
+    const ukVoice = voices.find(v => v.lang.startsWith('uk') || v.lang.startsWith('ru'));
+
+    let finishedCount = 0;
+    validTokens.forEach((token, idx) => {
+        const utterance = new SpeechSynthesisUtterance(token.text);
+        utterance.lang = token.lang;
+        utterance.rate = token.lang === 'sk-SK' ? 0.82 : 0.88;
+        utterance.pitch = 1.15;
+
+        if (token.lang === 'sk-SK' && skVoice) {
+            utterance.voice = skVoice;
+        } else if (token.lang !== 'sk-SK' && ukVoice) {
+            utterance.voice = ukVoice;
+        }
+
+        const handleDone = () => {
+            finishedCount++;
+            if (finishedCount === validTokens.length && onEnd) onEnd();
+        };
+
+        utterance.onend = handleDone;
+        utterance.onerror = handleDone;
+
+        window.speechSynthesis.speak(utterance);
+    });
+}
+
 function playTipAudio() {
     const tipTextEl = document.getElementById('pronunciation-tip-text');
     if (!tipTextEl) return;
@@ -204,33 +322,12 @@ function playTipAudio() {
     if (!text) return;
 
     const tipBox = document.getElementById('tip-box-clickable');
-    if (tipBox) {
-        tipBox.classList.add('playing');
-    }
 
-    // Accessibility TTS audio readout: SpeechSynthesis leaves the video player in its idle loop!
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = currentLang === 'uk' ? 'uk-UA' : 'ru-RU';
-        utterance.rate = 0.88;
-        utterance.pitch = 1.15;
-
-        utterance.onend = function() {
-            if (tipBox) tipBox.classList.remove('playing');
-        };
-
-        utterance.onerror = function() {
-            if (tipBox) tipBox.classList.remove('playing');
-        };
-
-        window.speechSynthesis.speak(utterance);
-    } else {
-        if (tipBox) {
-            setTimeout(() => tipBox.classList.remove('playing'), 3000);
-        }
-    }
+    speakBilingualText(
+        text,
+        () => { if (tipBox) tipBox.classList.add('playing'); },
+        () => { if (tipBox) tipBox.classList.remove('playing'); }
+    );
 }
 
 function playTaskAudio() {
@@ -246,33 +343,12 @@ function playTaskAudio() {
     if (!fullText.trim()) return;
 
     const btn = document.getElementById('btn-read-task');
-    if (btn) {
-        btn.classList.add('playing');
-    }
 
-    // SpeechSynthesis Audio readout for low-vision accessibility (leaves video player in idle loop)
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(fullText);
-        utterance.lang = currentLang === 'uk' ? 'uk-UA' : 'ru-RU';
-        utterance.rate = 0.88;
-        utterance.pitch = 1.15;
-
-        utterance.onend = function() {
-            if (btn) btn.classList.remove('playing');
-        };
-
-        utterance.onerror = function() {
-            if (btn) btn.classList.remove('playing');
-        };
-
-        window.speechSynthesis.speak(utterance);
-    } else {
-        if (btn) {
-            setTimeout(() => btn.classList.remove('playing'), 3000);
-        }
-    }
+    speakBilingualText(
+        fullText,
+        () => { if (btn) btn.classList.add('playing'); },
+        () => { if (btn) btn.classList.remove('playing'); }
+    );
 }
 
 // Explicit global window bindings for inline HTML handlers
