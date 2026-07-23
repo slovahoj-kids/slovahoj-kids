@@ -161,19 +161,30 @@ function startCurrentScenarioLesson() {
     // Instantly update ALL UI fields: target phrase, tip box, task description, active scenario button
     updateScenarioUI();
 
-    // Trigger video clip for the current scenario
-    updateAvatarState('level_' + currentScenario);
-    
-    // Pronounce the exact Slovak phrase matching the displayed text
-    speakBilingualText(
-        sc.phrase,
-        () => {
-            updateAvatarState('listening');
-        },
-        () => {
-            updateAvatarState('idle');
-        }
-    );
+    if (currentScenario === 1) {
+        // Scenario 1: Video clip contains Oksana's real video voice "Dobrý deň, ako sa máš?"
+        updateAvatarState('level_1');
+    } else {
+        // Scenarios 2-5: Mute video audio so no "Ahoj..." plays, animate avatar, and pronounce exact scenario phrase
+        const video = document.getElementById('heygen-video');
+        if (video) video.muted = true;
+
+        const reactionState = (currentScenario === 2) ? 'listening' :
+                              (currentScenario === 3) ? 'thinking' :
+                              (currentScenario === 4) ? 'surprise' : 'achievement';
+                              
+        updateAvatarState(reactionState);
+        
+        speakBilingualText(
+            sc.phrase,
+            () => {
+                updateAvatarState(reactionState);
+            },
+            () => {
+                updateAvatarState('idle');
+            }
+        );
+    }
 }
 
 function confirmLessonSelection() {
