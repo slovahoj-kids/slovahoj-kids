@@ -162,12 +162,20 @@ function startCurrentScenarioLesson() {
     updateScenarioUI();
 
     if (currentScenario === 1) {
-        // Scenario 1: Video clip contains Oksana's audio "Dobrý deň, ako sa máš?"
+        // Scenario 1: Video clip contains Oksana's video audio "Dobrý deň, ako sa máš?"
         updateAvatarState('level_1');
     } else {
-        // Scenarios 2-5: Pronounce the exact target phrase matching the displayed text!
-        updateAvatarState('idle');
-        speakBilingualText(sc.phrase);
+        // Scenarios 2-5: Switch to animated speech/listening video clip and pronounce the exact phrase!
+        updateAvatarState('listening');
+        speakBilingualText(
+            sc.phrase,
+            () => {
+                updateAvatarState('listening');
+            },
+            () => {
+                updateAvatarState('idle');
+            }
+        );
     }
 }
 
