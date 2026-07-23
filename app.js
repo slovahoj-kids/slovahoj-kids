@@ -153,11 +153,13 @@ function startCurrentScenarioLesson() {
     const sc = scenarios[currentScenario];
     if (!sc) return;
     
-    // Trigger video playback for current scenario
+    // Cancel any synthetic TTS audio so it does not overlap with video audio
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+
+    // Trigger video playback for current scenario (video contains Oksana's audio track)
     updateAvatarState('level_' + currentScenario);
-    
-    // Pronounce Slovak phrase
-    speakSlovak(sc.phrase);
 }
 
 function confirmLessonSelection() {
@@ -195,9 +197,13 @@ function playGreetingVideo() {
     const badge = document.getElementById('click-me-badge');
     if (badge) badge.classList.add('hidden');
     
-    // Play avatar greeting video clip & speak intro greeting
+    // Cancel any synthetic TTS audio so it does not overlap with video audio
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+
+    // Play avatar greeting video clip (contains Oksana's cloned voice)
     updateAvatarState('greeting');
-    speakSlovak("Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!");
     
     setTimeout(() => {
         startCurrentScenarioLesson();
@@ -2277,6 +2283,9 @@ function bindVideoStateHandlers() {
 }
 
 function updateAvatarState(state) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
     console.log("Avatar state updated to:", state);
     const video = document.getElementById('heygen-video');
     const fallback = document.getElementById('avatar-fallback');
