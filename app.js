@@ -2427,11 +2427,7 @@ function updateAvatarState(state) {
             subtitleText = 'Fantastické! Gratulujem!';
             break;
         case 'lesson_intro':
-        case 'level_1':
-        case 'level_2':
-        case 'level_3':
-        case 'level_4':
-        case 'level_5': {
+        case 'level_1': {
             const padMonth = String(currentMonth).padStart(2, '0');
             const padWeek = String(currentWeek).padStart(2, '0');
             videoFile = `m${padMonth}_w${padWeek}_${currentTrack}.mp4`;
@@ -2440,6 +2436,22 @@ function updateAvatarState(state) {
             }
             break;
         }
+        case 'level_2':
+            videoFile = 'reaction_listening.mp4';
+            if (scenarios[2]) subtitleText = scenarios[2].phrase;
+            break;
+        case 'level_3':
+            videoFile = 'reaction_thinking.mp4';
+            if (scenarios[3]) subtitleText = scenarios[3].phrase;
+            break;
+        case 'level_4':
+            videoFile = 'reaction_surprise.mp4';
+            if (scenarios[4]) subtitleText = scenarios[4].phrase;
+            break;
+        case 'level_5':
+            videoFile = 'reaction_achievement.mp4';
+            if (scenarios[5]) subtitleText = scenarios[5].phrase;
+            break;
         default:
             videoFile = 'reaction_idle.mp4';
             subtitleText = 'Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!';
@@ -2460,10 +2472,11 @@ function updateAvatarState(state) {
     
     const absoluteUrl = new URL(VIDEO_BASE_URL + videoFile, window.location.href).href;
     
-    if (video.src !== absoluteUrl) {
-        video.src = absoluteUrl;
-        try { video.load(); } catch(e) {}
-    }
+    video.src = absoluteUrl;
+    try {
+        video.currentTime = 0;
+        video.load();
+    } catch(e) {}
 
     return safePlayVideo(video, isIdle);
 }
