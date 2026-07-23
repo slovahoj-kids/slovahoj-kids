@@ -2124,6 +2124,30 @@ function resetFeedback() {
 
 const VIDEO_BASE_URL = './videos/';
 
+function safePlayVideo(video, isIdle) {
+    if (!video) return Promise.resolve(false);
+    video.classList.remove('hidden');
+    const fallback = document.getElementById('avatar-fallback');
+    if (fallback) fallback.classList.add('hidden');
+
+    try {
+        video.currentTime = 0;
+    } catch(e) {}
+
+    const playPromise = video.play();
+    if (playPromise !== undefined && typeof playPromise.then === 'function') {
+        return playPromise.then(() => true).catch(err => {
+            console.warn("Video playback blocked or failed:", err);
+            if (!isIdle) {
+                // Instantly fallback to idle loop
+                updateAvatarState('idle');
+            }
+            return false;
+        });
+    }
+    return Promise.resolve(true);
+}
+
 function bindVideoStateHandlers() {
     const video = document.getElementById('heygen-video');
     if (!video) return;
@@ -2131,11 +2155,6 @@ function bindVideoStateHandlers() {
     const handleClipEnd = () => {
         const currentState = video.getAttribute('data-state');
         console.log("Video clip finished playing. Current state:", currentState);
-        if (currentState === 'greeting' || currentState === 'greet') {
-            if (typeof triggerFirstActionIfNeeded === 'function') {
-                triggerFirstActionIfNeeded();
-            }
-        }
         if (currentState !== 'idle') {
             updateAvatarState('idle');
         }
@@ -2144,7 +2163,9 @@ function bindVideoStateHandlers() {
     video.onended = handleClipEnd;
     video.onerror = () => {
         console.warn("Video clip playback error, returning avatar to idle loop");
-        updateAvatarState('idle');
+        if (video.getAttribute('data-state') !== 'idle') {
+            updateAvatarState('idle');
+        }
     };
 
     if (!video.dataset.eventsBound) {
@@ -2156,7 +2177,9 @@ function bindVideoStateHandlers() {
             }
         });
         video.addEventListener('error', () => {
-            updateAvatarState('idle');
+            if (video.getAttribute('data-state') !== 'idle') {
+                updateAvatarState('idle');
+            }
         });
     }
 }
@@ -2246,11 +2269,11 @@ function updateAvatarState(state) {
         subtitleEl.innerHTML = subtitleText;
     }
 
-    if (state === 'idle') {
-        video.loop = true;
+    const isIdle = (state === 'idle');
+    video.loop = isIdle;
+    if (isIdle) {
         video.setAttribute('loop', 'true');
     } else {
-        video.loop = false;
         video.removeAttribute('loop');
     }
     
@@ -2258,48 +2281,10 @@ function updateAvatarState(state) {
     
     if (video.src !== absoluteUrl) {
         video.src = absoluteUrl;
+        try { video.load(); } catch(e) {}
     }
-    video.classList.remove('hidden');
-    fallback.classList.add('hidden');
-    
-    try {
-        const playPromise = video.play();
-        if (playPromise !== undefined && typeof playPromise.then === 'function') {
-            return playPromise.then(() => {
-                return true;
-            }).catch(err => {
-                console.warn("Pre-recorded video play failed or not found, falling back to idle or static avatar.", err);
-                if (state !== 'idle') {
-                    video.src = new URL(VIDEO_BASE_URL + 'reaction_idle.mp4', window.location.href).href;
-                    video.loop = true;
-                    video.play().catch(() => {
-                        video.classList.add('hidden');
-                        fallback.classList.remove('hidden');
-                    });
-                } else {
-                    video.classList.add('hidden');
-                    fallback.classList.remove('hidden');
-                }
-                return false;
-            });
-        } else {
-            return Promise.resolve(true);
-        }
-    } catch (e) {
-        console.warn("video.play() synchronous exception caught:", e);
-        if (state !== 'idle') {
-            video.src = new URL(VIDEO_BASE_URL + 'reaction_idle.mp4', window.location.href).href;
-            video.loop = true;
-            video.play().catch(() => {
-                video.classList.add('hidden');
-                fallback.classList.remove('hidden');
-            });
-        } else {
-            video.classList.add('hidden');
-            fallback.classList.remove('hidden');
-        }
-        return Promise.resolve(false);
-    }
+
+    return safePlayVideo(video, isIdle);
 }
 
 // 7. Parent Dashboard: Render Progress Chart
