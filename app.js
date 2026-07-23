@@ -159,9 +159,8 @@ function playGreetingVideo() {
         window.speechSynthesis.cancel();
     }
 
-    // Render trial lesson UI and start Lesson 1 audio/video synchronously
-    updateScenarioUI();
-    startCurrentScenarioLesson();
+    // Play Oksana's greeting video clip (reaction_greeting.mp4)
+    updateAvatarState('greeting');
 }
 
 function triggerFirstActionIfNeeded() {
@@ -2237,7 +2236,10 @@ function bindVideoStateHandlers() {
     const handleClipEnd = () => {
         const currentState = video.getAttribute('data-state');
         console.log("Video clip finished playing. Current state:", currentState);
-        if (currentState !== 'idle') {
+        if (currentState === 'greeting' || currentState === 'greet') {
+            // After Oksana's greeting video finishes, seamlessly transition to active lesson UI & video
+            applyLessonBinding();
+        } else if (currentState !== 'idle') {
             updateAvatarState('idle');
         }
     };
@@ -3540,8 +3542,10 @@ function updateAvatarVideoPlayer() {
     const video = document.getElementById('heygen-video');
     if (!video) return;
 
-    // Reset muted state to false so avatar voice audio plays unmuted
+    // Unmute audio for Oksana's voice and disable looping for lesson clips
     video.muted = false;
+    video.loop = false;
+    video.removeAttribute('loop');
 
     const padMonth = String(currentMonth).padStart(2, '0');
     const padWeek = String(currentWeek).padStart(2, '0');
