@@ -200,67 +200,19 @@ function confirmLessonSelection() {
     }
     dropdownSeqStep = 0;
 
-    // 1. Read selected values from dropdowns (Age/Track, Month, Week, Day)
+    // Read selected values from dropdowns (Track/Age, Month, Week, Lesson Day)
     const monthEl = document.getElementById('month-select');
     const weekEl = document.getElementById('week-select');
     const lessonEl = document.getElementById('lesson-select');
     const trackEl = document.getElementById('track-select');
 
-    const selMonth = monthEl ? parseInt(monthEl.value) : currentMonth;
-    const selWeek = weekEl ? parseInt(weekEl.value) : currentWeek;
-    const selDay = lessonEl ? parseInt(lessonEl.value) : currentLessonDay;
-    const selTrack = trackEl ? trackEl.value : currentTrack;
+    currentMonth = monthEl ? parseInt(monthEl.value) : currentMonth;
+    currentWeek = weekEl ? parseInt(weekEl.value) : currentWeek;
+    currentLessonDay = lessonEl ? parseInt(lessonEl.value) : currentLessonDay;
+    currentTrack = trackEl ? trackEl.value : currentTrack;
 
-    const isDropdownNav = (selMonth !== currentMonth || selWeek !== currentWeek || selTrack !== currentTrack);
-
-    if (isDropdownNav) {
-        // User selected a past or different lesson from dropdowns for review
-        currentMonth = selMonth;
-        currentWeek = selWeek;
-        currentLessonDay = selDay;
-        currentScenario = selDay;
-        currentTrack = selTrack;
-        
-        selectScenario(currentScenario);
-        startCurrentScenarioLesson();
-        return;
-    }
-
-    // 2. Ensure current scenario is completed and saved
-    if (!completedScenarios.includes(currentScenario)) {
-        completedScenarios.push(currentScenario);
-        saveCompletedScenarios();
-    }
-
-    if (currentScenario < 5) {
-        selectScenario(currentScenario + 1);
-        const msg = currentLang === 'uk' ? 'Чудово! Переходимо до наступного завдання!' : 'Отлично! Переходим к следующему заданию!';
-        appendChatBubble('tutor', msg);
-    } else {
-        // Advance to next Week/Month!
-        if (currentWeek < 4) {
-            currentWeek += 1;
-        } else if (currentMonth < 12) {
-            currentMonth += 1;
-            currentWeek = 1;
-        }
-        currentScenario = 1;
-        currentLessonDay = 1;
-        
-        // Unlock new progress in localStorage
-        if (currentMonth > maxUnlockedMonth || (currentMonth === maxUnlockedMonth && currentWeek > maxUnlockedWeek)) {
-            maxUnlockedMonth = currentMonth;
-            maxUnlockedWeek = currentWeek;
-            saveProgressState();
-        }
-
-        updateDropdownLockState();
-        selectScenario(1);
-        const msg = currentLang === 'uk' ? 'Вітаємо! Ти пройшов усі завдання тижня і переходиш до нового уроку!' : 'Поздравляем! Ты прошёл все задания недели и переходишь к новому уроку!';
-        appendChatBubble('tutor', msg);
-    }
-
-    // Start video & speech for the new scenario
+    // Update UI and start the selected lesson without auto-jumping scenario icons
+    updateScenarioUI();
     startCurrentScenarioLesson();
 }
 
@@ -1534,6 +1486,12 @@ function updateChatHistoryLanguage() {
 
 // 4.5. Scenario & Milestone Operations
 function selectScenario(num) {
+    const isLocked = (num !== 1 && !completedScenarios.includes(num - 1));
+    if (isLocked) {
+        alert(currentLang === 'uk' ? 'Спочатку вимовте фразу з попереднього завдання в мікрофон!' : 'Сначала произнесите фразу из предыдущего задания в микрофон!');
+        return;
+    }
+
     currentScenario = num;
     attemptCount = 0;
     for (let i = 1; i <= 5; i++) {
@@ -1541,6 +1499,7 @@ function selectScenario(num) {
         if (btn) btn.classList.toggle('active', i === num);
     }
     updateScenarioUI();
+    startCurrentScenarioLesson();
 }
 
 function updateScenarioUI() {
