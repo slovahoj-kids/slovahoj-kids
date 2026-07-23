@@ -149,6 +149,17 @@ function resetDropdownStyles() {
     if (btn) btn.classList.remove('blinking-btn');
 }
 
+function startCurrentScenarioLesson() {
+    const sc = scenarios[currentScenario];
+    if (!sc) return;
+    
+    // Trigger video playback for current scenario
+    updateAvatarState('level_' + currentScenario);
+    
+    // Pronounce Slovak phrase
+    speakSlovak(sc.phrase);
+}
+
 function confirmLessonSelection() {
     const isPaid = isRegistered && isSubscriptionActive();
     if (!isPaid) {
@@ -172,8 +183,10 @@ function confirmLessonSelection() {
         selectScenario(currentScenario + 1);
         const msg = currentLang === 'uk' ? 'Чудово! Переходимо до наступного завдання!' : 'Отлично! Переходим к следующему заданию!';
         appendChatBubble('tutor', msg);
+        startCurrentScenarioLesson();
     } else {
         updateScenarioUI();
+        startCurrentScenarioLesson();
     }
 }
 
@@ -181,13 +194,20 @@ function playGreetingVideo() {
     greetingPlayed = true;
     const badge = document.getElementById('click-me-badge');
     if (badge) badge.classList.add('hidden');
+    
+    // Play avatar greeting video clip & speak intro greeting
     updateAvatarState('greeting');
+    speakSlovak("Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!");
+    
+    setTimeout(() => {
+        startCurrentScenarioLesson();
+    }, 4500);
 }
 
 function triggerFirstActionIfNeeded() {
     if (!firstActionTriggered) {
         firstActionTriggered = true;
-        updateAvatarState('level_' + currentScenario);
+        startCurrentScenarioLesson();
         const confirmBtn = document.getElementById('btn-confirm-lesson');
         if (confirmBtn) {
             confirmBtn.classList.add('blinking-btn');
