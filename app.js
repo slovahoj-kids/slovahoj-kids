@@ -187,6 +187,37 @@ function startCurrentScenarioLesson() {
     }
 }
 
+function selectMonth(m) {
+    currentMonth = parseInt(m);
+    currentWeek = 1;
+    currentLessonDay = 1;
+    currentScenario = 1;
+    updateScenarioUI();
+}
+
+function selectWeek(w) {
+    currentWeek = parseInt(w);
+    currentLessonDay = 1;
+    currentScenario = 1;
+    updateScenarioUI();
+}
+
+function selectLessonDay(d) {
+    currentLessonDay = parseInt(d);
+    currentScenario = currentLessonDay;
+    for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById(`scenario-btn-${i}`);
+        if (btn) btn.classList.toggle('active', i === currentScenario);
+    }
+    updateScenarioUI();
+}
+
+function selectTrack(t) {
+    currentTrack = t;
+    localStorage.setItem('slovahoj_kids_child_track', t);
+    updateScenarioUI();
+}
+
 function confirmLessonSelection() {
     const isPaid = isRegistered && isSubscriptionActive();
     if (!isPaid) {
@@ -209,9 +240,15 @@ function confirmLessonSelection() {
     currentMonth = monthEl ? parseInt(monthEl.value) : currentMonth;
     currentWeek = weekEl ? parseInt(weekEl.value) : currentWeek;
     currentLessonDay = lessonEl ? parseInt(lessonEl.value) : currentLessonDay;
+    currentScenario = currentLessonDay; // Synchronize active scenario with chosen lesson day
     currentTrack = trackEl ? trackEl.value : currentTrack;
 
-    // Update UI and start the selected lesson without auto-jumping scenario icons
+    for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById(`scenario-btn-${i}`);
+        if (btn) btn.classList.toggle('active', i === currentScenario);
+    }
+
+    // Update UI and start the selected lesson
     updateScenarioUI();
     startCurrentScenarioLesson();
 }
@@ -3643,3 +3680,7 @@ window.openPaymentModal = openPaymentModal;
 window.closePaymentModal = closePaymentModal;
 window.playGreetingVideo = playGreetingVideo;
 window.selectScenario = selectScenario;
+window.selectMonth = selectMonth;
+window.selectWeek = selectWeek;
+window.selectLessonDay = selectLessonDay;
+window.selectTrack = selectTrack;
