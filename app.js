@@ -150,6 +150,12 @@ function resetDropdownStyles() {
 }
 
 function confirmLessonSelection() {
+    const isPaid = isRegistered && isSubscriptionActive();
+    if (!isPaid) {
+        document.getElementById('registration-modal').classList.remove('hidden');
+        return;
+    }
+
     const confirmBtn = document.getElementById('btn-confirm-lesson');
     if (confirmBtn) {
         confirmBtn.classList.remove('blinking-btn');
@@ -164,12 +170,11 @@ function confirmLessonSelection() {
 
     if (currentScenario < 5) {
         selectScenario(currentScenario + 1);
+        const msg = currentLang === 'uk' ? 'Чудово! Переходимо до наступного завдання!' : 'Отлично! Переходим к следующему заданию!';
+        appendChatBubble('tutor', msg);
     } else {
         updateScenarioUI();
     }
-    
-    const msg = currentLang === 'uk' ? 'Чудово! Переходимо до наступного завдання!' : 'Отлично! Переходим к следующему заданию!';
-    appendChatBubble('tutor', msg);
 }
 
 function playGreetingVideo() {
@@ -3028,6 +3033,46 @@ function checkLessonSchedule() {
     }
 }
 
+function updateDropdownLockState() {
+    const isPaid = isRegistered && isSubscriptionActive();
+    
+    ['month-select', 'week-select', 'lesson-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = !isPaid;
+            if (!isPaid) {
+                el.classList.add('disabled-dropdown');
+                el.title = currentLang === 'uk'
+                    ? 'Оберіть пакет у батьківському кабінеті для розблокування уроків'
+                    : 'Выберите пакет в родительском кабинете для разблокировки уроков';
+            } else {
+                el.classList.remove('disabled-dropdown');
+                el.removeAttribute('title');
+            }
+        }
+    });
+
+    const confirmBtn = document.getElementById('btn-confirm-lesson');
+    if (confirmBtn) {
+        confirmBtn.disabled = !isPaid;
+        if (!isPaid) {
+            confirmBtn.classList.add('disabled-btn');
+            confirmBtn.title = currentLang === 'uk'
+                ? 'Активація уроків доступна після оплати пакета'
+                : 'Активация уроков доступна после оплаты пакета';
+        } else {
+            confirmBtn.classList.remove('disabled-btn');
+            confirmBtn.removeAttribute('title');
+        }
+    }
+
+    if (!isPaid) {
+        currentMonth = 1;
+        currentWeek = 1;
+        currentLessonDay = 1;
+    }
+}
+
 function checkAccessRules() {
     // If the parent cabinet is currently active, do not apply child locks
     const playground = document.getElementById('playground-view');
@@ -3145,6 +3190,10 @@ function selectTrack(track) {
 }
 
 function changeMonth(value) {
+    if (!isRegistered || !isSubscriptionActive()) {
+        document.getElementById('registration-modal').classList.remove('hidden');
+        return;
+    }
     firstActionTriggered = true;
     currentMonth = parseInt(value);
     
@@ -3181,6 +3230,10 @@ function changeMonth(value) {
 }
 
 function changeWeek(value) {
+    if (!isRegistered || !isSubscriptionActive()) {
+        document.getElementById('registration-modal').classList.remove('hidden');
+        return;
+    }
     firstActionTriggered = true;
     currentWeek = parseInt(value);
 
@@ -3214,6 +3267,10 @@ function changeWeek(value) {
 }
 
 function selectLessonDay(day) {
+    if (!isRegistered || !isSubscriptionActive()) {
+        document.getElementById('registration-modal').classList.remove('hidden');
+        return;
+    }
     firstActionTriggered = true;
     currentLessonDay = parseInt(day);
 

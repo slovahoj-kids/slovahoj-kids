@@ -2340,5 +2340,14 @@ body {
     animation: confirmBtnBlinkAnim 1.0s infinite ease-in-out !important;
 }
 
+/* Locked / Disabled state for unpaid selectors */
+select:disabled,
+button:disabled,
+.disabled-dropdown,
+.disabled-btn {
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+}
+
 
 
