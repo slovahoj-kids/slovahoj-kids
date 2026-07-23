@@ -2339,12 +2339,19 @@ function safePlayVideo(video, isIdle) {
     const playPromise = video.play();
     if (playPromise !== undefined && typeof playPromise.then === 'function') {
         return playPromise.then(() => true).catch(err => {
-            console.warn("Video playback blocked or failed:", err);
-            if (!isIdle) {
-                // Instantly fallback to idle loop
-                updateAvatarState('idle');
-            }
-            return false;
+            console.warn("Unmuted video play failed/blocked, retrying muted:", err);
+            video.muted = true;
+            return video.play().then(() => true).catch(e2 => {
+                console.warn("Muted video play also failed:", e2);
+                if (!isIdle) {
+                    const fallbackUrl = new URL(VIDEO_BASE_URL + 'reaction_listening.mp4', window.location.href).href;
+                    if (video.src !== fallbackUrl) {
+                        video.src = fallbackUrl;
+                        video.play().catch(() => {});
+                    }
+                }
+                return false;
+            });
         });
     }
     return Promise.resolve(true);
@@ -2364,9 +2371,14 @@ function bindVideoStateHandlers() {
 
     video.onended = handleClipEnd;
     video.onerror = () => {
-        console.warn("Video clip playback error, returning avatar to idle loop");
-        if (video.getAttribute('data-state') !== 'idle') {
-            updateAvatarState('idle');
+        console.warn("Video clip playback error (missing file), switching to reaction_listening animation");
+        const currentState = video.getAttribute('data-state');
+        if (currentState !== 'idle') {
+            const fallbackUrl = new URL(VIDEO_BASE_URL + 'reaction_listening.mp4', window.location.href).href;
+            if (video.src !== fallbackUrl) {
+                video.src = fallbackUrl;
+                video.play().catch(() => {});
+            }
         }
     };
 
@@ -2451,7 +2463,11 @@ function updateAvatarState(state) {
             subtitleText = 'Fantastické! Gratulujem!';
             break;
         case 'lesson_intro':
-        case 'level_1': {
+        case 'level_1':
+        case 'level_2':
+        case 'level_3':
+        case 'level_4':
+        case 'level_5': {
             const padMonth = String(currentMonth).padStart(2, '0');
             const padWeek = String(currentWeek).padStart(2, '0');
             videoFile = `m${padMonth}_w${padWeek}_${currentTrack}.mp4`;
@@ -2460,22 +2476,6 @@ function updateAvatarState(state) {
             }
             break;
         }
-        case 'level_2':
-            videoFile = 'reaction_listening.mp4';
-            if (scenarios[2]) subtitleText = scenarios[2].phrase;
-            break;
-        case 'level_3':
-            videoFile = 'reaction_thinking.mp4';
-            if (scenarios[3]) subtitleText = scenarios[3].phrase;
-            break;
-        case 'level_4':
-            videoFile = 'reaction_surprise.mp4';
-            if (scenarios[4]) subtitleText = scenarios[4].phrase;
-            break;
-        case 'level_5':
-            videoFile = 'reaction_achievement.mp4';
-            if (scenarios[5]) subtitleText = scenarios[5].phrase;
-            break;
         default:
             videoFile = 'reaction_idle.mp4';
             subtitleText = 'Ahoj! Volám sa Oksana. Poďme sa spolu učiť slovenské slovíčka!';
