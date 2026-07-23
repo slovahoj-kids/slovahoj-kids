@@ -274,8 +274,8 @@ const curriculumCatalog = {
                 topic: "Привіт і знайомство",
                 is_safety: false,
                 hint: {
-                    uk: "Це слово підходить і вранці, і ввечері — універсальне!",
-                    ru: "Это слово подходит и утром, и вечером — универсальное!"
+                    uk: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко, як 'нь'!",
+                    ru: "«Dobrý deň» — это вежливое приветствие «Добрый день», а буква 'ň' в слове 'deň' произносится мягко, как 'нь'!"
                 },
                 tracks: {
                     junior: {
@@ -310,8 +310,8 @@ const curriculumCatalog = {
                 topic: "Як справи",
                 is_safety: false,
                 hint: {
-                    uk: "«Ďakujem» звучить схоже на «дякую» — легко запам'ятати!",
-                    ru: "«Ďakujem» звучит похоже на «дякую» — легко запомнить!"
+                    uk: "«Ďakujem» означає «дякую» — зверни увагу на м'який звук 'ď' у слові!",
+                    ru: "«Ďakujem» означает «спасибо» — обрати внимание на мягкий звук 'ď' в слове!"
                 },
                 tracks: {
                     junior: {
@@ -330,7 +330,7 @@ const curriculumCatalog = {
                         phrase: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?",
                         translation: "Як справи сьогодні? Було щось цікаве в школі?",
                         words: ["Ako sa dnes máš", "Bolo niečo zaujímavé", "v škole"],
-                        intro: "Ako sa dnes máš? Bolo niečo zaujímavé в школі?"
+                        intro: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?"
                     }
                 },
                 scenarios: [
@@ -346,8 +346,8 @@ const curriculumCatalog = {
                 topic: "Прощання",
                 is_safety: false,
                 hint: {
-                    uk: "Довге слово Dovidenia можна розбити: До-ви-де-ня.",
-                    ru: "Длинное слово Dovidenia можно разбить: До-ви-де-ня."
+                    uk: "Слово 'Dovidenia' розбивається по складах: До-ви-де-ня. Воно означає «До побачення»!",
+                    ru: "Слово 'Dovidenia' разбивается по слогам: До-ви-де-ня. Оно означает «До свидания»!"
                 },
                 tracks: {
                     junior: {
@@ -382,8 +382,8 @@ const curriculumCatalog = {
                 topic: "Ввічлива відмова (безпека)",
                 is_safety: true,
                 hint: {
-                    uk: "Це чарівна фраза. Вона працює в будь-якій країні і завжди ввічлива.",
-                    ru: "Это волшебная фраза. Она работает в любой стране и всегда вежлива."
+                    uk: "Фраза «Nie, ďakujem» («Ні, дякую») — це чарівний та ввічливий спосіб відмовити незнайомцю.",
+                    ru: "Фраза «Nie, ďakujem» («Нет, спасибо») — это вежливый способ отказать незнакомцу."
                 },
                 tracks: {
                     junior: {
@@ -423,8 +423,8 @@ const curriculumCatalog = {
                 topic: "Члени родини",
                 is_safety: false,
                 hint: {
-                    uk: "«Mama» і «otec» звучать майже так само — легко запам'ятати.",
-                    ru: "«Mama» и «otec» звучат почти так же — легко запомнить."
+                    uk: "«Mama» і «otec» означають «мама» і «тато», а «brat» і «sestra» — «брат» і «сестра»!",
+                    ru: "«Mama» и «otec» означают «мама» и «папа», а «brat» и «sestra» — «брат» и «сестра»!"
                 },
                 tracks: {
                     junior: {
@@ -459,8 +459,8 @@ const curriculumCatalog = {
                 topic: "Мій дім",
                 is_safety: false,
                 hint: {
-                    uk: "«Izba» — кімната, слово часто зустрічатиметься далі.",
-                    ru: "«Izba» — комната, это слово часто будет встречаться дальше."
+                    uk: "«Byt» — це «квартира», а «izba» — «кімната». «Toto je» означає «це є»!",
+                    ru: "«Byt» — это «квартира», а «izba» — «комната». «Toto je» означает «это»!"
                 },
                 tracks: {
                     junior: {
@@ -479,7 +479,7 @@ const curriculumCatalog = {
                         phrase: "Toto je náš byt. Mám tu svoju izbu a tu je obývačka.",
                         translation: "Це наша квартира. Тут моя кімната, а тут вітальня.",
                         words: ["Toto je", "náš byt", "izbu", "obývačka"],
-                        intro: "Toto je náš byt. Mám tu svoju izbu a tu je obývaчка."
+                        intro: "Toto je náš byt. Mám tu svoju izbu a tu je obývačka."
                     }
                 },
                 scenarios: [
@@ -495,8 +495,8 @@ const curriculumCatalog = {
                 topic: "Речі вдома",
                 is_safety: false,
                 hint: {
-                    uk: "«Kde» — питальне слово «де», буде зустрічатися часто.",
-                    ru: "«Kde» — вопросительное слово «где», будет встречаться часто."
+                    uk: "Питальне слово «Kde» означає «де», а «hračka» — це «іграшка»!",
+                    ru: "Вопросительное слово «Kde» означает «где», а «hračka» — это «игрушка»!"
                 },
                 tracks: {
                     junior: {
@@ -531,8 +531,8 @@ const curriculumCatalog = {
                 topic: "🛡️ Безпека: особисті дані",
                 is_safety: true,
                 hint: {
-                    uk: "Свою адресу можна казати тільки дорослим, яких добре знаєш.",
-                    ru: "Свой адрес можно говорить только взрослым, которых хорошо знаешь."
+                    uk: "«Moja adresa je tajomstvo» означає «Моя адреса — це секрет». Свою адресу можна казати тільки батькам!",
+                    ru: "«Moja adresa je tajomstvo» означает «Мой адрес — это секрет». Свой адрес можно говорить только родителям!"
                 },
                 tracks: {
                     junior: {
@@ -551,7 +551,7 @@ const curriculumCatalog = {
                         phrase: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých poznám.",
                         translation: "Свою адресу я кажу лише батькам або вчителям, яких знаю.",
                         words: ["Svoju adresu", "hovorím", "rodičom", "učiteľom", "poznám"],
-                        intro: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých познам."
+                        intro: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých poznám."
                     }
                 },
                 scenarios: [
@@ -764,7 +764,7 @@ const translations = {
         task_desc: "Повтори фразу",
         target_phrase: "Потрібно вимовити:",
         tip_title: "Підказка від Оксани:",
-        tip_content_default: "Слухай та повторюй словацькі слова разом зі мною.",
+        tip_content_default: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко, як 'нь'!",
         press_mic: "Натисни мікрофон та говори словацькою",
         accuracy_label: "точність",
         feedback_success: "Чудова вимова!",
@@ -856,7 +856,7 @@ const translations = {
         task_desc: "Повтори фразу",
         target_phrase: "Нужно произнести:",
         tip_title: "Подсказка от Оксаны:",
-        tip_content_default: "Слушай и повторяй словацкие слова вместе со мной.",
+        tip_content_default: "«Dobrý deň» — это вежливое приветствие «Добрый день», а буква 'ň' в слове 'deň' произносится мягко, как 'нь'!",
         press_mic: "Нажми микрофон и говори по-словацки",
         accuracy_label: "точность",
         feedback_success: "Отличное произношение!",
