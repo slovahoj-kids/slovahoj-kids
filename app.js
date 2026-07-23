@@ -2661,17 +2661,65 @@ function checkCabinetExpiryAlert() {
     }
 }
 
+// --- Event Analytics Tracking Helper ---
+function trackEvent(eventName, eventParams = {}) {
+    const payload = {
+        event: eventName,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        isRegistered: typeof isRegistered !== 'undefined' ? isRegistered : false,
+        subscriptionActive: typeof isSubscriptionActive === 'function' ? isSubscriptionActive() : false,
+        currentMonth: typeof currentMonth !== 'undefined' ? currentMonth : 1,
+        currentScenario: typeof currentScenario !== 'undefined' ? currentScenario : 1,
+        ...eventParams
+    };
+    console.log("📊 [ANALYTICS EVENT]:", payload);
+    try {
+        const logs = JSON.parse(localStorage.getItem('slovahoj_analytics_events') || '[]');
+        logs.push(payload);
+        if (logs.length > 200) logs.shift();
+        localStorage.setItem('slovahoj_analytics_events', JSON.stringify(logs));
+    } catch (e) {
+        console.warn("Could not save analytics log", e);
+    }
+}
+
+// --- Environment & Feature Flags ---
+function checkDevPanelVisibility() {
+    const devPanel = document.getElementById('test-dev-panel');
+    if (!devPanel) return;
+
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isDebugUrl = window.location.search.includes('debug=true');
+    const isDebugStorage = localStorage.getItem('slovahoj_debug') === 'true';
+
+    if (isLocalhost || isDebugUrl || isDebugStorage) {
+        devPanel.classList.remove('hidden');
+    } else {
+        devPanel.classList.add('hidden');
+    }
+}
+
 function closeRegistrationModal() {
+    trackEvent('registration_modal_closed');
     const modal = document.getElementById('registration-modal');
     if (modal) modal.classList.add('hidden');
 }
 
 function closeChildProtectionModal() {
+    trackEvent('child_protection_modal_closed');
     const modal = document.getElementById('sub-expired-lock-modal');
     if (modal) modal.classList.add('hidden');
 }
 
+function closePostTrialModal() {
+    trackEvent('post_trial_modal_closed');
+    const modal = document.getElementById('post-trial-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
 function closeParentExpiryModal() {
+    trackEvent('parent_expiry_modal_closed');
     document.getElementById('parent-expiry-modal').classList.add('hidden');
 }
 
@@ -2719,18 +2767,28 @@ function resetAllAuthData() {
     location.reload();
 }
 
+// --- Payment & Subscription Central Pricing Configuration ---
+const PRICING_PLANS = {
+    '1_month': { id: '1_month', price: 15, nameUk: '1 місяць', nameSk: '1 mesiac', nameRu: '1 месяц' },
+    '3_months': { id: '3_months', price: 35, nameUk: '3 місяці', nameSk: '3 mesiace', nameRu: '3 месяца' },
+    '12_months': { id: '12_months', price: 99, nameUk: '12 місяців', nameSk: '12 mesiacov', nameRu: '12 месяцев' }
+};
 
-
-// --- Payment & Subscription Simulator ---
-let currentPaymentAmount = 0;
-let currentPaymentPlanName = '';
+let currentPaymentAmount = 35;
+let currentPaymentPlanName = '3 місяці';
 
 function openPaymentModal(amount, planName) {
-    currentPaymentAmount = amount;
-    currentPaymentPlanName = planName;
+    trackEvent('payment_modal_opened', { amount, planName });
+    currentPaymentAmount = amount || 35;
+    currentPaymentPlanName = planName || '3 місяці';
     
-    // Update UI
-    document.getElementById('payment-plan-name').innerText = planName;
+    // Update UI from single source of truth
+    const planNameEl = document.getElementById('payment-plan-name');
+    if (planNameEl) planNameEl.innerText = currentPaymentPlanName;
+    
+    const amountValueEl = document.getElementById('payment-amount-value');
+    if (amountValueEl) amountValueEl.innerText = currentPaymentAmount;
+
     document.getElementById('card-holder').value = '';
     document.getElementById('card-number').value = '';
     document.getElementById('card-expiry').value = '';
@@ -2747,6 +2805,7 @@ function openPaymentModal(amount, planName) {
 }
 
 function closePaymentModal() {
+    trackEvent('payment_modal_closed', { amount: currentPaymentAmount, planName: currentPaymentPlanName });
     document.getElementById('payment-modal').classList.add('hidden');
 }
 
@@ -3361,6 +3420,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     // Check access controls on load
     checkAccessRules();
+    checkDevPanelVisibility();
 
     // Initialize UI
     syncMilestonesUI();

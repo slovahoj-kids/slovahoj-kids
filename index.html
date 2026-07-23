@@ -491,7 +491,7 @@
             </div>
 
             <!-- Subscription Control Simulator (Testing Panel) -->
-            <div class="gdpr-settings-card card" style="margin-top: 20px; border: 1.5px dashed var(--secondary-color); background: rgba(255, 152, 0, 0.03);">
+            <div id="test-dev-panel" class="gdpr-settings-card card hidden" style="margin-top: 20px; border: 1.5px dashed var(--secondary-color); background: rgba(255, 152, 0, 0.03);">
                 <div class="gdpr-header" style="display: flex; gap: 15px; align-items: center;">
                     <div style="font-size: 32px; color: var(--secondary-color);"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div class="gdpr-title">
@@ -601,6 +601,7 @@
     <!-- Post-Trial Invite Modal -->
     <div id="post-trial-modal" class="modal-overlay hidden">
         <div class="modal-card invite-card">
+            <button class="modal-close-btn" onclick="closePostTrialModal()">&times;</button>
             <div class="modal-header">
                 <div class="modal-icon" style="background: rgba(255, 152, 0, 0.1); color: var(--secondary-color);"><i class="fa-solid fa-graduation-cap"></i></div>
                 <h3>Пробне завдання завершено!</h3>
@@ -663,7 +664,7 @@
                     <div class="modal-icon"><i class="fa-solid fa-credit-card"></i></div>
                     <h3 data-i18n="payment_modal_title">Оплата банківською картою</h3>
                     <p><span data-i18n="payment_modal_sub">Оплата за тарифом</span> <strong id="payment-plan-name">3 місяці</strong></p>
-                    <div class="payment-amount-display">€<span id="payment-amount-value">24</span></div>
+                    <div class="payment-amount-display">€<span id="payment-amount-value">35</span></div>
                 </div>
                 
                 <div class="modal-body">
