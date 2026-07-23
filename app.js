@@ -3255,42 +3255,19 @@ function checkLessonSchedule() {
 }
 
 function updateDropdownLockState() {
-    const isPaid = isRegistered && isSubscriptionActive();
-    
     ['month-select', 'week-select', 'lesson-select'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.disabled = !isPaid;
-            if (!isPaid) {
-                el.classList.add('disabled-dropdown');
-                el.title = currentLang === 'uk'
-                    ? 'Оберіть пакет у батьківському кабінеті для розблокування уроків'
-                    : 'Выберите пакет в родительском кабинете для разблокировки уроков';
-            } else {
-                el.classList.remove('disabled-dropdown');
-                el.removeAttribute('title');
-            }
+            el.disabled = false;
+            el.classList.remove('disabled-dropdown');
+            el.removeAttribute('title');
         }
     });
-
     const confirmBtn = document.getElementById('btn-confirm-lesson');
     if (confirmBtn) {
-        confirmBtn.disabled = !isPaid;
-        if (!isPaid) {
-            confirmBtn.classList.add('disabled-btn');
-            confirmBtn.title = currentLang === 'uk'
-                ? 'Активація уроків доступна після оплати пакета'
-                : 'Активация уроков доступна после оплаты пакета';
-        } else {
-            confirmBtn.classList.remove('disabled-btn');
-            confirmBtn.removeAttribute('title');
-        }
-    }
-
-    if (!isPaid) {
-        currentMonth = 1;
-        currentWeek = 1;
-        currentLessonDay = 1;
+        confirmBtn.disabled = false;
+        confirmBtn.classList.remove('disabled-btn');
+        confirmBtn.removeAttribute('title');
     }
 }
 
@@ -3411,124 +3388,56 @@ function selectTrack(track) {
 }
 
 function changeMonth(value) {
-    if (!isRegistered || !isSubscriptionActive()) {
-        document.getElementById('registration-modal').classList.remove('hidden');
-        return;
-    }
     firstActionTriggered = true;
     currentMonth = parseInt(value);
-    
-    if (currentMonth > maxUnlockedMonth) {
-        currentMonth = maxUnlockedMonth;
-        document.getElementById('month-select').value = currentMonth;
-        alert(currentLang === 'uk' ? "Цей місяць заблокований. Пройди попередні уроки!" : "Этот месяц заблокирован. Пройди предыдущие уроки!");
-        return;
-    }
-
-    if (currentMonth === maxUnlockedMonth && currentWeek > maxUnlockedWeek) {
-        currentWeek = maxUnlockedWeek;
-    }
-    if (currentMonth === maxUnlockedMonth && currentWeek === maxUnlockedWeek && currentLessonDay > maxUnlockedDay) {
-        currentLessonDay = maxUnlockedDay;
-    }
-
-    updateDropdownLockState();
-    updateScenarioUI();
-    startCurrentScenarioLesson();
+    currentWeek = 1;
+    currentLessonDay = 1;
+    currentScenario = 1;
 
     const monthSelect = document.getElementById('month-select');
     const weekSelect = document.getElementById('week-select');
+    const lessonSelect = document.getElementById('lesson-select');
 
-    if (dropdownSeqStep > 0) {
-        if (monthSelect) {
-            monthSelect.classList.remove('blinking-dropdown');
-            monthSelect.classList.add('selected-dropdown-green');
-        }
-        dropdownSeqStep = 2;
-        if (weekSelect) {
-            weekSelect.classList.add('blinking-dropdown');
-        }
-    }
+    if (monthSelect) monthSelect.value = currentMonth.toString();
+    if (weekSelect) weekSelect.value = currentWeek.toString();
+    if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
+
+    updateScenarioUI();
+    startCurrentScenarioLesson();
 }
 
 function changeWeek(value) {
-    if (!isRegistered || !isSubscriptionActive()) {
-        document.getElementById('registration-modal').classList.remove('hidden');
-        return;
-    }
     firstActionTriggered = true;
     currentWeek = parseInt(value);
-
-    if (currentMonth === maxUnlockedMonth && currentWeek > maxUnlockedWeek) {
-        currentWeek = maxUnlockedWeek;
-        document.getElementById('week-select').value = currentWeek;
-        alert(currentLang === 'uk' ? "Цей тиждень заблокований. Пройди попередні уроки!" : "Эта неделя заблокирована. Пройди предыдущие уроки!");
-        return;
-    }
-
-    if (currentMonth === maxUnlockedMonth && currentWeek === maxUnlockedWeek && currentLessonDay > maxUnlockedDay) {
-        currentLessonDay = maxUnlockedDay;
-    }
-
-    updateDropdownLockState();
-    updateScenarioUI();
-    startCurrentScenarioLesson();
+    currentLessonDay = 1;
+    currentScenario = 1;
 
     const weekSelect = document.getElementById('week-select');
     const lessonSelect = document.getElementById('lesson-select');
 
-    if (dropdownSeqStep > 0) {
-        if (weekSelect) {
-            weekSelect.classList.remove('blinking-dropdown');
-            weekSelect.classList.add('selected-dropdown-green');
-        }
-        dropdownSeqStep = 3;
-        if (lessonSelect) {
-            lessonSelect.classList.add('blinking-dropdown');
-        }
-    }
+    if (weekSelect) weekSelect.value = currentWeek.toString();
+    if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
+
+    updateScenarioUI();
+    startCurrentScenarioLesson();
 }
 
 function selectLessonDay(day) {
-    if (!isRegistered || !isSubscriptionActive()) {
-        document.getElementById('registration-modal').classList.remove('hidden');
-        return;
-    }
     firstActionTriggered = true;
     currentLessonDay = parseInt(day);
-
     currentScenario = currentLessonDay;
+
     for (let i = 1; i <= 5; i++) {
         const btn = document.getElementById('scenario-btn-' + i);
         if (btn) btn.classList.toggle('active', i === currentScenario);
     }
 
-    if (currentMonth === maxUnlockedMonth && currentWeek === maxUnlockedWeek && currentLessonDay > maxUnlockedDay) {
-        currentLessonDay = maxUnlockedDay;
-        document.getElementById('lesson-select').value = currentLessonDay;
-        alert(currentLang === 'uk' ? "Це заняття заблоковане. Пройди попередні уроки!" : "Это занятие заблокировано. Пройди предыдущие уроки!");
-        return;
-    }
+    const lessonSelect = document.getElementById('lesson-select');
+    if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
 
-    updateDropdownLockState();
     updateScenarioUI();
     startCurrentScenarioLesson();
-
-    const lessonSelect = document.getElementById('lesson-select');
-    const confirmBtn = document.getElementById('btn-confirm-lesson');
-
-    if (dropdownSeqStep > 0) {
-        if (lessonSelect) {
-            lessonSelect.classList.remove('blinking-dropdown');
-            lessonSelect.classList.add('selected-dropdown-green');
-        }
-        dropdownSeqStep = 4;
-        if (confirmBtn) {
-            confirmBtn.classList.add('blinking-btn');
-        }
-    }
 }
-
 function exportGDPRData() {
     const data = {
         email: currentUserEmail,
