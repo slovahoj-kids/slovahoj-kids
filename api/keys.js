@@ -9,6 +9,8 @@ export default function handler(request, response) {
     AZURE_SPEECH_VOICE_NAME: process.env.AZURE_SPEECH_VOICE_NAME || process.env.CUSTOM_VOICE_NAME || "",
     OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
     HEYGEN_API_KEY: process.env.HEYGEN_API_KEY || "",
+    ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY || "sk_e0254d733c5b717c214ee0ee36d09822fa134541eeab04a3",
+    OKSANA_VOICE_ID: process.env.OKSANA_VOICE_ID || process.env.ELEVENLABS_VOICE_ID || "Tyg9nFvhX2bJikrsvQGN",
     D_ID_API_KEY: process.env.D_ID_API_KEY || process.env.DID_API_KEY || "",
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
     STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY || "pk_live_51Tw3otRLZSrXJTd8cd8uTOrWYkOwIxP9HRpEfQYBEAjoSvExGovKbzpv8hLDZjVzpKuWhtaefHntTi3dUt4dNYBa00OqHXjy6E",
