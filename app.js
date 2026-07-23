@@ -2054,10 +2054,37 @@ function handleSpeechResult(result) {
 
         if (!isSubscriptionActive() && !childAuthenticated && currentScenario === 1) {
             tutorTrialPassed[currentCharacter] = true;
-            saveTutorTrials();
-            setTimeout(() => {
-                showPostTrialModal();
-            }, 1800);
+            // Clean lock screens
+            document.getElementById('sub-expired-lock-modal').classList.add('hidden');
+            document.getElementById('parent-expiry-modal').classList.add('hidden');
+ 
+            // Update UI & unlock controls
+            updateAuthHeaderUI();
+            updateDropdownLockState();
+            updateScenarioButtonsVisibility();
+            updateScenarioUI();
+
+            // Activate subscription banner
+            const banner = document.getElementById('subscription-status-banner');
+            if (banner) {
+                const titleEl = banner.querySelector('.sub-title');
+                if (titleEl) {
+                    titleEl.setAttribute('data-i18n', 'sub_active_title');
+                    titleEl.innerText = currentLang === 'uk' ? 'Ваша підписка активна!' : 'Ваша подписка активна!';
+                }
+                const expDate = new Date(subscriptionEnd);
+                const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
+                const detailsEl = banner.querySelector('.sub-details');
+                if (detailsEl) {
+                    detailsEl.innerText = currentLang === 'uk'
+                        ? `Тарифний план: ${currentPaymentPlanName}. Дійсний до ${expString}.`
+                        : `Тарифный план: ${currentPaymentPlanName}. Действителен до ${expString}.`;
+                }
+                banner.classList.remove('hidden');
+            }
+        } else {
+            // Error
+            document.getElementById('payment-error').classList.add('hidden');
         }
     } else if (score >= 60) {
         // TIER 2: Score 60-84 (Medium quality -> reaction_soft_correction.mp4)
@@ -2102,6 +2129,50 @@ function handleSpeechResult(result) {
 
         appendChatBubble('tutor', `Skús to ešte raz. (${currentLang === 'uk' ? 'Послухай та повтори ще раз.' : 'Послушай и повтори еще раз.'})`);
     }
+}
+
+function startFreeTrial() {
+    trackEvent('start_free_trial');
+    // Set 7-day trial state
+    subscriptionStart = Date.now();
+    subscriptionEnd = subscriptionStart + (7 * 24 * 60 * 60 * 1000);
+    subscriptionType = 'trial';
+    saveSubState();
+    
+    // Clean any open lock screens
+    const lockModal = document.getElementById('sub-expired-lock-modal');
+    if (lockModal) lockModal.classList.add('hidden');
+    const parentExpModal = document.getElementById('parent-expiry-modal');
+    if (parentExpModal) parentExpModal.classList.add('hidden');
+
+    // Update UI components & unlock controls
+    updateAuthHeaderUI();
+    updateDropdownLockState();
+    updateScenarioButtonsVisibility();
+    updateScenarioUI();
+ 
+    // Activate subscription status banner in Parent Cabinet
+    const banner = document.getElementById('subscription-status-banner');
+    if (banner) {
+        banner.classList.remove('hidden');
+        const titleEl = banner.querySelector('.sub-title');
+        if (titleEl) {
+            titleEl.setAttribute('data-i18n', 'trial_active_title');
+            titleEl.innerText = currentLang === 'uk' ? 'Ваш пробний 7-денний період активний! 🎁' : 'Ваш пробный 7-дневный период активен! 🎁';
+        }
+        
+        const detailsEl = banner.querySelector('.sub-details');
+        if (detailsEl) {
+            const expDate = new Date(subscriptionEnd);
+            const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
+            detailsEl.innerText = currentLang === 'uk'
+                ? `Пробний доступ активовано. Дійсний до ${expString}. Усі уроки словацької мови відкрито!`
+                : `Пробный доступ активирован. Действителен до ${expString}. Все уроки словацкого языка открыты!`;
+        }
+    }
+    
+    alert(currentLang === 'uk' ? 'Вітаємо! Ваш 7-денний безкоштовний період успішно активовано!' : 'Поздравляем! Ваш 7-дневный бесплатный период успешно активирован!');
+    switchView('playground');
 }
 
 function resetFeedback() {
@@ -2385,18 +2456,31 @@ function processPayment() {
             // Clean lock screens
             document.getElementById('sub-expired-lock-modal').classList.add('hidden');
             document.getElementById('parent-expiry-modal').classList.add('hidden');
+
+            // Unlock UI components and selectors
+            updateAuthHeaderUI();
+            updateDropdownLockState();
+            updateScenarioButtonsVisibility();
+            updateScenarioUI();
  
             // Activate subscription banner
             const banner = document.getElementById('subscription-status-banner');
-            banner.querySelector('.sub-title').setAttribute('data-i18n', 'sub_active_title');
-            banner.querySelector('.sub-title').innerText = currentLang === 'uk' ? 'Ваша підписка активна!' : 'Ваша подписка активна!';
-            
-            const expDate = new Date(subscriptionEnd);
-            const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
-            banner.querySelector('.sub-details').innerText = currentLang === 'uk'
-                ? `Тарифний план: ${currentPaymentPlanName}. Дійсний до ${expString}.`
-                : `Тарифный план: ${currentPaymentPlanName}. Действителен до ${expString}.`;
-            banner.classList.remove('hidden');
+            if (banner) {
+                const titleEl = banner.querySelector('.sub-title');
+                if (titleEl) {
+                    titleEl.setAttribute('data-i18n', 'sub_active_title');
+                    titleEl.innerText = currentLang === 'uk' ? 'Ваша підписка активна!' : 'Ваша подписка активна!';
+                }
+                const expDate = new Date(subscriptionEnd);
+                const expString = `${expDate.getDate()}.${expDate.getMonth()+1}.${expDate.getFullYear()}`;
+                const detailsEl = banner.querySelector('.sub-details');
+                if (detailsEl) {
+                    detailsEl.innerText = currentLang === 'uk'
+                        ? `Тарифний план: ${currentPaymentPlanName}. Дійсний до ${expString}.`
+                        : `Тарифный план: ${currentPaymentPlanName}. Действителен до ${expString}.`;
+                }
+                banner.classList.remove('hidden');
+            }
         } else {
             // Error
             document.getElementById('payment-error').classList.remove('hidden');
