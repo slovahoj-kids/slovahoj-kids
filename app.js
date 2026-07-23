@@ -30,6 +30,14 @@ try {
 } catch (e) {
     console.warn("Error parsing completedScenarios, using default.", e);
 }
+
+function saveCompletedScenarios() {
+    try {
+        localStorage.setItem(completedScenariosKey, JSON.stringify(completedScenarios));
+    } catch (e) {
+        console.warn("Error saving completedScenarios:", e);
+    }
+}
 let envKeys = null;
 let currentLevel = 1;
 let isSimulatedSpeech = false;
