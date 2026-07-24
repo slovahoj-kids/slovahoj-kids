@@ -328,7 +328,6 @@ function playTaskAudio() {
 // Explicit global window bindings for inline HTML handlers
 window.handleUserInteraction = handleUserInteraction;
 window.playGreetingVideo = playGreetingVideo;
-window.triggerFirstActionIfNeeded = triggerFirstActionIfNeeded;
 window.confirmLessonSelection = confirmLessonSelection;
 window.openRegistrationModal = openRegistrationModal;
 window.closeChildProtectionModal = closeChildProtectionModal;
@@ -3459,7 +3458,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // Synchronize UI texts and dropdowns, keep avatar waiting in idle mode until user action
     applyLessonBinding(false);
-    updateAvatarState('idle');
+    if (typeof transitionAvatarStateTo === 'function') {
+        transitionAvatarStateTo(AvatarState.IDLE);
+    } else {
+        updateAvatarState('idle');
+    }
     
     // Start parent schedule verification checker (runs every 30 seconds)
     setInterval(checkLessonSchedule, 30000);
