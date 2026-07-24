@@ -1861,9 +1861,6 @@ async function runAzurePronunciationAssessment(targetPhrase, sessionId, callback
 }
 
 async function toggleSpeechRecording() {
-    if (!handleUserInteraction()) {
-        return;
-    }
     const recordBtn = document.getElementById('btn-record-speech');
     const recordIcon = document.getElementById('record-icon');
     const statusText = document.getElementById('record-status-text');
@@ -3550,6 +3547,8 @@ function applyDemoPhaseAData() {
 
     const phraseContainer = document.getElementById('phrase-phoneme-container');
     if (phraseContainer) {
+        phraseContainer.classList.remove('hidden');
+        if (phraseContainer.parentElement) phraseContainer.parentElement.classList.remove('hidden');
         phraseContainer.innerHTML = '';
         DEMO_PHRASE_DATA.words.forEach(w => {
             const span = document.createElement('span');
