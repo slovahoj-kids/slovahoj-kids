@@ -760,7 +760,7 @@ const monthMetadata = {
     }
 };
 
-function getLessonData(m, w) {
+function getLegacyLessonData(m, w) {
     if (curriculumCatalog[m] && curriculumCatalog[m].weeks[w]) {
         return curriculumCatalog[m].weeks[w];
     }
@@ -815,7 +815,7 @@ const scenarios = new Proxy({}, {
         const idx = parseInt(prop);
         if (isNaN(idx) || idx < 1 || idx > 5) return null;
         
-        const data = getLessonData(currentMonth, currentWeek);
+        const data = getLegacyLessonData(currentMonth, currentWeek);
         if (!data) return null;
         
         const trackData = (data.tracks && data.tracks[currentTrack]) ? data.tracks[currentTrack] : (data.tracks ? data.tracks.junior : { phrase: "Dobrý deň!", words: ["Dobrý", "deň!"] });
@@ -1420,7 +1420,7 @@ function updateScenarioUI() {
 }
 
 function updateScenarioButtonsContent() {
-    const data = getLessonData(currentMonth, currentWeek);
+    const data = getLegacyLessonData(currentMonth, currentWeek);
     if (!data) return;
     
     for (let i = 1; i <= 5; i++) {
@@ -1455,7 +1455,7 @@ function getSafetyPhrasesMasteredCount() {
     for (let m = 1; m <= currentMonth; m++) {
         const maxW = (m === currentMonth) ? currentWeek : 4;
         for (let w = 1; w <= maxW; w++) {
-            const weekData = getLessonData(m, w);
+            const weekData = getLegacyLessonData(m, w);
             if (weekData && weekData.is_safety) {
                 if (m < currentMonth || w < currentWeek || (m === currentMonth && w === currentWeek && completedScenarios.includes(5))) {
                     count++;
