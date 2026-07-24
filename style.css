@@ -2341,17 +2341,29 @@ body {
 }
 
 /* Locked / Disabled state for unpaid selectors */
+/* Locked / Disabled state for Phase B selectors */
 select:disabled,
 button:disabled,
 .disabled-dropdown,
 .disabled-btn {
     opacity: 0.65 !important;
     cursor: not-allowed !important;
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    animation: none !important;
+}
+
+.disabled-btn {
+    background-color: #94a3b8 !important;
+    color: #ffffff !important;
 }
 
 .subtitle-overlay {
     display: none !important;
 }
+
 
 
 

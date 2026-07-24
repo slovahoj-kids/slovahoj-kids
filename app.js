@@ -1904,6 +1904,22 @@ async function toggleSpeechRecording() {
         wave.classList.remove('hidden');
         
         const targetPhrase = scenarios[currentScenario].phrase;
+
+        // 10-second Speech API timeout fallback (prevents frozen screen)
+        if (speechTimeoutTimer) clearTimeout(speechTimeoutTimer);
+        speechTimeoutTimer = setTimeout(() => {
+            if (isRecording) {
+                stopSpeechRecording();
+                handleSpeechResult({
+                    success: false,
+                    error: "Timeout: Speech API did not return response within 10 seconds."
+                });
+                transitionAvatarStateTo(AvatarState.IDLE);
+                appendChatBubble('tutor', currentLang === 'uk'
+                    ? 'Не вдалося розпізнати вимову вчасно. Натисни мікрофон і спробуй ще раз!'
+                    : 'Не удалось распознать речь вовремя. Нажми микрофон и попробуй еще раз!');
+            }
+        }, 10000);
         
         // 1. Attempt real Azure speech assessment
         const startedAzure = await runAzurePronunciationAssessment(targetPhrase, sessionId, (result) => {
@@ -1954,6 +1970,10 @@ async function toggleSpeechRecording() {
             clearTimeout(recordTimer);
             recordTimer = null;
         }
+        if (speechTimeoutTimer) {
+            clearTimeout(speechTimeoutTimer);
+            speechTimeoutTimer = null;
+        }
         stopSpeechRecording();
     }
 }
@@ -1981,6 +2001,10 @@ function stopSpeechRecording() {
 }
 
 function handleSpeechResult(result) {
+    if (speechTimeoutTimer) {
+        clearTimeout(speechTimeoutTimer);
+        speechTimeoutTimer = null;
+    }
     const feedbackCard = document.getElementById('speech-feedback-card');
     const scoreVal = document.getElementById('pronunciation-score-val');
     const headline = document.getElementById('feedback-headline');
@@ -3483,8 +3507,194 @@ window.selectTrack = selectTrack;
 // ROCK-SOLID UNIFIED LESSON BINDING (3 Dropdowns -> 4 Targets)
 // =========================================================================
 
+// =========================================================================
+// UNIFIED 4-PARAMETER SINGLE SOURCE OF TRUTH & TWO-PHASE UI ENGINE
+// =========================================================================
+
+// Phase B active session flag (irreversible during active session)
+let lessonModeActive = sessionStorage.getItem('slovahoj_kids_lesson_mode_active') === 'true';
+
+// Avatar Finite State Machine (FSM)
+const AvatarState = {
+    IDLE: 'IDLE',
+    SPEAKING: 'SPEAKING',
+    REACTION: 'REACTION'
+};
+let currentAvatarFSMState = AvatarState.IDLE;
+let speechTimeoutTimer = null;
+
+function buildLessonKey(age, month, week, lesson) {
+    const a = age || currentTrack || 'junior';
+    const m = month || currentMonth || 1;
+    const w = week || currentWeek || 1;
+    const l = lesson || currentLessonDay || 1;
+    return `${a}-${m}-${w}-${l}`;
+}
+
+function getLessonData(age, month, week, lesson) {
+    const a = age || currentTrack || 'junior';
+    const m = parseInt(month) || currentMonth || 1;
+    const w = parseInt(week) || currentWeek || 1;
+    const l = parseInt(lesson) || currentLessonDay || 1;
+
+    const padMonth = String(m).padStart(2, '0');
+    const padWeek = String(w).padStart(2, '0');
+
+    // Query curriculumCatalog
+    let phrase = "Dobrý deň, ako sa máš?";
+    let tipText = "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко!";
+    let taskTitle = "Зустрів нового друга на дитячому майданчику";
+    let taskDesc = "Привітайся словацькою та запитай, як справи!";
+    let words = ["Dobrý", "deň,", "ako", "sa", "máš?"];
+
+    if (typeof curriculumCatalog !== 'undefined' && curriculumCatalog[m]) {
+        const mData = curriculumCatalog[m];
+        if (mData.weeks && mData.weeks[w]) {
+            const wData = mData.weeks[w];
+            if (wData.hint) {
+                tipText = typeof wData.hint === 'object' ? (wData.hint[currentLang] || wData.hint.uk || '') : wData.hint;
+            }
+            if (wData.tracks && wData.tracks[a]) {
+                const tData = wData.tracks[a];
+                if (tData.phrase) phrase = tData.phrase;
+                if (tData.words) words = tData.words;
+            }
+            if (wData.scenarios) {
+                const sc = wData.scenarios.find(s => s.id === l) || wData.scenarios[0];
+                if (sc) {
+                    if (sc.title) taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || '') : sc.title;
+                    if (sc.desc) taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || '') : sc.desc;
+                    if (sc.words) words = sc.words;
+                }
+            }
+        }
+    }
+
+    return {
+        lessonKey: `${a}-${m}-${w}-${l}`,
+        age: a,
+        month: m,
+        week: w,
+        lesson: l,
+        avatarVideoUrl: `./videos/m${padMonth}_w${padWeek}_${a}.mp4`,
+        pronunciationText: phrase,
+        hintText: tipText,
+        scenario: {
+            taskTitle: taskTitle,
+            taskDesc: taskDesc,
+            words: words
+        }
+    };
+}
+
+function onCombinationChange(age, month, week, lesson, autoPlayVideo = false) {
+    const key = buildLessonKey(age, month, week, lesson);
+    const data = getLessonData(age, month, week, lesson);
+
+    if (!data) {
+        console.error(`Missing lesson data for key: ${key}`);
+        return;
+    }
+
+    // 1. Update Subtitle under Video
+    const subtitleEl = document.getElementById('tutor-speech-text');
+    if (subtitleEl) {
+        subtitleEl.innerText = data.pronunciationText;
+    }
+
+    // 2. Update Pronunciation Tip Text
+    const tipTextEl = document.getElementById('pronunciation-tip-text');
+    if (tipTextEl) {
+        tipTextEl.innerText = data.hintText;
+    }
+
+    // 3. Update Right Window (Title, Description, Phrase, Scenario buttons)
+    const taskTitleEl = document.getElementById('current-task-title');
+    if (taskTitleEl) {
+        taskTitleEl.innerText = data.scenario.taskTitle;
+    }
+
+    const taskDescEl = document.getElementById('current-task-desc');
+    if (taskDescEl) {
+        taskDescEl.innerText = data.scenario.taskDesc;
+    }
+
+    const phraseContainer = document.getElementById('phrase-phoneme-container');
+    if (phraseContainer && data.scenario.words) {
+        phraseContainer.innerHTML = '';
+        data.scenario.words.forEach(w => {
+            const span = document.createElement('span');
+            span.className = 'phoneme-word';
+            span.innerText = w;
+            phraseContainer.appendChild(span);
+        });
+    }
+
+    for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById('scenario-btn-' + i);
+        if (btn) btn.classList.toggle('active', i === data.lesson);
+    }
+
+    // 4. Update Avatar Video Player (ONLY if explicit autoplay requested in Phase B)
+    if (autoPlayVideo && lessonModeActive) {
+        transitionAvatarStateTo(AvatarState.SPEAKING, data.avatarVideoUrl);
+    }
+}
+
+function transitionAvatarStateTo(newState, mediaSource) {
+    currentAvatarFSMState = newState;
+    const video = document.getElementById('heygen-video');
+    if (!video) return;
+
+    if (newState === AvatarState.IDLE) {
+        video.muted = false;
+        video.loop = true;
+        video.setAttribute('loop', 'true');
+        const idleUrl = new URL('./videos/reaction_idle.mp4', window.location.href).href;
+        if (video.src !== idleUrl) {
+            video.src = idleUrl;
+        }
+        if (typeof safePlayVideo === 'function') {
+            safePlayVideo(video, true);
+        } else {
+            video.play().catch(() => {});
+        }
+    } else if (newState === AvatarState.SPEAKING) {
+        video.muted = false;
+        video.loop = false;
+        video.removeAttribute('loop');
+        const srcUrl = mediaSource ? new URL(mediaSource, window.location.href).href : video.src;
+        if (video.src !== srcUrl) {
+            video.src = srcUrl;
+        }
+        video.onended = () => {
+            transitionAvatarStateTo(AvatarState.IDLE);
+        };
+        if (typeof safePlayVideo === 'function') {
+            safePlayVideo(video, false);
+        } else {
+            video.play().catch(() => {});
+        }
+    } else if (newState === AvatarState.REACTION) {
+        video.muted = false;
+        video.loop = false;
+        video.removeAttribute('loop');
+        const reactionUrl = mediaSource ? new URL(mediaSource, window.location.href).href : new URL('./videos/reaction_praise.mp4', window.location.href).href;
+        if (video.src !== reactionUrl) {
+            video.src = reactionUrl;
+        }
+        video.onended = () => {
+            transitionAvatarStateTo(AvatarState.IDLE);
+        };
+        if (typeof safePlayVideo === 'function') {
+            safePlayVideo(video, false);
+        } else {
+            video.play().catch(() => {});
+        }
+    }
+}
+
 function applyLessonBinding(autoplayVideo = false) {
-    // 1. Sync dropdown UI elements to state
     const monthSelect = document.getElementById('month-select');
     const weekSelect = document.getElementById('week-select');
     const lessonSelect = document.getElementById('lesson-select');
@@ -3495,122 +3705,38 @@ function applyLessonBinding(autoplayVideo = false) {
     if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
     if (trackSelect) trackSelect.value = currentTrack;
 
-    // 2. Fetch scenario data for (currentMonth, currentWeek, currentScenario)
-    currentScenario = currentLessonDay;
-    const sc = (typeof scenarios !== 'undefined' && scenarios[currentScenario]) ? scenarios[currentScenario] : null;
-
-    // 3. Item 3: Update Right Window (Title, Description, Phrase, Scenario buttons)
-    if (sc) {
-        const taskTitleEl = document.getElementById('current-task-title');
-        if (taskTitleEl && sc.title) {
-            taskTitleEl.innerText = sc.title[currentLang] || sc.title.uk || '';
-        }
-
-        const taskDescEl = document.getElementById('current-task-desc');
-        if (taskDescEl && sc.desc) {
-            taskDescEl.innerText = sc.desc[currentLang] || sc.desc.uk || '';
-        }
-
-        const phraseContainer = document.getElementById('phrase-phoneme-container');
-        if (phraseContainer && sc.words) {
-            phraseContainer.innerHTML = '';
-            sc.words.forEach(w => {
-                const span = document.createElement('span');
-                span.className = 'phoneme-word';
-                span.innerText = w;
-                phraseContainer.appendChild(span);
-            });
-        }
-
-        // 4. Item 2: Update Pronunciation Tip Text
-        const tipTextEl = document.getElementById('pronunciation-tip-text');
-        if (tipTextEl && sc.tip) {
-            tipTextEl.innerText = typeof sc.tip === 'object' ? (sc.tip[currentLang] || sc.tip.uk || '') : sc.tip;
-        }
-
-        // 5. Item 1: Update Subtitle under Video
-        const subtitleEl = document.getElementById('tutor-speech-text');
-        if (subtitleEl) {
-            subtitleEl.innerText = sc.phrase || '';
-        }
-    }
-
-    for (let i = 1; i <= 5; i++) {
-        const btn = document.getElementById('scenario-btn-' + i);
-        if (btn) btn.classList.toggle('active', i === currentScenario);
-    }
-
-    // 6. Item 4: Update Avatar Video Player (ONLY if explicit autoplay requested)
-    if (autoplayVideo) {
-        updateAvatarVideoPlayer();
+    if (lessonModeActive) {
+        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, autoplayVideo);
     }
 }
 
-function updateAvatarVideoPlayer() {
-    const video = document.getElementById('heygen-video');
-    if (!video) return;
+function updateDropdownLockState() {
+    const isLocked = lessonModeActive;
+    ['month-select', 'week-select', 'lesson-select', 'track-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = isLocked;
+            if (isLocked) {
+                el.classList.add('disabled-dropdown');
+                el.setAttribute('title', 'Дропдауни заблоковані під час активного уроку (Фаза B)');
+            } else {
+                el.classList.remove('disabled-dropdown');
+                el.removeAttribute('title');
+            }
+        }
+    });
 
-    // Unmute audio for Oksana's voice and disable looping for lesson clips
-    video.muted = false;
-    video.loop = false;
-    video.removeAttribute('loop');
-
-    const padMonth = String(currentMonth).padStart(2, '0');
-    const padWeek = String(currentWeek).padStart(2, '0');
-    
-    let videoFile = `m${padMonth}_w${padWeek}_${currentTrack}.mp4`;
-    const stateName = `level_${currentScenario}`;
-
-    const absoluteUrl = new URL('./videos/' + videoFile, window.location.href).href;
-
-    video.setAttribute('data-state', stateName);
-    if (video.src !== absoluteUrl) {
-        video.src = absoluteUrl;
+    const confirmBtn = document.getElementById('btn-confirm-lesson');
+    if (confirmBtn) {
+        confirmBtn.disabled = isLocked;
+        if (isLocked) {
+            confirmBtn.classList.add('disabled-btn');
+            confirmBtn.innerHTML = '<i class="fa-solid fa-lock"></i> <span>Урок активовано</span>';
+        } else {
+            confirmBtn.classList.remove('disabled-btn');
+            confirmBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span data-i18n="btn_confirm_lesson">Підтвердити</span>';
+        }
     }
-    if (typeof safePlayVideo === 'function') {
-        safePlayVideo(video, false);
-    } else {
-        video.play().catch(() => {});
-    }
-}
-
-function updateScenarioUI() {
-    applyLessonBinding();
-}
-
-function startCurrentScenarioLesson() {
-    applyLessonBinding();
-}
-
-function changeMonth(value) {
-    firstActionTriggered = true;
-    currentMonth = parseInt(value) || 1;
-    currentWeek = 1;
-    currentLessonDay = 1;
-    currentScenario = 1;
-    applyLessonBinding();
-}
-
-function changeWeek(value) {
-    firstActionTriggered = true;
-    currentWeek = parseInt(value) || 1;
-    currentLessonDay = 1;
-    currentScenario = 1;
-    applyLessonBinding();
-}
-
-function selectLessonDay(day) {
-    firstActionTriggered = true;
-    currentLessonDay = parseInt(day) || 1;
-    currentScenario = currentLessonDay;
-    applyLessonBinding();
-}
-
-function selectScenario(num) {
-    firstActionTriggered = true;
-    currentScenario = parseInt(num) || 1;
-    currentLessonDay = currentScenario;
-    applyLessonBinding();
 }
 
 function confirmLessonSelection() {
@@ -3626,43 +3752,65 @@ function confirmLessonSelection() {
     if (trackEl) currentTrack = trackEl.value || currentTrack;
     currentScenario = currentLessonDay;
 
-    // User clicked "Підтвердити" -> Autoplay the selected lesson video
-    applyLessonBinding(true);
+    // Irreversible transition to Phase B
+    lessonModeActive = true;
+    sessionStorage.setItem('slovahoj_kids_lesson_mode_active', 'true');
+
+    // Unmount demo badge & lock dropdowns
+    const badge = document.getElementById('click-me-badge');
+    if (badge) badge.classList.add('hidden');
+    updateDropdownLockState();
+
+    // Trigger atomic lesson render & play speaking avatar video
+    onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
+}
+
+function changeMonth(value) {
+    if (lessonModeActive) return; // Locked in Phase B
+    currentMonth = parseInt(value) || 1;
+    currentWeek = 1;
+    currentLessonDay = 1;
+    currentScenario = 1;
+    applyLessonBinding(false);
+}
+
+function changeWeek(value) {
+    if (lessonModeActive) return; // Locked in Phase B
+    currentWeek = parseInt(value) || 1;
+    currentLessonDay = 1;
+    currentScenario = 1;
+    applyLessonBinding(false);
+}
+
+function selectLessonDay(day) {
+    if (lessonModeActive) return; // Locked in Phase B
+    currentLessonDay = parseInt(day) || 1;
+    currentScenario = currentLessonDay;
+    applyLessonBinding(false);
+}
+
+function selectScenario(num) {
+    if (lessonModeActive) return; // Locked in Phase B
+    currentScenario = parseInt(num) || 1;
+    currentLessonDay = currentScenario;
+    applyLessonBinding(false);
 }
 
 function selectTrack(t) {
-    firstActionTriggered = true;
     currentTrack = t;
     localStorage.setItem('slovahoj_kids_child_track', t);
-    
-    // Sync all track-select elements in DOM (Parent Cabinet & Header/Playground)
+
     const trackSelects = document.querySelectorAll('#track-select, select[name="track-select"]');
     trackSelects.forEach(el => { el.value = t; });
 
-    applyLessonBinding();
-}
-
-function updateDropdownLockState() {
-    ['month-select', 'week-select', 'lesson-select'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.disabled = false;
-            el.classList.remove('disabled-dropdown');
-            el.removeAttribute('title');
-        }
-    });
-    const confirmBtn = document.getElementById('btn-confirm-lesson');
-    if (confirmBtn) {
-        confirmBtn.disabled = false;
-        confirmBtn.classList.remove('disabled-btn');
-        confirmBtn.removeAttribute('title');
+    if (lessonModeActive) {
+        // Invalidate and rebuild lesson key atomically
+        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
+    } else {
+        applyLessonBinding(false);
     }
 }
 
-function selectMonth(m) {
-    changeMonth(m);
-}
+function selectMonth(m) { changeMonth(m); }
+function selectWeek(w) { changeWeek(w); }
 
-function selectWeek(w) {
-    changeWeek(w);
-}
