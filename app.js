@@ -3590,49 +3590,97 @@ function getLessonData(age, month, week, lesson) {
     const padMonth = String(m).padStart(2, '0');
     const padWeek = String(w).padStart(2, '0');
 
-    // Query curriculumCatalog
-    let phrase = "Dobrý deň, ako sa máš?";
-    let tipText = "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко!";
-    let taskTitle = "Зустрів нового друга на дитячому майданчику";
-    let taskDesc = "Привітайся словацькою та запитай, як справи!";
-    let words = ["Dobrý", "deň,", "ako", "sa", "máš?"];
+    // 1. Query custom curriculumCatalog if defined
+    if (typeof curriculumCatalog !== 'undefined' && curriculumCatalog[m] && curriculumCatalog[m].weeks && curriculumCatalog[m].weeks[w]) {
+        const wData = curriculumCatalog[m].weeks[w];
+        let phrase = "Dobrý deň, ako sa máš?";
+        let tipText = "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко!";
+        let taskTitle = `Сценарій ${l}: Спілкування словацькою`;
+        let taskDesc = "Повтори фразу словацькою мовою та отримай бали!";
 
-    if (typeof curriculumCatalog !== 'undefined' && curriculumCatalog[m]) {
-        const mData = curriculumCatalog[m];
-        if (mData.weeks && mData.weeks[w]) {
-            const wData = mData.weeks[w];
-            if (wData.hint) {
-                tipText = typeof wData.hint === 'object' ? (wData.hint[currentLang] || wData.hint.uk || '') : wData.hint;
-            }
-            if (wData.tracks && wData.tracks[a]) {
-                const tData = wData.tracks[a];
-                if (tData.phrase) phrase = tData.phrase;
-                if (tData.words) words = tData.words;
-            }
-            if (wData.scenarios) {
-                const sc = wData.scenarios.find(s => s.id === l) || wData.scenarios[0];
-                if (sc) {
-                    if (sc.title) taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || '') : sc.title;
-                    if (sc.desc) taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || '') : sc.desc;
-                    if (sc.words) words = sc.words;
-                }
+        if (wData.tracks && wData.tracks[a]) {
+            phrase = wData.tracks[a].phrase || phrase;
+        }
+        if (wData.hint) {
+            tipText = typeof wData.hint === 'object' ? (wData.hint[currentLang] || wData.hint.uk || tipText) : wData.hint;
+        }
+        if (wData.scenarios) {
+            const sc = wData.scenarios.find(s => s.id === l) || wData.scenarios[0];
+            if (sc) {
+                taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || taskTitle) : sc.title;
+                taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || taskDesc) : sc.desc;
             }
         }
+        const words = phrase.split(/\s+/).filter(Boolean);
+
+        return {
+            lessonKey: `${a}-${m}-${w}-${l}`,
+            age: a, month: m, week: w, lesson: l,
+            avatarVideoUrl: `./videos/m${padMonth}_w${padWeek}_${a}.mp4`,
+            pronunciationText: phrase,
+            hintText: tipText,
+            scenario: { taskTitle, taskDesc, words }
+        };
     }
+
+    // 2. Systematic Topic Catalog for All 12 Months x 4 Weeks x 3 Tracks x 5 Lessons
+    const monthTopics = {
+        1: { title: "Знайомство та привітання", phrase: "Dobrý deň, ako sa máš?", tip: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' вимовляється м'яко!" },
+        2: { title: "Сім'я та родина", phrase: "Toto je moja mama a otec.", tip: "Слово «mama» у словацькій мові наголошується на першому складі!" },
+        3: { title: "Школа та навчання", phrase: "Mám rád školu a knihu.", tip: "У слові «škola» буква 'š' вимовляється як українське 'ш'!" },
+        4: { title: "Їжа та напої", phrase: "Prosím si jablko a vodu.", tip: "Слово «prosím si» означає «будь ласка, я хотів би»!" },
+        5: { title: "Моє місто та дім", phrase: "Bývam v peknom meste.", tip: "Буква 'ý' у слові «bývam» вимовляється довше ніж звичайне 'i'!" },
+        6: { title: "Тварини та природа", phrase: "Pes a mačka sú kamaráti.", tip: "Буква 'č' у слові «mačka» вимовляється як 'ч'!" },
+        7: { title: "Час та розклад", phrase: "Koľko je hodín?", tip: "Слово «koľko» містить м'який звук 'ľ'!" },
+        8: { title: "Професії та хобі", phrase: "Chcem byť lektorom.", tip: "Звук 'ch' вимовляється м'яко як х!" },
+        9: { title: "Моє дозвілля", phrase: "Hráme sa spolu futbal.", tip: "Буква 'á' вимовляється довше!" },
+        10: { title: "Подорожі та транспорт", phrase: "Cestujeme autobusom.", tip: "Буква 'c' у словацькій вимовляється як 'ц'!" },
+        11: { title: "Природа та погода", phrase: "Dnes svieti slnko.", tip: "Буква 'v' у словацькій звучить м'яко!" },
+        12: { title: "Свята та традиції", phrase: "Veselé Vianoce prajem!", tip: "«Veselé Vianoce» означає «Щасливого Різдва!»" }
+    };
+
+    const scenarioContexts = {
+        1: { title: "Зустрів нового друга на майданчику", desc: "Привітайся словацькою мовою впевнено та голосно!" },
+        2: { title: "Спілкування у грі", desc: "Скажи словацьку фразу друзям!" },
+        3: { title: "Діалог у класі", desc: "Повтори фразу вчительці словацькою!" },
+        4: { title: "Бесіда за обідом", desc: "Скажи словацьку фразу за столом!" },
+        5: { title: "Відеодзвінок бабусі", desc: "Покажи свої успіхи словацькою по телефону!" }
+    };
+
+    const mInfo = monthTopics[m] || monthTopics[1];
+    let customPhrase = mInfo.phrase;
+    
+    if (w === 4) {
+        customPhrase = m === 1 ? "Nie, ďakujem, nepôjdem." : "Viem moje telefónne číslo.";
+    } else if (l === 2) {
+        customPhrase = `Ahoj! ${mInfo.phrase}`;
+    } else if (l === 3) {
+        customPhrase = `Ďakujem дуже! ${mInfo.phrase}`;
+    } else if (l === 4) {
+        customPhrase = `Áno, ${mInfo.phrase}`;
+    } else if (l === 5) {
+        customPhrase = `Páči sa mi to! ${mInfo.phrase}`;
+    }
+
+    if (a === 'middle') {
+        customPhrase += " A ty?";
+    } else if (a === 'senior') {
+        customPhrase += " Ďakujem pekne!";
+    }
+
+    const scInfo = scenarioContexts[l] || scenarioContexts[1];
+    const phraseWords = customPhrase.split(/\s+/).filter(Boolean);
 
     return {
         lessonKey: `${a}-${m}-${w}-${l}`,
-        age: a,
-        month: m,
-        week: w,
-        lesson: l,
+        age: a, month: m, week: w, lesson: l,
         avatarVideoUrl: `./videos/m${padMonth}_w${padWeek}_${a}.mp4`,
-        pronunciationText: phrase,
-        hintText: tipText,
+        pronunciationText: customPhrase,
+        hintText: mInfo.tip,
         scenario: {
-            taskTitle: taskTitle,
-            taskDesc: taskDesc,
-            words: words
+            taskTitle: `${scInfo.title} (Урок ${m}.${w}.${l})`,
+            taskDesc: scInfo.desc,
+            words: phraseWords
         }
     };
 }
