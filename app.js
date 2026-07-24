@@ -17,25 +17,39 @@ let currentWeek = 1;
 let currentLessonDay = 1;
 let currentTrack = localStorage.getItem('slovahoj_kids_child_track') || 'junior'; // 'junior', 'middle', 'senior'
 let currentScenario = 1;
-const completedScenariosKey = 'slovahoj_kids_completed_scenarios';
-let completedScenarios = [1, 2, 3];
+
+// Scenario completion is tracked PER LESSON (track + month + week), not globally,
+// so switching lessons always starts fresh and revisiting a lesson keeps its own progress.
+const scenarioProgressStorageKey = 'slovahoj_kids_scenario_progress_by_lesson';
+let scenarioProgressMap = {};
 try {
-    const stored = localStorage.getItem(completedScenariosKey);
-    if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-            completedScenarios = parsed;
+    const storedProgress = localStorage.getItem(scenarioProgressStorageKey);
+    if (storedProgress) {
+        const parsedProgress = JSON.parse(storedProgress);
+        if (parsedProgress && typeof parsedProgress === 'object') {
+            scenarioProgressMap = parsedProgress;
         }
     }
 } catch (e) {
-    console.warn("Error parsing completedScenarios, using default.", e);
+    console.warn("Error parsing scenario progress map, using default.", e);
+}
+
+function getLessonProgressKey(track, month, week) {
+    return `${track || currentTrack}-${month || currentMonth}-${week || currentWeek}`;
+}
+
+let completedScenarios = scenarioProgressMap[getLessonProgressKey()] || [];
+
+function loadCompletedScenariosForCurrentLesson() {
+    completedScenarios = scenarioProgressMap[getLessonProgressKey()] || [];
 }
 
 function saveCompletedScenarios() {
     try {
-        localStorage.setItem(completedScenariosKey, JSON.stringify(completedScenarios));
+        scenarioProgressMap[getLessonProgressKey()] = completedScenarios;
+        localStorage.setItem(scenarioProgressStorageKey, JSON.stringify(scenarioProgressMap));
     } catch (e) {
-        console.warn("Error saving completedScenarios:", e);
+        console.warn("Error saving completed scenarios:", e);
     }
 }
 let envKeys = null;
@@ -1521,14 +1535,34 @@ function getSafetyPhrasesMasteredCount() {
 function unlockMilestone(num) {
     if (!completedScenarios.includes(num)) {
         completedScenarios.push(num);
-        localStorage.setItem(completedScenariosKey, JSON.stringify(completedScenarios));
+        saveCompletedScenarios();
     }
-    
+
     // Set scenario_1_4_completed flag if 1, 2, 3, 4 are completed
     const sc1_4_completed = [1, 2, 3, 4].every(x => completedScenarios.includes(x));
     localStorage.setItem('slovahoj_kids_scenario_1_4_completed', sc1_4_completed ? 'true' : 'false');
-    
+
     syncMilestonesUI();
+
+    // If all 5 scenarios of the current lesson are now done, the lesson is fully complete
+    const allFiveDone = [1, 2, 3, 4, 5].every(x => completedScenarios.includes(x));
+    if (allFiveDone && lessonModeActive) {
+        onLessonFullyComplete();
+    }
+}
+
+function onLessonFullyComplete() {
+    // Unlock the dropdowns & Confirm button again so the next lesson can be picked
+    // without needing to reload the whole page.
+    lessonModeActive = false;
+    if (typeof updateDropdownLockState === 'function') {
+        updateDropdownLockState();
+    }
+
+    const msg = currentLang === 'uk'
+        ? '🎉 Ти пройшов усі 5 пригод цього уроку! Чудова робота! Тепер обери наступний урок вгорі та натисни «Підтвердити», щоб продовжити.'
+        : '🎉 Ты прошёл все 5 приключений этого урока! Отличная работа! Теперь выбери следующий урок вверху и нажми «Подтвердить», чтобы продолжить.';
+    appendChatBubble('tutor', msg);
 }
 
 function syncMilestonesUI() {
@@ -3447,13 +3481,14 @@ function deleteGDPRProfile() {
         subscriptionType = 'none';
         subscriptionStart = 0;
         subscriptionEnd = 0;
-        completedScenarios = [1];
+        completedScenarios = [];
+        scenarioProgressMap = {};
         currentMonth = 1;
         currentWeek = 1;
         currentTrack = 'junior';
         
         saveSubState();
-        localStorage.removeItem(completedScenariosKey);
+        localStorage.removeItem(scenarioProgressStorageKey);
         localStorage.removeItem('slovahoj_parent_schedule');
         localStorage.removeItem('slovahoj_last_triggered_reminder');
         
@@ -3784,7 +3819,11 @@ function onCombinationChange(age, month, week, lesson, autoPlayVideo = false) {
 
     const taskDescEl = document.getElementById('current-task-desc');
     if (taskDescEl) {
-        taskDescEl.innerText = data.scenario.taskDesc;
+        const progressCount = completedScenarios.length;
+        const progressLabel = currentLang === 'uk'
+            ? ` (Пройдено: ${progressCount}/5)`
+            : ` (Пройдено: ${progressCount}/5)`;
+        taskDescEl.innerText = data.scenario.taskDesc + progressLabel;
     }
 
     const phraseContainer = document.getElementById('phrase-phoneme-container');
@@ -3926,6 +3965,10 @@ function confirmLessonSelection() {
 
     console.log('[DEBUG] confirmLessonSelection clicked. New selection:', { currentTrack, currentMonth, currentWeek, currentLessonDay });
 
+    // Load this specific lesson's own saved progress (fresh if never started, resumed if revisited)
+    loadCompletedScenariosForCurrentLesson();
+    syncMilestonesUI();
+
     // Irreversible transition to Phase B
     lessonModeActive = true;
 
@@ -3936,6 +3979,15 @@ function confirmLessonSelection() {
 
     // Trigger atomic lesson render & play speaking avatar video
     onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
+
+    // Explain to the child what "finishing the lesson" actually means:
+    // repeat the same phrase in all 5 scenario situations, not just once.
+    if (completedScenarios.length === 0) {
+        const introMsg = currentLang === 'uk'
+            ? 'Сьогодні ми потренуємо одну фразу у 5 різних ситуаціях! Проходь іконки по черзі зліва направо — урок буде завершено, коли всі 5 засвітяться галочкою ✅.'
+            : 'Сегодня мы потренируем одну фразу в 5 разных ситуациях! Проходи иконки по очереди слева направо — урок будет завершён, когда все 5 засветятся галочкой ✅.';
+        appendChatBubble('tutor', introMsg);
+    }
 }
 
 function changeMonth(value) {
@@ -3980,6 +4032,9 @@ function selectTrack(t) {
     trackSelects.forEach(el => { el.value = t; });
 
     if (lessonModeActive) {
+        // Track change means a different lesson key too - load that lesson's own progress
+        loadCompletedScenariosForCurrentLesson();
+        syncMilestonesUI();
         // Invalidate and rebuild lesson key atomically
         onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
     } else {
