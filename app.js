@@ -151,39 +151,21 @@ function resetDropdownStyles() {
 
 function playGreetingVideo() {
     greetingPlayed = true;
-    firstActionTriggered = true;
-    const badge = document.getElementById('click-me-badge');
-    if (badge) badge.classList.add('hidden');
-    
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
     }
 
-    // Play Oksana's greeting video clip (reaction_greeting.mp4)
-    updateAvatarState('greeting');
-}
-
-function triggerFirstActionIfNeeded() {
-    if (!firstActionTriggered) {
-        firstActionTriggered = true;
-        startCurrentScenarioLesson();
-        const confirmBtn = document.getElementById('btn-confirm-lesson');
-        if (confirmBtn) {
-            confirmBtn.classList.add('blinking-btn');
-        }
+    // Play Oksana's greeting video clip (reaction_greeting.mp4) via FSM
+    if (typeof transitionAvatarStateTo === 'function') {
+        transitionAvatarStateTo(AvatarState.SPEAKING, './videos/reaction_greeting.mp4');
+    } else {
+        updateAvatarState('greeting');
     }
 }
 
 function handleUserInteraction() {
-    const badge = document.getElementById('click-me-badge');
-    if (badge) badge.classList.add('hidden');
-
-    if (!greetingPlayed) {
+    if (!lessonModeActive) {
         playGreetingVideo();
-        return false;
-    }
-    if (!firstActionTriggered) {
-        triggerFirstActionIfNeeded();
         return false;
     }
     return true;
