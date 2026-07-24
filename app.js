@@ -402,145 +402,197 @@ const curriculumCatalog = {
             1: {
                 topic: "Привіт і знайомство",
                 is_safety: false,
-                hint: {
-                    uk: "«Ahoj!» — це найпопулярніше словацьке привітання «Привіт!», а «Ako sa máš?» — «Як справи?»",
-                    ru: "«Ahoj!» — это самое популярное словацкое приветствие «Привет!», а «Ako sa máš?» — «Как дела?»"
-                },
                 tracks: {
                     junior: {
-                        phrase: "Ahoj! Ako sa máš?",
-                        translation: "Привіт! Як справи?",
-                        words: ["Ahoj!", "ako", "sa", "máš?"],
-                        intro: "Ahoj! Ja som Oksana. Poďme sa spolu zahrať!"
+                        phrase: "Ahoj!",
+                        translation: "Привіт!",
+                        words: ["Ahoj"],
+                        hint: "Це слово підходить і вранці, і ввечері — універсальне!",
+                        intro: "Ahoj! Ja som Oksana. Poďme sa spolu zahrať!",
+                        scenarios: [
+                            { id: 1, title_icon: "🎈", title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
+                            { id: 2, title_icon: "🐱", title: { uk: "Побачив сусідського кота і привітався жартома", ru: "Увидел соседского кота и поздоровался в шутку" } },
+                            { id: 3, title_icon: "🏫", title: { uk: "Зайшов до класу вранці", ru: "Вошел в класс утром" } },
+                            { id: 4, title_icon: "👩‍🏫", title: { uk: "Зустрів вчительку в коридорі", ru: "Встретил учительницу в коридоре" } },
+                            { id: 5, title_icon: "👵", title: { uk: "Привітав бабусю по відеодзвінку", ru: "Поздоровался с бабушкой по видеозвонку" } }
+                        ]
                     },
                     middle: {
-                        phrase: "Ahoj! Ako sa máš?",
-                        translation: "Привіт! Як справи?",
-                        words: ["Ahoj!", "ako", "sa", "máš?"],
-                        intro: "Ahoj! Ako sa voláš? Ja som Oksana."
+                        phrase: "Ahoj! Ako sa voláš?",
+                        translation: "Привіт! Як тебе звати?",
+                        words: ["Ahoj", "Ako", "sa", "voláš"],
+                        hint: "«Sa voláš» буквально означає «звешся» — так словаки питають ім'я.",
+                        intro: "Ahoj! Ako sa voláš? Ja som Oksana.",
+                        scenarios: [
+                            { id: 1, title_icon: "🏫", title: { uk: "Знайомство з новим однокласником у школі в Словаччині", ru: "Знакомство с новым одноклассником в школе в Словакии" } },
+                            { id: 2, title_icon: "🏕️", title: { uk: "Знайомство на дитячому таборі", ru: "Знакомство в детском лагере" } },
+                            { id: 3, title_icon: "🏘️", title: { uk: "Знайомство з сусідським хлопчиком/дівчинкою у дворі", ru: "Знакомство с соседским мальчиком/девочкой во дворе" } },
+                            { id: 4, title_icon: "🎂", title: { uk: "Знайомство з другом друга на дні народження", ru: "Знакомство с другом друга на дне рождения" } },
+                            { id: 5, title_icon: "📹", title: { uk: "Знайомство по відеодзвінку з майбутнім однокласником перед переїздом", ru: "Знакомство по видеозвонку с будущим одноклассником перед переездом" } }
+                        ]
                     },
                     senior: {
-                        phrase: "Ahoj! Ako sa máš?",
-                        translation: "Привіт! Як справи?",
-                        words: ["Dobrý", "deň,", "ako", "sa", "máš?"],
-                        intro: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?"
+                        phrase: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?",
+                        translation: "Привіт, як тебе звати? Я — Оксана. Звідки ти?",
+                        words: ["Ahoj", "ako sa voláš", "Ja som Oksana", "Odkiaľ si"],
+                        hint: "«Odkiaľ si» — питання, яке відкриває розмову далі, добре запам'ятати для першого дня в новій школі.",
+                        intro: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?",
+                        scenarios: [
+                            { id: 1, title_icon: "🏫", title: { uk: "Перший день у словацькій школі", ru: "Первый день в словацкой школе" } },
+                            { id: 2, title_icon: "⚽", title: { uk: "Знайомство з тренером спортивної секції", ru: "Знакомство с тренером спортивной секции" } },
+                            { id: 3, title_icon: "🏘️", title: { uk: "Знайомство з сусідами по під'їзду", ru: "Знакомство с соседями по подъезду" } },
+                            { id: 4, title_icon: "🍦", title: { uk: "Розмова в черзі за морозивом з ровесником", ru: "Разговор в очереди за мороженым со сверстником" } },
+                            { id: 5, title_icon: "🎒", title: { uk: "Групове знайомство на шкільній екскурсії", ru: "Групповое знакомство на школьной экскурсии" } }
+                        ]
                     }
                 },
-                scenarios: [
-                    { id: 1, title_icon: "🎈", title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
-                    { id: 2, title_icon: "🐱", title: { uk: "Побачив сусідського кота і привітався жартома", ru: "Увидел соседского кота и поздоровался в шутку" } },
-                    { id: 3, title_icon: "🏫", title: { uk: "Зайшов до класу вранці", ru: "Вошел в класс утром" } },
-                    { id: 4, title_icon: "👩‍🏫", title: { uk: "Зустрів вчительку в коридорі", ru: "Встретил учительницу в коридоре" } },
-                    { id: 5, title_icon: "👴", title: { uk: "Привітав Дідуся по відеодзвінку", ru: "Поздравил Дедушку по видеозвонку" } }
-                ],
                 mistake_or_joke: "Секунду, я сама трохи забула це слово. Навіть дорослі повторюють!"
             },
             2: {
                 topic: "Як справи",
                 is_safety: false,
-                hint: {
-                    uk: "«Ďakujem» означає «дякую» — зверни увагу на м'який звук 'ď' у слові!",
-                    ru: "«Ďakujem» означает «спасибо» — обрати внимание на мягкий звук 'ď' в слове!"
-                },
                 tracks: {
                     junior: {
                         phrase: "Dobre, ďakujem.",
                         translation: "Добре, дякую.",
                         words: ["Dobre", "ďakujem"],
-                        intro: "Ako sa máš? Ja som dnes veľmi šťastná!"
+                        hint: "«Ďakujem» звучить схоже на «дякую» — легко запам'ятати!",
+                        intro: "Ako sa máš? Ja som dnes veľmi šťastná!",
+                        scenarios: [
+                            { id: 1, title_icon: "👩", title: { uk: "Відповідь мамі вранці", ru: "Ответ маме утром" } },
+                            { id: 2, title_icon: "👩‍🏫", title: { uk: "Відповідь вчительці", ru: "Ответ учительнице" } },
+                            { id: 3, title_icon: "👦", title: { uk: "Відповідь другові на майданчику", ru: "Ответ другу на площадке" } },
+                            { id: 4, title_icon: "👵", title: { uk: "Відповідь бабусі по телефону", ru: "Ответ бабушке по телефону" } },
+                            { id: 5, title_icon: "🐶", title: { uk: "Відповідь новому сусідському щеняті-«другу» жартома", ru: "Ответ новому соседскому щенку-«другу» в шутку" } }
+                        ]
                     },
                     middle: {
                         phrase: "Ako sa máš? — Dobre, a ty?",
                         translation: "Як справи? — Добре, а ти?",
                         words: ["Ako sa máš", "Dobre", "a ty"],
-                        intro: "Ako sa máš dnes?"
+                        hint: "Питання завжди можна повернути назад — «a ty?» ввічливо і природно.",
+                        intro: "Ako sa máš dnes?",
+                        scenarios: [
+                            { id: 1, title_icon: "🏫", title: { uk: "Розмова з однокласником на перерві", ru: "Разговор с одноклассником на перемене" } },
+                            { id: 2, title_icon: "⚽", title: { uk: "Розмова з тренером", ru: "Разговор с тренером" } },
+                            { id: 3, title_icon: "🏘️", title: { uk: "Розмова з сусідом на вулиці", ru: "Разговор с соседом на улице" } },
+                            { id: 4, title_icon: "👨‍👩‍👧", title: { uk: "Розмова з другом батьків", ru: "Разговор с другом родителей" } },
+                            { id: 5, title_icon: "💬", title: { uk: "Групова розмова у чаті класу", ru: "Групповой разговор в чате класса" } }
+                        ]
                     },
                     senior: {
                         phrase: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?",
                         translation: "Як справи сьогодні? Було щось цікаве в школі?",
                         words: ["Ako sa dnes máš", "Bolo niečo zaujímavé", "v škole"],
-                        intro: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?"
+                        hint: "Додавання «dnes» (сьогодні) робить питання живішим, не формальним.",
+                        intro: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?",
+                        scenarios: [
+                            { id: 1, title_icon: "🏫", title: { uk: "Розмова з однокласником після уроків", ru: "Разговор с одноклассником после уроков" } },
+                            { id: 2, title_icon: "🏠", title: { uk: "Розмова з господарями квартири", ru: "Разговор с хозяевами квартиры" } },
+                            { id: 3, title_icon: "🏋️", title: { uk: "Розмова з новим другом у спортзалі", ru: "Разговор с новым другом в спортзале" } },
+                            { id: 4, title_icon: "👩‍🏫", title: { uk: "Розмова з учителькою після канікул", ru: "Разговор с учительницей после каникул" } },
+                            { id: 5, title_icon: "👨‍👩‍👧‍👦", title: { uk: "Розмова на батьківських зборах, де дитина перекладає для мами/тата", ru: "Разговор на родительском собрании, где ребенок переводит для мамы/папы" } }
+                        ]
                     }
                 },
-                scenarios: [
-                    { id: 1, title_icon: "👩", title: { uk: "Відповідь мамі вранці", ru: "Ответ маме утром" } },
-                    { id: 2, title_icon: "👩‍🏫", title: { uk: "Відповідь вчительці", ru: "Ответ учительнице" } },
-                    { id: 3, title_icon: "👦", title: { uk: "Відповідь другові на майданчику", ru: "Ответ другу на площадке" } },
-                    { id: 4, title_icon: "👵", title: { uk: "Відповідь бабусі по телефону", ru: "Ответ бабушке по телефону" } },
-                    { id: 5, title_icon: "🐶", title: { uk: "Відповідь новому сусідському цуценяті", ru: "Ответ новому соседскому щенку в шутку" } }
-                ],
                 mistake_or_joke: "Ой, здається, я переплутала порядок слів! Буває навіть у мене."
             },
             3: {
                 topic: "Прощання",
                 is_safety: false,
-                hint: {
-                    uk: "Слово 'Dovidenia' розбивається по складах: До-ви-де-ня. Воно означає «До побачення»!",
-                    ru: "Слово 'Dovidenia' разбивается по слогам: До-ви-де-ня. Оно означает «До свидания»!"
-                },
                 tracks: {
                     junior: {
                         phrase: "Dovidenia!",
                         translation: "До побачення!",
                         words: ["Dovidenia"],
-                        intro: "Dovidenia, kamarát! Uvidíme sa nabudúce."
+                        hint: "Довге слово, але його можна «розбити»: До-ви-де-ня.",
+                        intro: "Dovidenia, kamarát! Uvidíme sa nabudúce.",
+                        scenarios: [
+                            { id: 1, title_icon: "👩‍🏫", title: { uk: "Прощання з вчителькою", ru: "Прощание с учительницей" } },
+                            { id: 2, title_icon: "👋", title: { uk: "Прощання з другом на майданчику", ru: "Прощание с другом на площадке" } },
+                            { id: 3, title_icon: "🚌", title: { uk: "Прощання з водієм автобуса", ru: "Прощание с водителем автобуса" } },
+                            { id: 4, title_icon: "🛒", title: { uk: "Прощання з продавчинею в магазині", ru: "Прощание с продавщицей в магазине" } },
+                            { id: 5, title_icon: "👵", title: { uk: "Прощання з бабусею по відеодзвінку", ru: "Прощание с бабушкой по видеозвонку" } }
+                        ]
                     },
                     middle: {
                         phrase: "Maj sa pekne! Uvidíme sa zajtra.",
                         translation: "Гарного дня! Побачимось завтра.",
                         words: ["Maj sa pekne", "Uvidíme sa", "zajtra"],
-                        intro: "Maj sa pekne! Uvidíme sa zajtra."
+                        hint: "«Maj sa pekne» — тепліше і живіше, ніж просто «до побачення».",
+                        intro: "Maj sa pekne! Uvidíme sa zajtra.",
+                        scenarios: [
+                            { id: 1, title_icon: "🏫", title: { uk: "Прощання з однокласниками після уроків", ru: "Прощание с одноклассниками после уроков" } },
+                            { id: 2, title_icon: "⚽", title: { uk: "Прощання з тренером", ru: "Прощание с тренером" } },
+                            { id: 3, title_icon: "🏘️", title: { uk: "Прощання з сусідами", ru: "Прощание с соседями" } },
+                            { id: 4, title_icon: "🎂", title: { uk: "Прощання після дня народження", ru: "Прощание после дня рождения" } },
+                            { id: 5, title_icon: "🏕️", title: { uk: "Прощання з новими друзями в кінці табору", ru: "Прощание с новыми друзьями в конце лагеря" } }
+                        ]
                     },
                     senior: {
                         phrase: "Bolo super sa s tebou porozprávať. Maj sa a čoskoro dopočutia!",
                         translation: "Було супер з тобою поспілкуватися. Бувай, до швидкого!",
                         words: ["Bolo super", "porozprávať", "Maj sa", "dopočutia"],
-                        intro: "Bolo super sa s tebou porozprávať!"
+                        hint: "Ця фраза звучить природно навіть для дорослого — можна сміливо використовувати з новими друзями.",
+                        intro: "Bolo super sa s tebou porozprávať!",
+                        scenarios: [
+                            { id: 1, title_icon: "🏫", title: { uk: "Прощання після групового проєкту в школі", ru: "Прощание после группового проекта в школе" } },
+                            { id: 2, title_icon: "⚽", title: { uk: "Прощання після матчу/тренування", ru: "Прощание после матча/тренировки" } },
+                            { id: 3, title_icon: "🏘️", title: { uk: "Прощання з новим сусідом-ровесником", ru: "Прощание с новым соседом-ровесником" } },
+                            { id: 4, title_icon: "✈️", title: { uk: "Прощання в кінці подорожі", ru: "Прощание в конце путешествия" } },
+                            { id: 5, title_icon: "🎒", title: { uk: "Прощання наприкінці першого шкільного тижня в Словаччині", ru: "Прощание в конце первой школьной недели в Словакии" } }
+                        ]
                     }
                 },
-                scenarios: [
-                    { id: 1, title_icon: "👩‍🏫", title: { uk: "Прощання з вчителькою", ru: "Прощание с учительницей" } },
-                    { id: 2, title_icon: "👋", title: { uk: "Прощання з другом на майданчику", ru: "Прощание с другом на площадке" } },
-                    { id: 3, title_icon: "🚌", title: { uk: "Прощання з водієм автобуса", ru: "Прощание с водителем автобуса" } },
-                    { id: 4, title_icon: "🛒", title: { uk: "Прощання з продавчинею в магазині", ru: "Прощание с продавщицей в магазине" } },
-                    { id: 5, title_icon: "👴", title: { uk: "Прощання з Дідусем по відеодзвінку", ru: "Прощание с Дедушкой по видеозвонку" } }
-                ],
-                mistake_or_joke: "Хвилинку… а як це было? Ах так, згадала!"
+                mistake_or_joke: "Хвилинку… а як це було? Ах так, згадала!"
             },
             4: {
                 topic: "Ввічлива відмова (безпека)",
                 is_safety: true,
-                hint: {
-                    uk: "Фраза «Nie, ďakujem» («Ні, дякую») — це чарівний та ввічливий спосіб відмовити незнайомцю.",
-                    ru: "Фраза «Nie, ďakujem» («Нет, спасибо») — это вежливый способ отказать незнакомцу."
-                },
                 tracks: {
                     junior: {
                         phrase: "Nie, ďakujem.",
                         translation: "Ні, дякую.",
                         words: ["Nie", "ďakujem"],
-                        intro: "Ak niekto neznámy niečo ponúka, povieš: Nie, ďakujem!"
+                        hint: "Це чарівна фраза. Вона працює в будь-якій країні і завжди ввічлива.",
+                        intro: "Ak niekto neznámy niečo ponúka, povieš: Nie, ďakujem!",
+                        scenarios: [
+                            { id: 1, title_icon: "🍬", title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
+                            { id: 2, title_icon: "🐶", title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
+                            { id: 3, title_icon: "🌳", title: { uk: "Хтось у парку пропонує піти «показати щось цікаве»", ru: "Кто-то в парке предлагает пойти «показать что-то интересное»" } },
+                            { id: 4, title_icon: "🚗", title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } },
+                            { id: 5, title_icon: "🤔", title: { uk: "Рольова гра: «а що якщо незнайомець каже, що знає твою маму?»", ru: "Ролевая игра: «а что если незнакомец говорит, что знает твою маму?»" } }
+                        ]
                     },
                     middle: {
                         phrase: "Nie, ďakujem. Musím ísť za mamou.",
                         translation: "Ні, дякую. Мені треба йти до мами.",
                         words: ["Nie, ďakujem", "Musím ísť", "za mamou"],
-                        intro: "Vždy môžeš povedať: Nie, ďakujem. Musím ísť za mamou."
+                        hint: "Додавання причини робить відмову природною і зрозумілою для будь-кого поруч.",
+                        intro: "Vždy môžeš povedať: Nie, ďakujem. Musím ísť za mamou.",
+                        scenarios: [
+                            { id: 1, title_icon: "🍬", title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
+                            { id: 2, title_icon: "🐶", title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
+                            { id: 3, title_icon: "🌳", title: { uk: "Хтось у парку пропонує піти «показати щось цікаве»", ru: "Кто-то в парке предлагает пойти «показать что-то интересное»" } },
+                            { id: 4, title_icon: "🚗", title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } },
+                            { id: 5, title_icon: "🏬", title: { uk: "Ситуація в торговому центрі, коли загубився з групи", ru: "Ситуация в торговом центре, когда потерялся из группы" } }
+                        ]
                     },
                     senior: {
                         phrase: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma.",
-                        translation: "Вибачте, мене це не цікавитть. Я йду до батьків, вони на мене чекають.",
+                        translation: "Вибачте, мене це не цікавить. Я йду до батьків, вони на мене чекають.",
                         words: ["Prepáčte", "nemám záujem", "Idem za rodičmi", "čakajú ma"],
-                        intro: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma."
+                        hint: "Ця фраза одразу дає зрозуміти — тебе чекають, ти не сам. Це працює як сигнал для будь-кого поруч.",
+                        intro: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma.",
+                        scenarios: [
+                            { id: 1, title_icon: "💼", title: { uk: "Незнайомець на вулиці пропонує «легкий заробіток»", ru: "Незнакомец на улице предлагает «легкий заработок»" } },
+                            { id: 2, title_icon: "💻", title: { uk: "Хтось в інтернеті просить зустрітися особисто", ru: "Кто-то в интернете просит встретиться лично" } },
+                            { id: 3, title_icon: "🚌", title: { uk: "Незнайомець у громадському транспорті нав'язливо заговорює", ru: "Незнакомец в общественном транспорте навязчиво заговаривает" } },
+                            { id: 4, title_icon: "🚗", title: { uk: "Пропозиція «підвезти безкоштовно» біля школи", ru: "Предложение «подвезти бесплатно» возле школы" } },
+                            { id: 5, title_icon: "🛡️", title: { uk: "Комплексна рольова гра — послідовність дій «відмова → відхід → дзвінок батькам»", ru: "Комплексная ролевая игра — последовательность действий «отказ → уход → звонок родителям»" } }
+                        ]
                     }
                 },
-                scenarios: [
-                    { id: 1, title_icon: "🍬", title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
-                    { id: 2, title_icon: "🐶", title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
-                    { id: 3, title_icon: "🌳", title: { uk: "Хтось у парку пропонує піти показати щось", ru: "Кто-то в парке предлагает пойти показать что-то интересное" } },
-                    { id: 4, title_icon: "🚗", title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } },
-                    { id: 5, title_icon: "🤔", title: { uk: "Рольова гра: незнайомець каже, що знає маму", ru: "Ролевая игра: а что если незнакомец говорит, что знает твою маму?" } }
-                ],
                 mistake_or_joke: null
             }
         }
@@ -3598,24 +3650,36 @@ function getLessonData(age, month, week, lesson) {
         let taskTitle = `Сценарій ${l}: Спілкування словацькою`;
         let taskDesc = "Повтори фразу словацькою мовою та отримай бали!";
 
+        let wordsOverride = null;
         if (wData.tracks && wData.tracks[a]) {
-            phrase = wData.tracks[a].phrase || phrase;
-        }
-        if (wData.hint) {
-            tipText = typeof wData.hint === 'object' ? (wData.hint[currentLang] || wData.hint.uk || tipText) : wData.hint;
-        }
-        if (wData.scenarios) {
-            const sc = wData.scenarios.find(s => s.id === l) || wData.scenarios[0];
-            if (sc) {
-                if (sc.title) {
-                    taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || taskTitle) : sc.title;
-                }
-                if (sc.desc) {
-                    taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || taskDesc) : sc.desc;
+            const trackData = wData.tracks[a];
+            phrase = trackData.phrase || phrase;
+            wordsOverride = trackData.words;
+
+            // Prefer track-specific hint, fall back to week-level shared hint
+            if (trackData.hint) {
+                tipText = typeof trackData.hint === 'object' ? (trackData.hint[currentLang] || trackData.hint.uk || tipText) : trackData.hint;
+            } else if (wData.hint) {
+                tipText = typeof wData.hint === 'object' ? (wData.hint[currentLang] || wData.hint.uk || tipText) : wData.hint;
+            }
+
+            // Prefer track-specific scenarios, fall back to week-level shared scenarios
+            const scenarioList = trackData.scenarios || wData.scenarios;
+            if (scenarioList) {
+                const sc = scenarioList.find(s => s.id === l) || scenarioList[0];
+                if (sc) {
+                    if (sc.title) {
+                        taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || taskTitle) : sc.title;
+                    }
+                    if (sc.desc) {
+                        taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || taskDesc) : sc.desc;
+                    }
                 }
             }
+        } else if (wData.hint) {
+            tipText = typeof wData.hint === 'object' ? (wData.hint[currentLang] || wData.hint.uk || tipText) : wData.hint;
         }
-        const words = phrase.split(/\s+/).filter(Boolean);
+        const words = (wordsOverride && wordsOverride.length) ? wordsOverride : phrase.split(/\s+/).filter(Boolean);
 
         return {
             lessonKey: `${a}-${m}-${w}-${l}`,
