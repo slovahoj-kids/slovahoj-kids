@@ -1884,7 +1884,9 @@ async function toggleSpeechRecording() {
         statusText.innerHTML = currentLang === 'uk' ? 'Слухаю тебе... говори!' : 'Слушаю тебя... говори!';
         wave.classList.remove('hidden');
         
-        const targetPhrase = scenarios[currentScenario].phrase;
+        const targetPhrase = lessonModeActive
+            ? (getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay).pronunciationText)
+            : DEMO_PHRASE_DATA.text;
 
         // 10-second Speech API timeout fallback (prevents frozen screen)
         if (speechTimeoutTimer) clearTimeout(speechTimeoutTimer);
@@ -2036,7 +2038,11 @@ function handleSpeechResult(result) {
         headline.className = 'success-text';
         subtext.innerHTML = translations[currentLang].feedback_subtext_success;
 
-        document.getElementById('pronunciation-tip-text').innerHTML = scenarios[currentScenario].tip[currentLang];
+        const activeTip = lessonModeActive
+            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay).hintText
+            : DEMO_PHRASE_DATA.hintText;
+        const tipEl = document.getElementById('pronunciation-tip-text');
+        if (tipEl) tipEl.innerText = activeTip;
 
         unlockMilestone(currentScenario);
         advanceLessonProgress();
@@ -2102,7 +2108,11 @@ function handleSpeechResult(result) {
             ? 'Майже, спробуй ще раз! Зверни увагу на виділені помаранчевим слова.' 
             : 'Почти получилось, попробуй еще раз! Обрати внимание на выделенные оранжевым слова.';
 
-        document.getElementById('pronunciation-tip-text').innerHTML = scenarios[currentScenario].phoneticTip[currentLang];
+        const activeTip2 = lessonModeActive
+            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay).hintText
+            : DEMO_PHRASE_DATA.hintText;
+        const tipEl2 = document.getElementById('pronunciation-tip-text');
+        if (tipEl2) tipEl2.innerText = activeTip2;
 
         // Play Avatar video reaction (reaction_soft_correction.mp4 contains Oksana's voice, NO synthetic TTS!)
         const videoPlayedPromise = updateAvatarState('retry');
@@ -2123,7 +2133,11 @@ function handleSpeechResult(result) {
             ? 'Послухай, як вимовляє Оксана, та повтори повільніше.'
             : 'Послушай, как произносит Оксана, и повтори медленнее.';
 
-        document.getElementById('pronunciation-tip-text').innerHTML = scenarios[currentScenario].phoneticTip[currentLang];
+        const activeTip3 = lessonModeActive
+            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay).hintText
+            : DEMO_PHRASE_DATA.hintText;
+        const tipEl3 = document.getElementById('pronunciation-tip-text');
+        if (tipEl3) tipEl3.innerText = activeTip3;
 
         // Play Avatar video reaction (reaction_soft_correction.mp4 contains Oksana's voice, NO synthetic TTS!)
         const videoPlayedPromise = updateAvatarState('retry');
@@ -3499,6 +3513,58 @@ window.selectTrack = selectTrack;
 // Phase B active session flag (irreversible during active session)
 let lessonModeActive = sessionStorage.getItem('slovahoj_kids_lesson_mode_active') === 'true';
 
+// Centralized Single Source of Truth for Phase A (Demo Mode)
+const DEMO_PHRASE_DATA = {
+    text: "Ahoj! Ako sa máš?",
+    translation: "Привіт! Як справи?",
+    words: ["Ahoj!", "ako", "sa", "máš?"],
+    hintText: "«Ahoj» — це привітання «Привіт», а «Ako sa máš?» означає «Як справи?»",
+    scenarios: {
+        1: { id: 1, icon: "🎈", title: "Зустрів нового друга на дитячому майданчику", desc: "Привітайся словацькою та запитай, як справи!" },
+        2: { id: 2, icon: "🐱", title: "Побачив сусідського кота і привітався жартома", desc: "Привітайся з котиком весело!" },
+        3: { id: 3, icon: "🏫", title: "Зайшов до класу вранці", desc: "Привітайся з однокласниками!" },
+        4: { id: 4, icon: "👩‍🏫", title: "Зустрів вчительку в коридорі", desc: "Привітайся з вчителькою ввічливо!" },
+        5: { id: 5, icon: "👴", title: "Привітав Дідуся по відеодзвінку", desc: "Покажи дідусеві, як ти вітаєшся словацькою!" }
+    }
+};
+
+function applyDemoPhaseAData() {
+    if (lessonModeActive) return;
+
+    // 1. Subtitle under video
+    const subtitleEl = document.getElementById('tutor-speech-text');
+    if (subtitleEl) subtitleEl.innerText = DEMO_PHRASE_DATA.text;
+
+    // 2. Pronunciation tip text
+    const tipTextEl = document.getElementById('pronunciation-tip-text');
+    if (tipTextEl) tipTextEl.innerText = DEMO_PHRASE_DATA.hintText;
+
+    // 3. Right window task title, desc, phrase chips & buttons
+    const sc = DEMO_PHRASE_DATA.scenarios[currentScenario] || DEMO_PHRASE_DATA.scenarios[1];
+
+    const taskTitleEl = document.getElementById('current-task-title');
+    if (taskTitleEl) taskTitleEl.innerText = sc.title;
+
+    const taskDescEl = document.getElementById('current-task-desc');
+    if (taskDescEl) taskDescEl.innerText = sc.desc;
+
+    const phraseContainer = document.getElementById('phrase-phoneme-container');
+    if (phraseContainer) {
+        phraseContainer.innerHTML = '';
+        DEMO_PHRASE_DATA.words.forEach(w => {
+            const span = document.createElement('span');
+            span.className = 'phoneme-word';
+            span.innerText = w;
+            phraseContainer.appendChild(span);
+        });
+    }
+
+    for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById('scenario-btn-' + i);
+        if (btn) btn.classList.toggle('active', i === currentScenario);
+    }
+}
+
 // Avatar Finite State Machine (FSM)
 const AvatarState = {
     IDLE: 'IDLE',
@@ -3692,6 +3758,8 @@ function applyLessonBinding(autoplayVideo = false) {
 
     if (lessonModeActive) {
         onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, autoplayVideo);
+    } else {
+        applyDemoPhaseAData();
     }
 }
 
@@ -3775,10 +3843,13 @@ function selectLessonDay(day) {
 }
 
 function selectScenario(num) {
-    if (lessonModeActive) return; // Locked in Phase B
     currentScenario = parseInt(num) || 1;
     currentLessonDay = currentScenario;
-    applyLessonBinding(false);
+    if (lessonModeActive) {
+        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
+    } else {
+        applyDemoPhaseAData();
+    }
 }
 
 function selectTrack(t) {
