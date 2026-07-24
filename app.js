@@ -3508,7 +3508,7 @@ window.selectTrack = selectTrack;
 // =========================================================================
 
 // Phase B active session flag (irreversible during active session)
-let lessonModeActive = sessionStorage.getItem('slovahoj_kids_lesson_mode_active') === 'true';
+let lessonModeActive = false; // Always start in Phase A (demo) on every fresh page load
 
 // Centralized Single Source of Truth for Phase A (Demo Mode)
 const DEMO_PHRASE_DATA = {
@@ -3607,8 +3607,12 @@ function getLessonData(age, month, week, lesson) {
         if (wData.scenarios) {
             const sc = wData.scenarios.find(s => s.id === l) || wData.scenarios[0];
             if (sc) {
-                taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || taskTitle) : sc.title;
-                taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || taskDesc) : sc.desc;
+                if (sc.title) {
+                    taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || taskTitle) : sc.title;
+                }
+                if (sc.desc) {
+                    taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || taskDesc) : sc.desc;
+                }
             }
         }
         const words = phrase.split(/\s+/).filter(Boolean);
@@ -3860,7 +3864,6 @@ function confirmLessonSelection() {
 
     // Irreversible transition to Phase B
     lessonModeActive = true;
-    sessionStorage.setItem('slovahoj_kids_lesson_mode_active', 'true');
 
     // Unmount demo badge & lock dropdowns
     const badge = document.getElementById('click-me-badge');
