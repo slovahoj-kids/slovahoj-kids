@@ -1553,8 +1553,9 @@ function unlockMilestone(num) {
 
 function onLessonFullyComplete() {
     // Unlock the dropdowns & Confirm button again so the next lesson can be picked
-    // without needing to reload the whole page.
-    lessonModeActive = false;
+    // without needing to reload the whole page. The screen stays on the completed
+    // lesson's content until "Підтвердити" is pressed again for the new selection.
+    dropdownsUnlockedForNextLesson = true;
     if (typeof updateDropdownLockState === 'function') {
         updateDropdownLockState();
     }
@@ -3596,6 +3597,11 @@ window.selectTrack = selectTrack;
 
 // Phase B active session flag (irreversible during active session)
 let lessonModeActive = false; // Always start in Phase A (demo) on every fresh page load
+// True right after a lesson is fully completed (all 5 scenarios), while waiting for
+// the parent/child to pick the next lesson and press "Підтвердити" again.
+// Kept separate from lessonModeActive so the screen doesn't fall back to demo content
+// just because dropdowns are temporarily unlocked.
+let dropdownsUnlockedForNextLesson = false;
 
 // Centralized Single Source of Truth for Phase A (Demo Mode)
 const DEMO_PHRASE_DATA = {
@@ -3922,7 +3928,7 @@ function applyLessonBinding(autoplayVideo = false) {
 }
 
 function updateDropdownLockState() {
-    const isLocked = lessonModeActive;
+    const isLocked = lessonModeActive && !dropdownsUnlockedForNextLesson;
     ['month-select', 'week-select', 'lesson-select', 'track-select'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -3971,6 +3977,7 @@ function confirmLessonSelection() {
 
     // Irreversible transition to Phase B
     lessonModeActive = true;
+    dropdownsUnlockedForNextLesson = false;
 
     // Unmount demo badge & lock dropdowns
     const badge = document.getElementById('click-me-badge');
@@ -3991,27 +3998,46 @@ function confirmLessonSelection() {
 }
 
 function changeMonth(value) {
-    if (lessonModeActive) return; // Locked in Phase B
+    if (lessonModeActive && !dropdownsUnlockedForNextLesson) return; // Locked during active lesson
     currentMonth = parseInt(value) || 1;
     currentWeek = 1;
     currentLessonDay = 1;
     currentScenario = 1;
-    applyLessonBinding(false);
+    if (dropdownsUnlockedForNextLesson) {
+        // Just record the pick; screen stays on the completed lesson until "Підтвердити" again
+        const monthSelect = document.getElementById('month-select');
+        if (monthSelect) monthSelect.value = currentMonth.toString();
+        const weekSelect = document.getElementById('week-select');
+        if (weekSelect) weekSelect.value = currentWeek.toString();
+        const lessonSelect = document.getElementById('lesson-select');
+        if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
+    } else {
+        applyLessonBinding(false);
+    }
 }
 
 function changeWeek(value) {
-    if (lessonModeActive) return; // Locked in Phase B
+    if (lessonModeActive && !dropdownsUnlockedForNextLesson) return; // Locked during active lesson
     currentWeek = parseInt(value) || 1;
     currentLessonDay = 1;
     currentScenario = 1;
-    applyLessonBinding(false);
+    if (dropdownsUnlockedForNextLesson) {
+        const weekSelect = document.getElementById('week-select');
+        if (weekSelect) weekSelect.value = currentWeek.toString();
+        const lessonSelect = document.getElementById('lesson-select');
+        if (lessonSelect) lessonSelect.value = currentLessonDay.toString();
+    } else {
+        applyLessonBinding(false);
+    }
 }
 
 function selectLessonDay(day) {
-    if (lessonModeActive) return; // Locked in Phase B
+    if (lessonModeActive && !dropdownsUnlockedForNextLesson) return; // Locked during active lesson
     currentLessonDay = parseInt(day) || 1;
     currentScenario = currentLessonDay;
-    applyLessonBinding(false);
+    if (!dropdownsUnlockedForNextLesson) {
+        applyLessonBinding(false);
+    }
 }
 
 function selectScenario(num) {
@@ -4031,12 +4057,14 @@ function selectTrack(t) {
     const trackSelects = document.querySelectorAll('#track-select, select[name="track-select"]');
     trackSelects.forEach(el => { el.value = t; });
 
-    if (lessonModeActive) {
+    if (lessonModeActive && !dropdownsUnlockedForNextLesson) {
         // Track change means a different lesson key too - load that lesson's own progress
         loadCompletedScenariosForCurrentLesson();
         syncMilestonesUI();
         // Invalidate and rebuild lesson key atomically
         onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
+    } else if (dropdownsUnlockedForNextLesson) {
+        // Just record the pick; screen stays on the completed lesson until "Підтвердити" again
     } else {
         applyLessonBinding(false);
     }
