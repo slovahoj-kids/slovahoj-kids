@@ -34,8 +34,8 @@ try {
     console.warn("Error parsing scenario progress map, using default.", e);
 }
 
-function getLessonProgressKey(track, month, week) {
-    return `${track || currentTrack}-${month || currentMonth}-${week || currentWeek}`;
+function getLessonProgressKey(track, month, week, day) {
+    return `${track || currentTrack}-${month || currentMonth}-${week || currentWeek}-${day || currentLessonDay}`;
 }
 
 let completedScenarios = scenarioProgressMap[getLessonProgressKey()] || [];
@@ -411,352 +411,436 @@ function saveSubState() {
 // Full curriculum data database for Month 1 and 2, with metadata for Months 3-12
 const curriculumCatalog = {
     1: {
-        theme: "Знайомство та привітання",
+        theme: "Перший місяць",
         weeks: {
             1: {
-                topic: "Привіт і знайомство",
-                is_safety: false,
-                tracks: {
-                    junior: {
-                        phrase: "Ahoj!",
-                        translation: "Привіт!",
-                        words: ["Ahoj"],
-                        hint: "Це слово підходить і вранці, і ввечері — універсальне!",
-                        intro: "Ahoj! Ja som Oksana. Poďme sa spolu zahrať!",
-                        scenarios: [
-                            { id: 1, title_icon: "🎈", title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
-                            { id: 2, title_icon: "🐱", title: { uk: "Побачив сусідського кота і привітався жартома", ru: "Увидел соседского кота и поздоровался в шутку" } },
-                            { id: 3, title_icon: "🏫", title: { uk: "Зайшов до класу вранці", ru: "Вошел в класс утром" } },
-                            { id: 4, title_icon: "👩‍🏫", title: { uk: "Зустрів вчительку в коридорі", ru: "Встретил учительницу в коридоре" } },
-                            { id: 5, title_icon: "👵", title: { uk: "Привітав бабусю по відеодзвінку", ru: "Поздоровался с бабушкой по видеозвонку" } }
-                        ]
+                days: {
+                    1: {
+                        topic: "Привіт і знайомство",
+                        is_safety: false,
+                        tracks: {
+                            junior: {
+                                phrase: "Ahoj!",
+                                translation: "Привіт!",
+                                words: ["Ahoj"],
+                                hint: "Це слово підходить і вранці, і ввечері — універсальне!",
+                                intro: "Ahoj! Ja som Oksana. Poďme sa spolu zahrať!",
+                                scenarios: [
+                                    { id: 1, title_icon: "🎈", title: { uk: "Зустрів нового друга на дитячому майданчику", ru: "Встретил нового друга на детской площадке" } },
+                                    { id: 2, title_icon: "🐱", title: { uk: "Побачив сусідського кота і привітався жартома", ru: "Увидел соседского кота и поздоровался в шутку" } },
+                                    { id: 3, title_icon: "🏫", title: { uk: "Зайшов до класу вранці", ru: "Вошел в класс утром" } },
+                                    { id: 4, title_icon: "👩‍🏫", title: { uk: "Зустрів вчительку в коридорі", ru: "Встретил учительницу в коридоре" } }
+                                ]
+                            },
+                            middle: {
+                                phrase: "Ahoj! Ako sa voláš?",
+                                translation: "Привіт! Як тебе звати?",
+                                words: ["Ahoj", "Ako", "sa", "voláš"],
+                                hint: "«Sa voláš» буквально означає «звешся» — так словаки питають ім'я.",
+                                intro: "Ahoj! Ako sa voláš? Ja som Oksana.",
+                                scenarios: [
+                                    { id: 1, title_icon: "🏫", title: { uk: "Знайомство з новим однокласником у школі в Словаччині", ru: "Знакомство с новым одноклассником в школе в Словакии" } },
+                                    { id: 2, title_icon: "🏕️", title: { uk: "Знайомство на дитячому таборі", ru: "Знакомство в детском лагере" } },
+                                    { id: 3, title_icon: "🏘️", title: { uk: "Знайомство з сусідським хлопчиком/дівчинкою у дворі", ru: "Знакомство с соседским мальчиком/девочкой во дворе" } },
+                                    { id: 4, title_icon: "🎂", title: { uk: "Знайомство з другом друга на дні народження", ru: "Знакомство с другом друга на дне рождения" } }
+                                ]
+                            },
+                            senior: {
+                                phrase: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?",
+                                translation: "Привіт, як тебе звати? Я — Оксана. Звідки ти?",
+                                words: ["Ahoj", "ako sa voláš", "Ja som Oksana", "Odkiaľ si"],
+                                hint: "«Odkiaľ si» — питання, яке відкриває розмову далі, добре запам'ятати для першого дня в новій школі.",
+                                intro: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?",
+                                scenarios: [
+                                    { id: 1, title_icon: "🏫", title: { uk: "Перший день у словацькій школі", ru: "Первый день в словацкой школе" } },
+                                    { id: 2, title_icon: "⚽", title: { uk: "Знайомство з тренером спортивної секції", ru: "Знакомство с тренером спортивной секции" } },
+                                    { id: 3, title_icon: "🏘️", title: { uk: "Знайомство з сусідами по під'їзду", ru: "Знакомство с соседями по подъезду" } },
+                                    { id: 4, title_icon: "🍦", title: { uk: "Розмова в черзі за морозивом з ровесником", ru: "Разговор в очереди за мороженым со сверстником" } }
+                                ]
+                            }
+                        },
+                        mistake_or_joke: "Секунду, я сама трохи забула це слово. Навіть дорослі повторюють!"
                     },
-                    middle: {
-                        phrase: "Ahoj! Ako sa voláš?",
-                        translation: "Привіт! Як тебе звати?",
-                        words: ["Ahoj", "Ako", "sa", "voláš"],
-                        hint: "«Sa voláš» буквально означає «звешся» — так словаки питають ім'я.",
-                        intro: "Ahoj! Ako sa voláš? Ja som Oksana.",
-                        scenarios: [
-                            { id: 1, title_icon: "🏫", title: { uk: "Знайомство з новим однокласником у школі в Словаччині", ru: "Знакомство с новым одноклассником в школе в Словакии" } },
-                            { id: 2, title_icon: "🏕️", title: { uk: "Знайомство на дитячому таборі", ru: "Знакомство в детском лагере" } },
-                            { id: 3, title_icon: "🏘️", title: { uk: "Знайомство з сусідським хлопчиком/дівчинкою у дворі", ru: "Знакомство с соседским мальчиком/девочкой во дворе" } },
-                            { id: 4, title_icon: "🎂", title: { uk: "Знайомство з другом друга на дні народження", ru: "Знакомство с другом друга на дне рождения" } },
-                            { id: 5, title_icon: "📹", title: { uk: "Знайомство по відеодзвінку з майбутнім однокласником перед переїздом", ru: "Знакомство по видеозвонку с будущим одноклассником перед переездом" } }
-                        ]
+                    2: {
+                        topic: "Як справи",
+                        is_safety: false,
+                        tracks: {
+                            junior: {
+                                phrase: "Dobre, ďakujem.",
+                                translation: "Добре, дякую.",
+                                words: ["Dobre", "ďakujem"],
+                                hint: "«Ďakujem» звучить схоже на «дякую» — легко запам'ятати!",
+                                intro: "Ako sa máš? Ja som dnes veľmi šťastná!",
+                                scenarios: [
+                                    { id: 1, title_icon: "👩", title: { uk: "Відповідь мамі вранці", ru: "Ответ маме утром" } },
+                                    { id: 2, title_icon: "👩‍🏫", title: { uk: "Відповідь вчительці", ru: "Ответ учительнице" } },
+                                    { id: 3, title_icon: "👦", title: { uk: "Відповідь другові на майданчику", ru: "Ответ другу на площадке" } },
+                                    { id: 4, title_icon: "👵", title: { uk: "Відповідь бабусі по телефону", ru: "Ответ бабушке по телефону" } }
+                                ]
+                            },
+                            middle: {
+                                phrase: "Ako sa máš? — Dobre, a ty?",
+                                translation: "Як справи? — Добре, а ти?",
+                                words: ["Ako sa máš", "Dobre", "a ty"],
+                                hint: "Питання завжди можна повернути назад — «a ty?» ввічливо і природно.",
+                                intro: "Ako sa máš dnes?",
+                                scenarios: [
+                                    { id: 1, title_icon: "🏫", title: { uk: "Розмова з однокласником на перерві", ru: "Разговор с одноклассником на перемене" } },
+                                    { id: 2, title_icon: "⚽", title: { uk: "Розмова з тренером", ru: "Разговор с тренером" } },
+                                    { id: 3, title_icon: "🏘️", title: { uk: "Розмова з сусідом на вулиці", ru: "Разговор с соседом на улице" } },
+                                    { id: 4, title_icon: "👨‍👩‍👧", title: { uk: "Розмова з другом батьків", ru: "Разговор с другом родителей" } }
+                                ]
+                            },
+                            senior: {
+                                phrase: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?",
+                                translation: "Як справи сьогодні? Було щось цікаве в школі?",
+                                words: ["Ako sa dnes máš", "Bolo niečo zaujímavé", "v škole"],
+                                hint: "Додавання «dnes» (сьогодні) робить питання живішим, не формальним.",
+                                intro: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?",
+                                scenarios: [
+                                    { id: 1, title_icon: "🏫", title: { uk: "Розмова з однокласником після уроків", ru: "Разговор с одноклассником после уроков" } },
+                                    { id: 2, title_icon: "🏠", title: { uk: "Розмова з господарями квартири", ru: "Разговор с хозяевами квартиры" } },
+                                    { id: 3, title_icon: "🏋️", title: { uk: "Розмова з новим другом у спортзалі", ru: "Разговор с новым другом в спортзале" } },
+                                    { id: 4, title_icon: "👩‍🏫", title: { uk: "Розмова з учителькою після канікул", ru: "Разговор с учительницей после каникул" } }
+                                ]
+                            }
+                        },
+                        mistake_or_joke: "Ой, здається, я переплутала порядок слів! Буває навіть у мене."
                     },
-                    senior: {
-                        phrase: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?",
-                        translation: "Привіт, як тебе звати? Я — Оксана. Звідки ти?",
-                        words: ["Ahoj", "ako sa voláš", "Ja som Oksana", "Odkiaľ si"],
-                        hint: "«Odkiaľ si» — питання, яке відкриває розмову далі, добре запам'ятати для першого дня в новій школі.",
-                        intro: "Ahoj, ako sa voláš? Ja som Oksana. Odkiaľ si?",
-                        scenarios: [
-                            { id: 1, title_icon: "🏫", title: { uk: "Перший день у словацькій школі", ru: "Первый день в словацкой школе" } },
-                            { id: 2, title_icon: "⚽", title: { uk: "Знайомство з тренером спортивної секції", ru: "Знакомство с тренером спортивной секции" } },
-                            { id: 3, title_icon: "🏘️", title: { uk: "Знайомство з сусідами по під'їзду", ru: "Знакомство с соседями по подъезду" } },
-                            { id: 4, title_icon: "🍦", title: { uk: "Розмова в черзі за морозивом з ровесником", ru: "Разговор в очереди за мороженым со сверстником" } },
-                            { id: 5, title_icon: "🎒", title: { uk: "Групове знайомство на шкільній екскурсії", ru: "Групповое знакомство на школьной экскурсии" } }
-                        ]
+                    3: {
+                        topic: "Прощання",
+                        is_safety: false,
+                        tracks: {
+                            junior: {
+                                phrase: "Dovidenia!",
+                                translation: "До побачення!",
+                                words: ["Dovidenia"],
+                                hint: "Довге слово, але його можна «розбити»: До-ви-де-ня.",
+                                intro: "Dovidenia, kamarát! Uvidíme sa nabudúce.",
+                                scenarios: [
+                                    { id: 1, title_icon: "👩‍🏫", title: { uk: "Прощання з вчителькою", ru: "Прощание с учительницей" } },
+                                    { id: 2, title_icon: "👋", title: { uk: "Прощання з другом на майданчику", ru: "Прощание с другом на площадке" } },
+                                    { id: 3, title_icon: "🚌", title: { uk: "Прощання з водієм автобуса", ru: "Прощание с водителем автобуса" } },
+                                    { id: 4, title_icon: "🛒", title: { uk: "Прощання з продавчинею в магазині", ru: "Прощание с продавщицей в магазине" } }
+                                ]
+                            },
+                            middle: {
+                                phrase: "Maj sa pekne! Uvidíme sa zajtra.",
+                                translation: "Гарного дня! Побачимось завтра.",
+                                words: ["Maj sa pekne", "Uvidíme sa", "zajtra"],
+                                hint: "«Maj sa pekne» — тепліше і живіше, ніж просто «до побачення».",
+                                intro: "Maj sa pekne! Uvidíme sa zajtra.",
+                                scenarios: [
+                                    { id: 1, title_icon: "🏫", title: { uk: "Прощання з однокласниками після уроків", ru: "Прощание с одноклассниками после уроков" } },
+                                    { id: 2, title_icon: "⚽", title: { uk: "Прощання з тренером", ru: "Прощание с тренером" } },
+                                    { id: 3, title_icon: "🏘️", title: { uk: "Прощання з сусідами", ru: "Прощание с соседями" } },
+                                    { id: 4, title_icon: "🎂", title: { uk: "Прощання після дня народження", ru: "Прощание после дня рождения" } }
+                                ]
+                            },
+                            senior: {
+                                phrase: "Bolo super sa s tebou porozprávať. Maj sa a čoskoro dopočutia!",
+                                translation: "Було супер з тобою поспілкуватися. Бувай, до швидкого!",
+                                words: ["Bolo super", "porozprávať", "Maj sa", "dopočutia"],
+                                hint: "Ця фраза звучить природно навіть для дорослого — можна сміливо використовувати з новими друзями.",
+                                intro: "Bolo super sa s tebou porozprávať!",
+                                scenarios: [
+                                    { id: 1, title_icon: "🏫", title: { uk: "Прощання після групового проєкту в школі", ru: "Прощание после группового проекта в школе" } },
+                                    { id: 2, title_icon: "⚽", title: { uk: "Прощання після матчу/тренування", ru: "Прощание после матча/тренировки" } },
+                                    { id: 3, title_icon: "🏘️", title: { uk: "Прощання з новим сусідом-ровесником", ru: "Прощание с новым соседом-ровесником" } },
+                                    { id: 4, title_icon: "✈️", title: { uk: "Прощання в кінці подорожі", ru: "Прощание в конце путешествия" } }
+                                ]
+                            }
+                        },
+                        mistake_or_joke: "Хвилинку… а як це було? Ах так, згадала!"
                     }
-                },
-                mistake_or_joke: "Секунду, я сама трохи забула це слово. Навіть дорослі повторюють!"
+                }
             },
             2: {
-                topic: "Як справи",
-                is_safety: false,
-                tracks: {
-                    junior: {
-                        phrase: "Dobre, ďakujem.",
-                        translation: "Добре, дякую.",
-                        words: ["Dobre", "ďakujem"],
-                        hint: "«Ďakujem» звучить схоже на «дякую» — легко запам'ятати!",
-                        intro: "Ako sa máš? Ja som dnes veľmi šťastná!",
-                        scenarios: [
-                            { id: 1, title_icon: "👩", title: { uk: "Відповідь мамі вранці", ru: "Ответ маме утром" } },
-                            { id: 2, title_icon: "👩‍🏫", title: { uk: "Відповідь вчительці", ru: "Ответ учительнице" } },
-                            { id: 3, title_icon: "👦", title: { uk: "Відповідь другові на майданчику", ru: "Ответ другу на площадке" } },
-                            { id: 4, title_icon: "👵", title: { uk: "Відповідь бабусі по телефону", ru: "Ответ бабушке по телефону" } },
-                            { id: 5, title_icon: "🐶", title: { uk: "Відповідь новому сусідському щеняті-«другу» жартома", ru: "Ответ новому соседскому щенку-«другу» в шутку" } }
-                        ]
+                days: {
+                    1: {
+                        topic: "Ввічлива відмова (безпека)",
+                        is_safety: true,
+                        tracks: {
+                            junior: {
+                                phrase: "Nie, ďakujem.",
+                                translation: "Ні, дякую.",
+                                words: ["Nie", "ďakujem"],
+                                hint: "Це чарівна фраза. Вона працює в будь-якій країні і завжди ввічлива.",
+                                intro: "Ak niekto neznámy niečo ponúka, povieš: Nie, ďakujem!",
+                                scenarios: [
+                                    { id: 1, title_icon: "🍬", title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
+                                    { id: 2, title_icon: "🐶", title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
+                                    { id: 3, title_icon: "🌳", title: { uk: "Хтось у парку пропонує піти «показати щось цікаве»", ru: "Кто-то в парке предлагает пойти «показать что-то интересное»" } },
+                                    { id: 4, title_icon: "🚗", title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } }
+                                ]
+                            },
+                            middle: {
+                                phrase: "Nie, ďakujem. Musím ísť za mamou.",
+                                translation: "Ні, дякую. Мені треба йти до мами.",
+                                words: ["Nie, ďakujem", "Musím ísť", "za mamou"],
+                                hint: "Додавання причини робить відмову природною і зрозумілою для будь-кого поруч.",
+                                intro: "Vždy môžeš povedať: Nie, ďakujem. Musím ísť za mamou.",
+                                scenarios: [
+                                    { id: 1, title_icon: "🍬", title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
+                                    { id: 2, title_icon: "🐶", title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
+                                    { id: 3, title_icon: "🌳", title: { uk: "Хтось у парку пропонує піти «показати щось цікаве»", ru: "Кто-то в парке предлагает пойти «показать что-то интересное»" } },
+                                    { id: 4, title_icon: "🚗", title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } }
+                                ]
+                            },
+                            senior: {
+                                phrase: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma.",
+                                translation: "Вибачте, мене це не цікавить. Я йду до батьків, вони на мене чекають.",
+                                words: ["Prepáčte", "nemám záujem", "Idem za rodičmi", "čakajú ma"],
+                                hint: "Ця фраза одразу дає зрозуміти — тебе чекають, ти не сам. Це працює як сигнал для будь-кого поруч.",
+                                intro: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma.",
+                                scenarios: [
+                                    { id: 1, title_icon: "💼", title: { uk: "Незнайомець на вулиці пропонує «легкий заробіток»", ru: "Незнакомец на улице предлагает «легкий заработок»" } },
+                                    { id: 2, title_icon: "💻", title: { uk: "Хтось в інтернеті просить зустрітися особисто", ru: "Кто-то в интернете просит встретиться лично" } },
+                                    { id: 3, title_icon: "🚌", title: { uk: "Незнайомець у громадському транспорті нав'язливо заговорює", ru: "Незнакомец в общественном транспорте навязчиво заговаривает" } },
+                                    { id: 4, title_icon: "🚗", title: { uk: "Пропозиція «підвезти безкоштовно» біля школи", ru: "Предложение «подвезти бесплатно» возле школы" } }
+                                ]
+                            }
+                        },
+                        mistake_or_joke: null
                     },
-                    middle: {
-                        phrase: "Ako sa máš? — Dobre, a ty?",
-                        translation: "Як справи? — Добре, а ти?",
-                        words: ["Ako sa máš", "Dobre", "a ty"],
-                        hint: "Питання завжди можна повернути назад — «a ty?» ввічливо і природно.",
-                        intro: "Ako sa máš dnes?",
+                    2: {
+                        topic: "Члени родини",
+                        is_safety: false,
+                        hint: {
+                            uk: "«Mama» і «otec» означають «мама» і «тато», а «brat» і «sestra» — «брат» і «сестра»!",
+                            ru: "«Mama» и «otec» означают «мама» и «папа», а «brat» и «sestra» — «брат» и «сестра»!"
+                        },
+                        tracks: {
+                            junior: {
+                                phrase: "Mama, otec, brat, sestra.",
+                                translation: "Мама, тато, брат, сестра.",
+                                words: ["Mama", "otec", "brat", "sestra"],
+                                intro: "Ahoj! Dnes sa naučíme členov rodiny: mama, otec, brat a sestra."
+                            },
+                            middle: {
+                                phrase: "To je moja mama a môj otec.",
+                                translation: "Це моя мама і мій тато.",
+                                words: ["To je", "moja mama", "môj otec"],
+                                intro: "Predstavujem ti moju rodinu. To je moja mama a otec."
+                            },
+                            senior: {
+                                phrase: "To je moja rodina — mama, otec, brat a sestra.",
+                                translation: "Це моя сім'я — мама, тато, брат і сестра.",
+                                words: ["To je", "rodina", "mama", "otec", "brat", "sestra"],
+                                intro: "Ahoj! To je moja rodina — mama, otec, brat a sestra."
+                            }
+                        },
                         scenarios: [
-                            { id: 1, title_icon: "🏫", title: { uk: "Розмова з однокласником на перерві", ru: "Разговор с одноклассником на перемене" } },
-                            { id: 2, title_icon: "⚽", title: { uk: "Розмова з тренером", ru: "Разговор с тренером" } },
-                            { id: 3, title_icon: "🏘️", title: { uk: "Розмова з сусідом на вулиці", ru: "Разговор с соседом на улице" } },
-                            { id: 4, title_icon: "👨‍👩‍👧", title: { uk: "Розмова з другом батьків", ru: "Разговор с другом родителей" } },
-                            { id: 5, title_icon: "💬", title: { uk: "Групова розмова у чаті класу", ru: "Групповой разговор в чате класса" } }
-                        ]
+                            { id: 1, title_icon: "🖼️", title: { uk: "Показує сімейне фото другові", ru: "Показывает семейное фото другу" } },
+                            { id: 2, title_icon: "👦", title: { uk: "Розповідає про родину новому однокласнику", ru: "Рассказывает о семье новому однокласснику" } },
+                            { id: 3, title_icon: "🏡", title: { uk: "Знайомить родину з сусідами", ru: "Знакомит семью с соседями" } },
+                            { id: 4, title_icon: "👵", title: { uk: "Розповідає бабусі по відеодзвінку", ru: "Рассказывает бабушке по видеозвонку" } }
+                        ],
+                        mistake_or_joke: "Ой-ой, зачекай, я відволіклася. Спробуємо ще раз разом?"
                     },
-                    senior: {
-                        phrase: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?",
-                        translation: "Як справи сьогодні? Було щось цікаве в школі?",
-                        words: ["Ako sa dnes máš", "Bolo niečo zaujímavé", "v škole"],
-                        hint: "Додавання «dnes» (сьогодні) робить питання живішим, не формальним.",
-                        intro: "Ako sa dnes máš? Bolo niečo zaujímavé v škole?",
+                    3: {
+                        topic: "Мій дім",
+                        is_safety: false,
+                        hint: {
+                            uk: "«Byt» — це «квартира», а «izba» — «кімната». «Toto je» означає «це є»!",
+                            ru: "«Byt» — это «квартира», а «izba» — «комната». «Toto je» означает «это»!"
+                        },
+                        tracks: {
+                            junior: {
+                                phrase: "Toto je môj byt.",
+                                translation: "Це моя квартира.",
+                                words: ["Toto je", "môj byt"],
+                                intro: "Ahoj! Toto je môj byt."
+                            },
+                            middle: {
+                                phrase: "Toto je môj byt. Tu je moja izba.",
+                                translation: "Це моя квартира. Тут моя кімната.",
+                                words: ["Toto je", "môj byt", "Tu je", "moja izba"],
+                                intro: "Ukážem ti môj byt. Tu je moja izba."
+                            },
+                            senior: {
+                                phrase: "Toto je náš byt. Mám tu svoju izbu a tu je obývačka.",
+                                translation: "Це наша квартира. Тут моя кімната, а тут вітальня.",
+                                words: ["Toto je", "náš byt", "izbu", "obývačka"],
+                                intro: "Toto je náš byt. Mám tu svoju izbu a tu je obývačka."
+                            }
+                        },
                         scenarios: [
-                            { id: 1, title_icon: "🏫", title: { uk: "Розмова з однокласником після уроків", ru: "Разговор с одноклассником после уроков" } },
-                            { id: 2, title_icon: "🏠", title: { uk: "Розмова з господарями квартири", ru: "Разговор с хозяевами квартиры" } },
-                            { id: 3, title_icon: "🏋️", title: { uk: "Розмова з новим другом у спортзалі", ru: "Разговор с новым другом в спортзале" } },
-                            { id: 4, title_icon: "👩‍🏫", title: { uk: "Розмова з учителькою після канікул", ru: "Разговор с учительницей после каникул" } },
-                            { id: 5, title_icon: "👨‍👩‍👧‍👦", title: { uk: "Розмова на батьківських зборах, де дитина перекладає для мами/тата", ru: "Разговор на родительском собрании, где ребенок переводит для мамы/папы" } }
-                        ]
+                            { id: 1, title_icon: "📹", title: { uk: "Показує кімнату другу по відео", ru: "Показывает комнату другу по видео" } },
+                            { id: 2, title_icon: "👵", title: { uk: "Розповідає про новий дім бабусі", ru: "Рассказывает о новом доме бабушке" } },
+                            { id: 3, title_icon: "🏘️", title: { uk: "Пояснює сусідському хлопчику, де живе", ru: "Объясняет соседскому мальчику, где живет" } },
+                            { id: 4, title_icon: "✏️", title: { uk: "Малює план квартири на уроці", ru: "Рисует план квартиры на уроке" } }
+                        ],
+                        mistake_or_joke: "Хочеш дізнатися хитрість? Найкращий спосіб запам'ятати слово — сказати його вголос тричі. Спробуємо?"
                     }
-                },
-                mistake_or_joke: "Ой, здається, я переплутала порядок слів! Буває навіть у мене."
+                }
             },
             3: {
-                topic: "Прощання",
-                is_safety: false,
-                tracks: {
-                    junior: {
-                        phrase: "Dovidenia!",
-                        translation: "До побачення!",
-                        words: ["Dovidenia"],
-                        hint: "Довге слово, але його можна «розбити»: До-ви-де-ня.",
-                        intro: "Dovidenia, kamarát! Uvidíme sa nabudúce.",
+                days: {
+                    1: {
+                        topic: "Речі вдома",
+                        is_safety: false,
+                        hint: {
+                            uk: "Питальне слово «Kde» означає «де», а «hračka» — це «іграшка»!",
+                            ru: "Вопросительное слово «Kde» означает «где», а «hračka» — это «игрушка»!"
+                        },
+                        tracks: {
+                            junior: {
+                                phrase: "Kde je moja hračka?",
+                                translation: "Де моя іграшка?",
+                                words: ["Kde je", "moja hračka"],
+                                intro: "Kde je moja hračka? Hľadajme spolu!"
+                            },
+                            middle: {
+                                phrase: "Kde je moja hračka? Tu je!",
+                                translation: "Де моя іграшка? Ось вона!",
+                                words: ["Kde je", "moja hračka", "Tu je"],
+                                intro: "Kde je moja hračka? Tu je!"
+                            },
+                            senior: {
+                                phrase: "Nemôžem nájsť svoju hračku. Ach, tu je, pod posteľou!",
+                                translation: "Не можу знайти іграшку. Ах, ось вона, під ліжком!",
+                                words: ["Nemôžem nájsť", "hračku", "pod posteľou"],
+                                intro: "Nemôžem nájsť svoju hračku."
+                            }
+                        },
                         scenarios: [
-                            { id: 1, title_icon: "👩‍🏫", title: { uk: "Прощання з вчителькою", ru: "Прощание с учительницей" } },
-                            { id: 2, title_icon: "👋", title: { uk: "Прощання з другом на майданчику", ru: "Прощание с другом на площадке" } },
-                            { id: 3, title_icon: "🚌", title: { uk: "Прощання з водієм автобуса", ru: "Прощание с водителем автобуса" } },
-                            { id: 4, title_icon: "🛒", title: { uk: "Прощання з продавчинею в магазині", ru: "Прощание с продавщицей в магазине" } },
-                            { id: 5, title_icon: "👵", title: { uk: "Прощання з бабусею по відеодзвінку", ru: "Прощание с бабушкой по видеозвонку" } }
-                        ]
+                            { id: 1, title_icon: "🧸", title: { uk: "Шукає іграшку вдома", ru: "Ищет игрушку дома" } },
+                            { id: 2, title_icon: "🔍", title: { uk: "Питає, де річ у гостях", ru: "Спрашивает, где вещь в гостях" } },
+                            { id: 3, title_icon: "👶", title: { uk: "Допомагає молодшому братику знайти річ", ru: "Помогает младшему брату найти вещь" } },
+                            { id: 4, title_icon: "📖", title: { uk: "Питає вчительку, де його зошит", ru: "Спрашивает учительницу, где его тетрадь" } }
+                        ],
+                        mistake_or_joke: "А знаєш, чому мені подобається вчити тебе словацької? Бо разом веселіше, навіть коли помиляємось!"
                     },
-                    middle: {
-                        phrase: "Maj sa pekne! Uvidíme sa zajtra.",
-                        translation: "Гарного дня! Побачимось завтра.",
-                        words: ["Maj sa pekne", "Uvidíme sa", "zajtra"],
-                        hint: "«Maj sa pekne» — тепліше і живіше, ніж просто «до побачення».",
-                        intro: "Maj sa pekne! Uvidíme sa zajtra.",
+                    2: {
+                        topic: "🛡️ Безпека: особисті дані",
+                        is_safety: true,
+                        hint: {
+                            uk: "«Moja adresa je tajomstvo» означає «Моя адреса — це секрет». Свою адресу можна казати тільки батькам!",
+                            ru: "«Moja adresa je tajomstvo» означает «Мой адрес — это секрет». Свой адрес можно говорить только родителям!"
+                        },
+                        tracks: {
+                            junior: {
+                                phrase: "Moja adresa je tajomstvo.",
+                                translation: "Моя адреса — це секрет.",
+                                words: ["Moja adresa", "tajomstvo"],
+                                intro: "Moja adresa je tajomstvo. Nikomu ju nehovor!"
+                            },
+                            middle: {
+                                phrase: "Moja adresa je tajomstvo — vedia ju len rodičia.",
+                                translation: "Моя адреса — секрет, її знають лише батьки.",
+                                words: ["Moja adresa", "tajomstvo", "vedia", "rodičia"],
+                                intro: "Povedz: Moja adresa je tajomstvo — vedia ju len rodičia."
+                            },
+                            senior: {
+                                phrase: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých poznám.",
+                                translation: "Свою адресу я кажу лише батькам або вчителям, яких знаю.",
+                                words: ["Svoju adresu", "hovorím", "rodičom", "učiteľom", "poznám"],
+                                intro: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých poznám."
+                            }
+                        },
                         scenarios: [
-                            { id: 1, title_icon: "🏫", title: { uk: "Прощання з однокласниками після уроків", ru: "Прощание с одноклассниками после уроков" } },
-                            { id: 2, title_icon: "⚽", title: { uk: "Прощання з тренером", ru: "Прощание с тренером" } },
-                            { id: 3, title_icon: "🏘️", title: { uk: "Прощання з сусідами", ru: "Прощание с соседями" } },
-                            { id: 4, title_icon: "🎂", title: { uk: "Прощання після дня народження", ru: "Прощание после дня рождения" } },
-                            { id: 5, title_icon: "🏕️", title: { uk: "Прощання з новими друзями в кінці табору", ru: "Прощание с новыми друзьями в конце лагеря" } }
-                        ]
+                            { id: 1, title_icon: "🚶", title: { uk: "Незнайомець на вулиці питає адресу", ru: "Незнакомец на улице спрашивает адрес" } },
+                            { id: 2, title_icon: "📞", title: { uk: "Дзвінок з невідомого номера питає, де живеш", ru: "Звонок с неизвестного номера спрашивает, где живешь" } },
+                            { id: 3, title_icon: "🎮", title: { uk: "Онлайн-гра просить вказати адресу", ru: "Онлайн-игра просит указать адрес" } },
+                            { id: 4, title_icon: "💻", title: { uk: "Новий друг в інтернеті просить адресу", ru: "Новый «друг» в интернете просит адрес" } }
+                        ],
+                        mistake_or_joke: null
                     },
-                    senior: {
-                        phrase: "Bolo super sa s tebou porozprávať. Maj sa a čoskoro dopočutia!",
-                        translation: "Було супер з тобою поспілкуватися. Бувай, до швидкого!",
-                        words: ["Bolo super", "porozprávať", "Maj sa", "dopočutia"],
-                        hint: "Ця фраза звучить природно навіть для дорослого — можна сміливо використовувати з новими друзями.",
-                        intro: "Bolo super sa s tebou porozprávať!",
+                    3: {
+                        // Placeholder: source video/content (old m03_w01) not recorded yet.
+                        // Reusing existing generic "У класі" topic as a stand-in until real content is authored.
+                        topic: "У класі (матеріал ще готується)",
+                        is_safety: false,
+                        is_placeholder: true,
+                        hint: {
+                            uk: "Учителька — довге слово, розбий: у-чи-тель-ка.",
+                            ru: "Учительница — длинное слово, разбей: у-чи-тель-ни-ца."
+                        },
+                        tracks: {
+                            junior: { phrase: "Moja trieda!", translation: "Мій клас!", words: ["Moja", "trieda"], intro: "Toto je moja trieda!" },
+                            middle: { phrase: "Toto je moja trieda a moja učiteľka.", translation: "Це мій клас і моя вчителька.", words: ["Toto je", "moja trieda", "a moja", "učiteľka"], intro: "Toto je moja trieda a moja učiteľka." },
+                            senior: { phrase: "Toto je moja trieda. Toto je moja učiteľka.", translation: "Це мій клас. Це моя вчителька.", words: ["Toto je", "moja trieda", "Toto je", "moja učiteľka"], intro: "Toto je moja trieda. Toto je moja učiteľka." }
+                        },
                         scenarios: [
-                            { id: 1, title_icon: "🏫", title: { uk: "Прощання після групового проєкту в школі", ru: "Прощание после группового проекта в школе" } },
-                            { id: 2, title_icon: "⚽", title: { uk: "Прощання після матчу/тренування", ru: "Прощание после матча/тренировки" } },
-                            { id: 3, title_icon: "🏘️", title: { uk: "Прощання з новим сусідом-ровесником", ru: "Прощание с новым соседом-ровесником" } },
-                            { id: 4, title_icon: "✈️", title: { uk: "Прощання в кінці подорожі", ru: "Прощание в конце путешествия" } },
-                            { id: 5, title_icon: "🎒", title: { uk: "Прощання наприкінці першого шкільного тижня в Словаччині", ru: "Прощание в конце первой школьной недели в Словакии" } }
-                        ]
+                            { id: 1, title_icon: "🏫", title: { uk: "Перший день у новому класі", ru: "Первый день в новом классе" } },
+                            { id: 2, title_icon: "👩‍🏫", title: { uk: "Знайомство з новою вчителькою", ru: "Знакомство с новой учительницей" } },
+                            { id: 3, title_icon: "📝", title: { uk: "Показує клас другові", ru: "Показывает класс другу" } },
+                            { id: 4, title_icon: "🖼️", title: { uk: "Малює свій клас удома", ru: "Рисует свой класс дома" } }
+                        ],
+                        mistake_or_joke: "Цей матеріал ще уточнюється — скоро тут буде повноцінний урок!"
                     }
-                },
-                mistake_or_joke: "Хвилинку… а як це було? Ах так, згадала!"
+                }
             },
             4: {
-                topic: "Ввічлива відмова (безпека)",
-                is_safety: true,
-                tracks: {
-                    junior: {
-                        phrase: "Nie, ďakujem.",
-                        translation: "Ні, дякую.",
-                        words: ["Nie", "ďakujem"],
-                        hint: "Це чарівна фраза. Вона працює в будь-якій країні і завжди ввічлива.",
-                        intro: "Ak niekto neznámy niečo ponúka, povieš: Nie, ďakujem!",
+                days: {
+                    1: {
+                        // Placeholder: source (old m03_w02) not recorded yet.
+                        topic: "Шкільні речі (матеріал ще готується)",
+                        is_safety: false,
+                        is_placeholder: true,
+                        hint: {
+                            uk: "«Potrebujem» означає «мені потрібно».",
+                            ru: "«Potrebujem» означает «мне нужно»."
+                        },
+                        tracks: {
+                            junior: { phrase: "Pero a zošit.", translation: "Ручка і зошит.", words: ["Pero", "a", "zošit"], intro: "Potrebujem pero a zošit." },
+                            middle: { phrase: "Potrebujem pero a zošit.", translation: "Мені потрібні ручка і зошит.", words: ["Potrebujem", "pero", "a", "zošit"], intro: "Potrebujem pero a zošit." },
+                            senior: { phrase: "Potrebujem pero, zošit a učebnicu.", translation: "Мені потрібні ручка, зошит і підручник.", words: ["Potrebujem", "pero", "zošit", "a učebnicu"], intro: "Potrebujem pero, zošit a učebnicu." }
+                        },
                         scenarios: [
-                            { id: 1, title_icon: "🍬", title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
-                            { id: 2, title_icon: "🐶", title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
-                            { id: 3, title_icon: "🌳", title: { uk: "Хтось у парку пропонує піти «показати щось цікаве»", ru: "Кто-то в парке предлагает пойти «показать что-то интересное»" } },
-                            { id: 4, title_icon: "🚗", title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } },
-                            { id: 5, title_icon: "🤔", title: { uk: "Рольова гра: «а що якщо незнайомець каже, що знає твою маму?»", ru: "Ролевая игра: «а что если незнакомец говорит, что знает твою маму?»" } }
-                        ]
+                            { id: 1, title_icon: "🎒", title: { uk: "Збирає портфель зранку", ru: "Собирает портфель утром" } },
+                            { id: 2, title_icon: "🖊️", title: { uk: "Просить ручку в однокласника", ru: "Просит ручку у одноклассника" } },
+                            { id: 3, title_icon: "🛒", title: { uk: "Купує шкільне приладдя в магазині", ru: "Покупает школьные принадлежности в магазине" } },
+                            { id: 4, title_icon: "📚", title: { uk: "Показує зошит учительці", ru: "Показывает тетрадь учительнице" } }
+                        ],
+                        mistake_or_joke: "Цей матеріал ще уточнюється — скоро тут буде повноцінний урок!"
                     },
-                    middle: {
-                        phrase: "Nie, ďakujem. Musím ísť za mamou.",
-                        translation: "Ні, дякую. Мені треба йти до мами.",
-                        words: ["Nie, ďakujem", "Musím ísť", "za mamou"],
-                        hint: "Додавання причини робить відмову природною і зрозумілою для будь-кого поруч.",
-                        intro: "Vždy môžeš povedať: Nie, ďakujem. Musím ísť za mamou.",
+                    2: {
+                        // Placeholder: source (old m03_w03) not recorded yet.
+                        topic: "Розклад та предмети (матеріал ще готується)",
+                        is_safety: false,
+                        is_placeholder: true,
+                        hint: {
+                            uk: "Telesná výchova — фізкультура.",
+                            ru: "Telesná výchova — физкультура."
+                        },
+                        tracks: {
+                            junior: { phrase: "Matematika, telocvik.", translation: "Математика, фізкультура.", words: ["Matematika", "telocvik"], intro: "Dnes mám matematiku a telocvik." },
+                            middle: { phrase: "Dnes mám matematiku a telesnú výchovu.", translation: "Сьогодні у мене математика і фізкультура.", words: ["Dnes mám", "matematiku", "a telesnú", "výchovu"], intro: "Dnes mám matematiku a telesnú výchovu." },
+                            senior: { phrase: "Dnes mám matematiku, telesnú výchovu a dejepis.", translation: "Сьогодні у мене математика, фізкультура та історія.", words: ["Dnes mám", "matematiku", "telesnú výchovu", "a dejepis"], intro: "Dnes mám matematiku, telesnú výchovu a dejepis." }
+                        },
                         scenarios: [
-                            { id: 1, title_icon: "🍬", title: { uk: "Незнайомець пропонує цукерку на вулиці", ru: "Незнакомец предлагает конфету на улице" } },
-                            { id: 2, title_icon: "🐶", title: { uk: "Незнайомець кличе подивитися цуценя за рогом", ru: "Незнакомец зовет посмотреть щенка за углом" } },
-                            { id: 3, title_icon: "🌳", title: { uk: "Хтось у парку пропонує піти «показати щось цікаве»", ru: "Кто-то в парке предлагает пойти «показать что-то интересное»" } },
-                            { id: 4, title_icon: "🚗", title: { uk: "Незнайома людина пропонує підвезти", ru: "Незнакомый человек предлагает подвезти" } },
-                            { id: 5, title_icon: "🏬", title: { uk: "Ситуація в торговому центрі, коли загубився з групи", ru: "Ситуация в торговом центре, когда потерялся из группы" } }
-                        ]
+                            { id: 1, title_icon: "📅", title: { uk: "Дивиться розклад уроків", ru: "Смотрит расписание уроков" } },
+                            { id: 2, title_icon: "🧮", title: { uk: "Розповідає, який зараз урок", ru: "Рассказывает, какой сейчас урок" } },
+                            { id: 3, title_icon: "🏃", title: { uk: "Готується до фізкультури", ru: "Готовится к физкультуре" } },
+                            { id: 4, title_icon: "👩‍🏫", title: { uk: "Питає вчительку про розклад на завтра", ru: "Спрашивает учительницу про расписание на завтра" } }
+                        ],
+                        mistake_or_joke: "Цей матеріал ще уточнюється — скоро тут буде повноцінний урок!"
                     },
-                    senior: {
-                        phrase: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma.",
-                        translation: "Вибачте, мене це не цікавить. Я йду до батьків, вони на мене чекають.",
-                        words: ["Prepáčte", "nemám záujem", "Idem za rodičmi", "čakajú ma"],
-                        hint: "Ця фраза одразу дає зрозуміти — тебе чекають, ти не сам. Це працює як сигнал для будь-кого поруч.",
-                        intro: "Prepáčte, nemám záujem. Idem za rodičmi, čakajú ma.",
+                    3: {
+                        // Placeholder: source (old m03_w04, safety) not recorded yet.
+                        topic: "🛡️ Безпека: дорога до школи (матеріал ще готується)",
+                        is_safety: true,
+                        is_placeholder: true,
+                        hint: {
+                            uk: "Ніколи не йди з незнайомцями.",
+                            ru: "Никогда не ходи с незнакомцами."
+                        },
+                        tracks: {
+                            junior: { phrase: "Idem so susedom.", translation: "Йду з сусідом.", words: ["Idem", "so susedom"], intro: "Idem do školy so susedom, ktorého poznajú rodičia." },
+                            middle: { phrase: "Idem do školy len s tým, koho poznajú moji rodičia.", translation: "Я йду до школи лише з тим, кого знають мої батьки.", words: ["Idem do školy", "len s tým", "koho poznajú", "moji rodičia"], intro: "Idem do školy len s tým, koho poznajú moji rodičia." },
+                            senior: { phrase: "Cestu do školy si volím vždy s niekým, koho poznajú moji rodičia.", translation: "Дорогу до школи я обираю завжди з тим, кого знають мої батьки.", words: ["Cestu do školy", "si volím vždy", "s niekým", "koho poznajú moji rodičia"], intro: "Cestu do školy si volím vždy s niekým, koho poznajú moji rodičia." }
+                        },
                         scenarios: [
-                            { id: 1, title_icon: "💼", title: { uk: "Незнайомець на вулиці пропонує «легкий заробіток»", ru: "Незнакомец на улице предлагает «легкий заработок»" } },
-                            { id: 2, title_icon: "💻", title: { uk: "Хтось в інтернеті просить зустрітися особисто", ru: "Кто-то в интернете просит встретиться лично" } },
-                            { id: 3, title_icon: "🚌", title: { uk: "Незнайомець у громадському транспорті нав'язливо заговорює", ru: "Незнакомец в общественном транспорте навязчиво заговаривает" } },
-                            { id: 4, title_icon: "🚗", title: { uk: "Пропозиція «підвезти безкоштовно» біля школи", ru: "Предложение «подвезти бесплатно» возле школы" } },
-                            { id: 5, title_icon: "🛡️", title: { uk: "Комплексна рольова гра — послідовність дій «відмова → відхід → дзвінок батькам»", ru: "Комплексная ролевая игра — последовательность действий «отказ → уход → звонок родителям»" } }
-                        ]
+                            { id: 1, title_icon: "🚸", title: { uk: "Йде до школи знайомою дорогою", ru: "Идёт в школу знакомой дорогой" } },
+                            { id: 2, title_icon: "🚗", title: { uk: "Незнайомець пропонує підвезти до школи", ru: "Незнакомец предлагает подвезти до школы" } },
+                            { id: 3, title_icon: "👨‍👩‍👧", title: { uk: "Домовляється з батьками про дорогу до школи", ru: "Договаривается с родителями о дороге в школу" } },
+                            { id: 4, title_icon: "🛡️", title: { uk: "Пояснює правило другові", ru: "Объясняет правило другу" } }
+                        ],
+                        mistake_or_joke: null
                     }
-                },
-                mistake_or_joke: null
-            }
-        }
-    },
-    2: {
-        theme: "Сім'я та дім",
-        weeks: {
-            1: {
-                topic: "Члени родини",
-                is_safety: false,
-                hint: {
-                    uk: "«Mama» і «otec» означають «мама» і «тато», а «brat» і «sestra» — «брат» і «сестра»!",
-                    ru: "«Mama» и «otec» означают «мама» и «папа», а «brat» и «sestra» — «брат» и «сестра»!"
-                },
-                tracks: {
-                    junior: {
-                        phrase: "Mama, otec, brat, sestra.",
-                        translation: "Мама, тато, брат, сестра.",
-                        words: ["Mama", "otec", "brat", "sestra"],
-                        intro: "Ahoj! Dnes sa naučíme členov rodiny: mama, otec, brat a sestra."
-                    },
-                    middle: {
-                        phrase: "To je moja mama a môj otec.",
-                        translation: "Це моя мама і мій тато.",
-                        words: ["To je", "moja mama", "môj otec"],
-                        intro: "Predstavujem ti moju rodinu. To je moja mama a otec."
-                    },
-                    senior: {
-                        phrase: "To je moja rodina — mama, otec, brat a sestra.",
-                        translation: "Це моя сім'я — мама, тато, брат і сестра.",
-                        words: ["To je", "rodina", "mama", "otec", "brat", "sestra"],
-                        intro: "Ahoj! To je moja rodina — mama, otec, brat a sestra."
-                    }
-                },
-                scenarios: [
-                    { id: 1, title_icon: "🖼️", title: { uk: "Показує сімейне фото другові", ru: "Показывает семейное фото другу" } },
-                    { id: 2, title_icon: "👦", title: { uk: "Розповідає про родину новому однокласнику", ru: "Рассказывает о семье новому однокласснику" } },
-                    { id: 3, title_icon: "🏡", title: { uk: "Знайомить родину з сусідами", ru: "Знакомит семью с соседями" } },
-                    { id: 4, title_icon: "👵", title: { uk: "Розповідає бабусі по відеодзвінку", ru: "Рассказывает бабушке по видеозвонку" } },
-                    { id: 5, title_icon: "📝", title: { uk: "Заповнює шкільну анкету про родину", ru: "Заполняет школьную анкету о семье" } }
-                ],
-                mistake_or_joke: "Ой-ой, зачекай, я відволіклася. Спробуємо ще раз разом?"
-            },
-            2: {
-                topic: "Мій дім",
-                is_safety: false,
-                hint: {
-                    uk: "«Byt» — це «квартира», а «izba» — «кімната». «Toto je» означає «це є»!",
-                    ru: "«Byt» — это «квартира», а «izba» — «комната». «Toto je» означает «это»!"
-                },
-                tracks: {
-                    junior: {
-                        phrase: "Toto je môj byt.",
-                        translation: "Це моя квартира.",
-                        words: ["Toto je", "môj byt"],
-                        intro: "Ahoj! Toto je môj byt."
-                    },
-                    middle: {
-                        phrase: "Toto je môj byt. Tu je moja izba.",
-                        translation: "Це моя квартира. Тут моя кімната.",
-                        words: ["Toto je", "môj byt", "Tu je", "moja izba"],
-                        intro: "Ukážem ti môj byt. Tu je moja izba."
-                    },
-                    senior: {
-                        phrase: "Toto je náš byt. Mám tu svoju izbu a tu je obývačka.",
-                        translation: "Це наша квартира. Тут моя кімната, а тут вітальня.",
-                        words: ["Toto je", "náš byt", "izbu", "obývačka"],
-                        intro: "Toto je náš byt. Mám tu svoju izbu a tu je obývačka."
-                    }
-                },
-                scenarios: [
-                    { id: 1, title: { uk: "Показує кімнату другу по відео", ru: "Показывает комнату другу по видео" } },
-                    { id: 2, title: { uk: "Розповідає про новий дім бабусі", ru: "Рассказывает о новом доме бабушке" } },
-                    { id: 3, title: { uk: "Пояснює сусідському хлопчику, де живе", ru: "Объясняет соседскому мальчику, где живет" } },
-                    { id: 4, title: { uk: "Малює план квартири на уроці", ru: "Рисует план квартиры на уроке" } },
-                    { id: 5, title: { uk: "Відео-екскурсія квартирою для родички", ru: "Видео-экскурсия по квартире для родственницы" } }
-                ],
-                mistake_or_joke: "Хочеш дізнатися хитрість? Найкращий спосіб запам'ятати слово — сказати його вголос тричі. Спробуємо?"
-            },
-            3: {
-                topic: "Речі вдома",
-                is_safety: false,
-                hint: {
-                    uk: "Питальне слово «Kde» означає «де», а «hračka» — це «іграшка»!",
-                    ru: "Вопросительное слово «Kde» означает «где», а «hračka» — это «игрушка»!"
-                },
-                tracks: {
-                    junior: {
-                        phrase: "Kde je moja hračka?",
-                        translation: "Де моя іграшка?",
-                        words: ["Kde je", "moja hračka"],
-                        intro: "Kde je moja hračka? Hľadajme spolu!"
-                    },
-                    middle: {
-                        phrase: "Kde je moja hračka? Tu je!",
-                        translation: "Де моя іграшка? Ось вона!",
-                        words: ["Kde je", "moja hračka", "Tu je"],
-                        intro: "Kde je moja hračka? Tu je!"
-                    },
-                    senior: {
-                        phrase: "Nemôžem nájsť svoju hračku. Ach, tu je, pod posteľou!",
-                        translation: "Не можу знайти іграшку. Ах, ось вона, під ліжком!",
-                        words: ["Nemôžem nájsť", "hračku", "pod posteľou"],
-                        intro: "Nemôžem nájsť svoju hračку."
-                    }
-                },
-                scenarios: [
-                    { id: 1, title_icon: "🧸", title: { uk: "Шукає іграшку вдома", ru: "Ищет игрушку дома" } },
-                    { id: 2, title_icon: "🔍", title: { uk: "Питає, де річ у гостях", ru: "Спрашивает, где вещь в гостях" } },
-                    { id: 3, title_icon: "👶", title: { uk: "Допомагає молодшому братику знайти річ", ru: "Помогает младшему брату найти вещь" } },
-                    { id: 4, title_icon: "📖", title: { uk: "Питає вчительку, де його зошит", ru: "Спрашивает учительницу, где его тетрадь" } },
-                    { id: 5, title_icon: "🙈", title: { uk: "Гра «хованки» з предметами по-словацьки", ru: "Игра «прятки» с предметами по-словацки" } }
-                ],
-                mistake_or_joke: "А знаєш, чому мені подобається вчити тебе словацької? Бо разом веселіше, навіть коли помиляємось!"
-            },
-            4: {
-                topic: "🛡️ Безпека: особисті дані",
-                is_safety: true,
-                hint: {
-                    uk: "«Moja adresa je tajomstvo» означає «Моя адреса — це секрет». Свою адресу можна казати тільки батькам!",
-                    ru: "«Moja adresa je tajomstvo» означает «Мой адрес — это секрет». Свой адрес можно говорить только родителям!"
-                },
-                tracks: {
-                    junior: {
-                        phrase: "Moja adresa je tajomstvo.",
-                        translation: "Моя адреса — це секрет.",
-                        words: ["Moja adresa", "tajomstvo"],
-                        intro: "Moja adresa je tajomstvo. Nikomu ju nehovor!"
-                    },
-                    middle: {
-                        phrase: "Moja adresa je tajomstvo — vedia ju len rodičia.",
-                        translation: "Моя адреса — секрет, її знають лише батьки.",
-                        words: ["Moja adresa", "tajomstvo", "vedia", "rodičia"],
-                        intro: "Povedz: Moja adresa je tajomstvo — vedia ju len rodičia."
-                    },
-                    senior: {
-                        phrase: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých poznám.",
-                        translation: "Свою адресу я кажу лише батькам або вчителям, яких знаю.",
-                        words: ["Svoju adresu", "hovorím", "rodičom", "učiteľom", "poznám"],
-                        intro: "Svoju adresu hovorím len rodičom alebo učiteľom, ktorých poznám."
-                    }
-                },
-                scenarios: [
-                    { id: 1, title_icon: "🚶", title: { uk: "Незнайомець на вулиці питає адресу", ru: "Незнакомец на улице спрашивает адрес" } },
-                    { id: 2, title_icon: "📞", title: { uk: "Дзвінок з невідомого номера питає, де живеш", ru: "Звонок с неизвестного номера спрашивает, где живешь" } },
-                    { id: 3, title_icon: "🎮", title: { uk: "Онлайн-гра просить вказати адресу", ru: "Онлайн-игра просит указать адрес" } },
-                    { id: 4, title_icon: "💻", title: { uk: "Новий друг в інтернеті просить адресу", ru: "Новый «друг» в интернете просит адрес" } },
-                    { id: 5, title_icon: "🛡️", title: { uk: "Комплексна рольова гра — коли адресу казати можна, а коли ні", ru: "Комплексная ролевая игра — когда адрес говорить можно, а когда нет" } }
-                ],
-                mistake_or_joke: null
+                }
             }
         }
     }
@@ -1969,7 +2053,7 @@ async function toggleSpeechRecording() {
         wave.classList.remove('hidden');
         
         const targetPhrase = lessonModeActive
-            ? (getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay).pronunciationText)
+            ? (getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay, currentScenario).pronunciationText)
             : DEMO_PHRASE_DATA.text;
 
         // 10-second Speech API timeout fallback (prevents frozen screen)
@@ -2123,7 +2207,7 @@ function handleSpeechResult(result) {
         subtext.innerHTML = translations[currentLang].feedback_subtext_success;
 
         const activeTip = lessonModeActive
-            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay).hintText
+            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay, currentScenario).hintText
             : DEMO_PHRASE_DATA.hintText;
         const tipEl = document.getElementById('pronunciation-tip-text');
         if (tipEl) tipEl.innerText = activeTip;
@@ -2193,7 +2277,7 @@ function handleSpeechResult(result) {
             : 'Почти получилось, попробуй еще раз! Обрати внимание на выделенные оранжевым слова.';
 
         const activeTip2 = lessonModeActive
-            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay).hintText
+            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay, currentScenario).hintText
             : DEMO_PHRASE_DATA.hintText;
         const tipEl2 = document.getElementById('pronunciation-tip-text');
         if (tipEl2) tipEl2.innerText = activeTip2;
@@ -2218,7 +2302,7 @@ function handleSpeechResult(result) {
             : 'Послушай, как произносит Оксана, и повтори медленнее.';
 
         const activeTip3 = lessonModeActive
-            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay).hintText
+            ? getLessonData(currentTrack, currentMonth, currentWeek, currentLessonDay, currentScenario).hintText
             : DEMO_PHRASE_DATA.hintText;
         const tipEl3 = document.getElementById('pronunciation-tip-text');
         if (tipEl3) tipEl3.innerText = activeTip3;
@@ -3666,139 +3750,198 @@ const AvatarState = {
 let currentAvatarFSMState = AvatarState.IDLE;
 let speechTimeoutTimer = null;
 
-function buildLessonKey(age, month, week, lesson) {
+function buildLessonKey(age, month, week, day, scenarioSlot) {
     const a = age || currentTrack || 'junior';
     const m = month || currentMonth || 1;
     const w = week || currentWeek || 1;
-    const l = lesson || currentLessonDay || 1;
-    return `${a}-${m}-${w}-${l}`;
+    const d = day || currentLessonDay || 1;
+    const s = scenarioSlot || currentScenario || 1;
+    return `${a}-${m}-${w}-${d}-${s}`;
 }
 
-function getLessonData(age, month, week, lesson) {
-    const a = age || currentTrack || 'junior';
-    const m = parseInt(month) || currentMonth || 1;
-    const w = parseInt(week) || currentWeek || 1;
-    const l = parseInt(lesson) || currentLessonDay || 1;
+// Returns { month, week, day } of the day immediately preceding the given one
+// in the continuous day-to-day chain (ignores week/month grouping - it's just
+// "what came right before this"). Returns null if this is the very first day
+// of the whole program, in which case the demo phrase should be used instead.
+function getPreviousDayInChain(month, week, day) {
+    if (day > 1) return { month, week, day: day - 1 };
+    if (week > 1) return { month, week: week - 1, day: 3 };
+    if (month > 1) return { month: month - 1, week: 4, day: 3 };
+    return null;
+}
 
+const monthTopicsFallback = {
+    1: { title: "Знайомство та привітання", phrase: "Dobrý deň, ako sa máš?", tip: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' вимовляється м'яко!" },
+    2: { title: "Сім'я та родина", phrase: "Toto je moja mama a otec.", tip: "Слово «mama» у словацькій мові наголошується на першому складі!" },
+    3: { title: "Школа та навчання", phrase: "Mám rád školu a knihu.", tip: "У слові «škola» буква 'š' вимовляється як українське 'ш'!" },
+    4: { title: "Їжа та напої", phrase: "Prosím si jablko a vodu.", tip: "Слово «prosím si» означає «будь ласка, я хотів би»!" },
+    5: { title: "Моє місто та дім", phrase: "Bývam v peknom meste.", tip: "Буква 'ý' у слові «bývam» вимовляється довше ніж звичайне 'i'!" },
+    6: { title: "Тварини та природа", phrase: "Pes a mačka sú kamaráti.", tip: "Буква 'č' у слові «mačka» вимовляється як 'ч'!" },
+    7: { title: "Час та розклад", phrase: "Koľko je hodín?", tip: "Слово «koľko» містить м'який звук 'ľ'!" },
+    8: { title: "Професії та хобі", phrase: "Chcem byť lektorom.", tip: "Звук 'ch' вимовляється м'яко як х!" },
+    9: { title: "Моє дозвілля", phrase: "Hráme sa spolu futbal.", tip: "Буква 'á' вимовляється довше!" },
+    10: { title: "Подорожі та транспорт", phrase: "Cestujeme autobusom.", tip: "Буква 'c' у словацькій вимовляється як 'ц'!" },
+    11: { title: "Природа та погода", phrase: "Dnes svieti slnko.", tip: "Буква 'v' у словацькій звучить м'яко!" },
+    12: { title: "Свята та традиції", phrase: "Veselé Vianoce prajem!", tip: "«Veselé Vianoce» означає «Щасливого Різдва!»" }
+};
+
+// Builds the "new material" content for a given day (month/week/day), independent
+// of which scenario slot is currently shown. Used both for the day's own slots 1-4
+// AND, when a later day reviews this one, to fetch this day's content again.
+function buildDayLessonPayload(age, month, week, day) {
+    const a = age || currentTrack || 'junior';
+    const m = parseInt(month) || 1;
+    const w = parseInt(week) || 1;
+    const d = parseInt(day) || 1;
     const padMonth = String(m).padStart(2, '0');
     const padWeek = String(w).padStart(2, '0');
+    const padDay = String(d).padStart(2, '0');
+    const avatarVideoUrl = `./videos/d${padDay}-w${padWeek}_m${padMonth}_${a}.mp4`;
 
-    // 1. Query custom curriculumCatalog if defined
-    if (typeof curriculumCatalog !== 'undefined' && curriculumCatalog[m] && curriculumCatalog[m].weeks && curriculumCatalog[m].weeks[w]) {
-        const wData = curriculumCatalog[m].weeks[w];
+    if (typeof curriculumCatalog !== 'undefined' &&
+        curriculumCatalog[m] && curriculumCatalog[m].weeks && curriculumCatalog[m].weeks[w] &&
+        curriculumCatalog[m].weeks[w].days && curriculumCatalog[m].weeks[w].days[d]) {
+
+        const dData = curriculumCatalog[m].weeks[w].days[d];
         let phrase = "Dobrý deň, ako sa máš?";
         let tipText = "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' у слові 'deň' вимовляється м'яко!";
-        let taskTitle = `Сценарій ${l}: Спілкування словацькою`;
-        let taskDesc = "Повтори фразу словацькою мовою та отримай бали!";
-
         let wordsOverride = null;
-        if (wData.tracks && wData.tracks[a]) {
-            const trackData = wData.tracks[a];
+        let scenarioList = dData.scenarios || null;
+
+        if (dData.tracks && dData.tracks[a]) {
+            const trackData = dData.tracks[a];
             phrase = trackData.phrase || phrase;
             wordsOverride = trackData.words;
-
-            // Prefer track-specific hint, fall back to week-level shared hint
             if (trackData.hint) {
                 tipText = typeof trackData.hint === 'object' ? (trackData.hint[currentLang] || trackData.hint.uk || tipText) : trackData.hint;
-            } else if (wData.hint) {
-                tipText = typeof wData.hint === 'object' ? (wData.hint[currentLang] || wData.hint.uk || tipText) : wData.hint;
+            } else if (dData.hint) {
+                tipText = typeof dData.hint === 'object' ? (dData.hint[currentLang] || dData.hint.uk || tipText) : dData.hint;
             }
-
-            // Prefer track-specific scenarios, fall back to week-level shared scenarios
-            const scenarioList = trackData.scenarios || wData.scenarios;
-            if (scenarioList) {
-                const sc = scenarioList.find(s => s.id === l) || scenarioList[0];
-                if (sc) {
-                    if (sc.title) {
-                        taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || taskTitle) : sc.title;
-                    }
-                    if (sc.desc) {
-                        taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || taskDesc) : sc.desc;
-                    }
-                }
-            }
-        } else if (wData.hint) {
-            tipText = typeof wData.hint === 'object' ? (wData.hint[currentLang] || wData.hint.uk || tipText) : wData.hint;
+            if (trackData.scenarios) scenarioList = trackData.scenarios;
+        } else if (dData.hint) {
+            tipText = typeof dData.hint === 'object' ? (dData.hint[currentLang] || dData.hint.uk || tipText) : dData.hint;
         }
+
         const words = (wordsOverride && wordsOverride.length) ? wordsOverride : phrase.split(/\s+/).filter(Boolean);
 
         return {
-            lessonKey: `${a}-${m}-${w}-${l}`,
-            age: a, month: m, week: w, lesson: l,
-            avatarVideoUrl: `./videos/m${padMonth}_w${padWeek}_${a}.mp4`,
-            pronunciationText: phrase,
+            isReal: true,
+            isPlaceholder: !!dData.is_placeholder,
+            isSafety: !!dData.is_safety,
+            topic: dData.topic || '',
+            phrase,
             hintText: tipText,
-            scenario: { taskTitle, taskDesc, words }
+            words,
+            scenarioList,
+            avatarVideoUrl
         };
     }
 
-    // 2. Systematic Topic Catalog for All 12 Months x 4 Weeks x 3 Tracks x 5 Lessons
-    const monthTopics = {
-        1: { title: "Знайомство та привітання", phrase: "Dobrý deň, ako sa máš?", tip: "«Dobrý deň» — це ввічливе привітання «Добрий день», а буква 'ň' вимовляється м'яко!" },
-        2: { title: "Сім'я та родина", phrase: "Toto je moja mama a otec.", tip: "Слово «mama» у словацькій мові наголошується на першому складі!" },
-        3: { title: "Школа та навчання", phrase: "Mám rád školu a knihu.", tip: "У слові «škola» буква 'š' вимовляється як українське 'ш'!" },
-        4: { title: "Їжа та напої", phrase: "Prosím si jablko a vodu.", tip: "Слово «prosím si» означає «будь ласка, я хотів би»!" },
-        5: { title: "Моє місто та дім", phrase: "Bývam v peknom meste.", tip: "Буква 'ý' у слові «bývam» вимовляється довше ніж звичайне 'i'!" },
-        6: { title: "Тварини та природа", phrase: "Pes a mačka sú kamaráti.", tip: "Буква 'č' у слові «mačka» вимовляється як 'ч'!" },
-        7: { title: "Час та розклад", phrase: "Koľko je hodín?", tip: "Слово «koľko» містить м'який звук 'ľ'!" },
-        8: { title: "Професії та хобі", phrase: "Chcem byť lektorom.", tip: "Звук 'ch' вимовляється м'яко як х!" },
-        9: { title: "Моє дозвілля", phrase: "Hráme sa spolu futbal.", tip: "Буква 'á' вимовляється довше!" },
-        10: { title: "Подорожі та транспорт", phrase: "Cestujeme autobusom.", tip: "Буква 'c' у словацькій вимовляється як 'ц'!" },
-        11: { title: "Природа та погода", phrase: "Dnes svieti slnko.", tip: "Буква 'v' у словацькій звучить м'яко!" },
-        12: { title: "Свята та традиції", phrase: "Veselé Vianoce prajem!", tip: "«Veselé Vianoce» означає «Щасливого Різдва!»" }
-    };
-
-    const scenarioContexts = {
-        1: { title: "Зустрів нового друга на майданчику", desc: "Привітайся словацькою мовою впевнено та голосно!" },
-        2: { title: "Спілкування у грі", desc: "Скажи словацьку фразу друзям!" },
-        3: { title: "Діалог у класі", desc: "Повтори фразу вчительці словацькою!" },
-        4: { title: "Бесіда за обідом", desc: "Скажи словацьку фразу за столом!" },
-        5: { title: "Відеодзвінок бабусі", desc: "Покажи свої успіхи словацькою по телефону!" }
-    };
-
-    const mInfo = monthTopics[m] || monthTopics[1];
+    // Fallback: no authored data for this month/week/day yet - use a generic
+    // dynamically-generated phrase so the app never breaks, just shows placeholder text.
+    const mInfo = monthTopicsFallback[m] || monthTopicsFallback[1];
     let customPhrase = mInfo.phrase;
-    
-    if (w === 4) {
-        customPhrase = m === 1 ? "Nie, ďakujem, nepôjdem." : "Viem moje telefónne číslo.";
-    } else if (l === 2) {
-        customPhrase = `Ahoj! ${mInfo.phrase}`;
-    } else if (l === 3) {
-        customPhrase = `Ďakujem дуже! ${mInfo.phrase}`;
-    } else if (l === 4) {
-        customPhrase = `Áno, ${mInfo.phrase}`;
-    } else if (l === 5) {
-        customPhrase = `Páči sa mi to! ${mInfo.phrase}`;
-    }
-
-    if (a === 'middle') {
-        customPhrase += " A ty?";
-    } else if (a === 'senior') {
-        customPhrase += " Ďakujem pekne!";
-    }
-
-    const scInfo = scenarioContexts[l] || scenarioContexts[1];
-    const phraseWords = customPhrase.split(/\s+/).filter(Boolean);
+    if (a === 'middle') customPhrase += " A ty?";
+    else if (a === 'senior') customPhrase += " Ďakujem pekne!";
+    const words = customPhrase.split(/\s+/).filter(Boolean);
 
     return {
-        lessonKey: `${a}-${m}-${w}-${l}`,
-        age: a, month: m, week: w, lesson: l,
-        avatarVideoUrl: `./videos/m${padMonth}_w${padWeek}_${a}.mp4`,
-        pronunciationText: customPhrase,
+        isReal: false,
+        isPlaceholder: true,
+        isSafety: false,
+        topic: mInfo.title,
+        phrase: customPhrase,
         hintText: mInfo.tip,
-        scenario: {
-            taskTitle: `${scInfo.title} (Урок ${m}.${w}.${l})`,
-            taskDesc: scInfo.desc,
-            words: phraseWords
-        }
+        words,
+        scenarioList: null,
+        avatarVideoUrl
     };
 }
 
-function onCombinationChange(age, month, week, lesson, autoPlayVideo = false) {
-    const key = buildLessonKey(age, month, week, lesson);
-    const data = getLessonData(age, month, week, lesson);
+const genericScenarioContexts = {
+    1: { title: "Зустрів нового друга на майданчику", desc: "Привітайся словацькою мовою впевнено та голосно!" },
+    2: { title: "Спілкування у грі", desc: "Скажи словацьку фразу друзям!" },
+    3: { title: "Діалог у класі", desc: "Повтори фразу вчительці словацькою!" },
+    4: { title: "Бесіда за обідом", desc: "Скажи словацьку фразу за столом!" }
+};
 
-    console.log('[DEBUG] onCombinationChange called:', { age, month, week, lesson, autoPlayVideo, lessonModeActive, key, data });
+function getLessonData(age, month, week, day, scenarioSlot) {
+    const a = age || currentTrack || 'junior';
+    const m = parseInt(month) || currentMonth || 1;
+    const w = parseInt(week) || currentWeek || 1;
+    const d = parseInt(day) || currentLessonDay || 1;
+    const slot = parseInt(scenarioSlot) || currentScenario || 1;
+
+    // Slot 5 is always the built-in "review" slot: it shows the PREVIOUS day's
+    // phrase (or the demo phrase, if this is the very first day of the whole
+    // program), never this day's own new material.
+    if (slot === 5) {
+        const prev = getPreviousDayInChain(m, w, d);
+        let base;
+        let reviewLabel;
+
+        if (!prev) {
+            base = {
+                phrase: DEMO_PHRASE_DATA.text,
+                hintText: DEMO_PHRASE_DATA.hintText,
+                words: DEMO_PHRASE_DATA.words,
+                avatarVideoUrl: './videos/demo_lesson_intro.mp4'
+            };
+            reviewLabel = currentLang === 'uk' ? 'Пригадай фразу з пробного заняття!' : 'Вспомни фразу из пробного занятия!';
+        } else {
+            const prevPayload = buildDayLessonPayload(a, prev.month, prev.week, prev.day);
+            base = prevPayload;
+            reviewLabel = currentLang === 'uk' ? 'Пригадай вчорашню фразу!' : 'Вспомни вчерашнюю фразу!';
+        }
+
+        return {
+            lessonKey: `${a}-${m}-${w}-${d}-review`,
+            age: a, month: m, week: w, day: d, lesson: slot,
+            avatarVideoUrl: base.avatarVideoUrl,
+            pronunciationText: base.phrase,
+            hintText: base.hintText,
+            scenario: {
+                taskTitle: `🔁 ${reviewLabel}`,
+                taskDesc: currentLang === 'uk' ? 'Повтори фразу, яку ти вже вивчив!' : 'Повтори фразу, которую ты уже выучил!',
+                words: base.words
+            }
+        };
+    }
+
+    // Slots 1-4: this day's own new material, in 4 different scenario contexts
+    const payload = buildDayLessonPayload(a, m, w, d);
+    let taskTitle = payload.topic || `Заняття ${slot}`;
+    let taskDesc = "Повтори фразу словацькою мовою та отримай бали!";
+
+    if (payload.scenarioList) {
+        const sc = payload.scenarioList.find(s => s.id === slot) || payload.scenarioList[0];
+        if (sc && sc.title) {
+            taskTitle = typeof sc.title === 'object' ? (sc.title[currentLang] || sc.title.uk || taskTitle) : sc.title;
+        }
+        if (sc && sc.desc) {
+            taskDesc = typeof sc.desc === 'object' ? (sc.desc[currentLang] || sc.desc.uk || taskDesc) : sc.desc;
+        }
+    } else {
+        const scInfo = genericScenarioContexts[slot] || genericScenarioContexts[1];
+        taskTitle = scInfo.title;
+        taskDesc = scInfo.desc;
+    }
+
+    return {
+        lessonKey: `${a}-${m}-${w}-${d}-${slot}`,
+        age: a, month: m, week: w, day: d, lesson: slot,
+        avatarVideoUrl: payload.avatarVideoUrl,
+        pronunciationText: payload.phrase,
+        hintText: payload.hintText,
+        scenario: { taskTitle, taskDesc, words: payload.words }
+    };
+}
+
+function onCombinationChange(age, month, week, day, scenarioSlot, autoPlayVideo = false) {
+    const key = buildLessonKey(age, month, week, day, scenarioSlot);
+    const data = getLessonData(age, month, week, day, scenarioSlot);
+
+    console.log('[DEBUG] onCombinationChange called:', { age, month, week, day, scenarioSlot, autoPlayVideo, lessonModeActive, key, data });
 
     if (!data) {
         console.error(`[DEBUG] Missing lesson data for key: ${key}`);
@@ -3921,7 +4064,7 @@ function applyLessonBinding(autoplayVideo = false) {
     if (trackSelect) trackSelect.value = currentTrack;
 
     if (lessonModeActive) {
-        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, autoplayVideo);
+        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, currentScenario, autoplayVideo);
     } else {
         applyDemoPhaseAData();
     }
@@ -3967,11 +4110,11 @@ function confirmLessonSelection() {
     if (weekEl) currentWeek = parseInt(weekEl.value) || currentWeek;
     if (lessonEl) currentLessonDay = parseInt(lessonEl.value) || currentLessonDay;
     if (trackEl) currentTrack = trackEl.value || currentTrack;
-    currentScenario = currentLessonDay;
+    currentScenario = 1; // Always start a newly picked day on scenario slot 1
 
     console.log('[DEBUG] confirmLessonSelection clicked. New selection:', { currentTrack, currentMonth, currentWeek, currentLessonDay });
 
-    // Load this specific lesson's own saved progress (fresh if never started, resumed if revisited)
+    // Load this specific day's own saved progress (fresh if never started, resumed if revisited)
     loadCompletedScenariosForCurrentLesson();
     syncMilestonesUI();
 
@@ -3985,14 +4128,15 @@ function confirmLessonSelection() {
     updateDropdownLockState();
 
     // Trigger atomic lesson render & play speaking avatar video
-    onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
+    onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, currentScenario, true);
 
-    // Explain to the child what "finishing the lesson" actually means:
-    // repeat the same phrase in all 5 scenario situations, not just once.
+    // Explain to the child what "finishing the day" actually means:
+    // 4 icons with today's new phrase in different situations, plus 1 icon
+    // (with the 🔁 symbol) that repeats yesterday's phrase.
     if (completedScenarios.length === 0) {
         const introMsg = currentLang === 'uk'
-            ? 'Сьогодні ми потренуємо одну фразу у 5 різних ситуаціях! Проходь іконки по черзі зліва направо — урок буде завершено, коли всі 5 засвітяться галочкою ✅.'
-            : 'Сегодня мы потренируем одну фразу в 5 разных ситуациях! Проходи иконки по очереди слева направо — урок будет завершён, когда все 5 засветятся галочкой ✅.';
+            ? 'Сьогодні у тебе нова фраза у 4 різних ситуаціях, а остання іконка 🔁 — це повторення вчорашньої фрази! Пройди всі 5 іконок по черзі — і заняття буде завершено ✅.'
+            : 'Сегодня у тебя новая фраза в 4 разных ситуациях, а последняя иконка 🔁 — это повторение вчерашней фразы! Пройди все 5 иконок по очереди — и занятие будет завершено ✅.';
         appendChatBubble('tutor', introMsg);
     }
 }
@@ -4034,7 +4178,7 @@ function changeWeek(value) {
 function selectLessonDay(day) {
     if (lessonModeActive && !dropdownsUnlockedForNextLesson) return; // Locked during active lesson
     currentLessonDay = parseInt(day) || 1;
-    currentScenario = currentLessonDay;
+    currentScenario = 1; // A newly picked day always starts on scenario slot 1
     if (!dropdownsUnlockedForNextLesson) {
         applyLessonBinding(false);
     }
@@ -4042,9 +4186,8 @@ function selectLessonDay(day) {
 
 function selectScenario(num) {
     currentScenario = parseInt(num) || 1;
-    currentLessonDay = currentScenario;
     if (lessonModeActive) {
-        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
+        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, currentScenario, true);
     } else {
         applyDemoPhaseAData();
     }
@@ -4062,7 +4205,7 @@ function selectTrack(t) {
         loadCompletedScenariosForCurrentLesson();
         syncMilestonesUI();
         // Invalidate and rebuild lesson key atomically
-        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, true);
+        onCombinationChange(currentTrack, currentMonth, currentWeek, currentLessonDay, currentScenario, true);
     } else if (dropdownsUnlockedForNextLesson) {
         // Just record the pick; screen stays on the completed lesson until "Підтвердити" again
     } else {
