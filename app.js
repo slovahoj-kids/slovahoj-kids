@@ -3689,8 +3689,10 @@ function onCombinationChange(age, month, week, lesson, autoPlayVideo = false) {
     const key = buildLessonKey(age, month, week, lesson);
     const data = getLessonData(age, month, week, lesson);
 
+    console.log('[DEBUG] onCombinationChange called:', { age, month, week, lesson, autoPlayVideo, lessonModeActive, key, data });
+
     if (!data) {
-        console.error(`Missing lesson data for key: ${key}`);
+        console.error(`[DEBUG] Missing lesson data for key: ${key}`);
         return;
     }
 
@@ -3719,6 +3721,8 @@ function onCombinationChange(age, month, week, lesson, autoPlayVideo = false) {
 
     const phraseContainer = document.getElementById('phrase-phoneme-container');
     if (phraseContainer && data.scenario.words) {
+        phraseContainer.classList.remove('hidden');
+        if (phraseContainer.parentElement) phraseContainer.parentElement.classList.remove('hidden');
         phraseContainer.innerHTML = '';
         data.scenario.words.forEach(w => {
             const span = document.createElement('span');
@@ -3851,6 +3855,8 @@ function confirmLessonSelection() {
     if (lessonEl) currentLessonDay = parseInt(lessonEl.value) || currentLessonDay;
     if (trackEl) currentTrack = trackEl.value || currentTrack;
     currentScenario = currentLessonDay;
+
+    console.log('[DEBUG] confirmLessonSelection clicked. New selection:', { currentTrack, currentMonth, currentWeek, currentLessonDay });
 
     // Irreversible transition to Phase B
     lessonModeActive = true;
