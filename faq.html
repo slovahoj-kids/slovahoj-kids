@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Часті запитання та підтримка - SlovAhoj Kids</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0b47a6;
+            --text-dark: #1e293b;
+            --font-heading: 'Outfit', 'Montserrat', sans-serif;
+            --font-body: 'Montserrat', sans-serif;
+        }
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #dcfce7 100%);
+            background-attachment: fixed;
+            color: var(--text-dark);
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(11, 71, 166, 0.1);
+        }
+        h1, h2 {
+            font-family: var(--font-heading);
+            color: var(--primary-color);
+        }
+        h1 {
+            font-size: 28px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 2px solid rgba(11, 71, 166, 0.1);
+            padding-bottom: 15px;
+        }
+        h2 {
+            font-size: 19px;
+            margin-top: 36px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        p { margin-bottom: 12px; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .intro {
+            font-size: 15px;
+            color: #475569;
+            margin-bottom: 10px;
+        }
+        details {
+            background: rgba(11, 71, 166, 0.04);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+        }
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-dark);
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::before {
+            content: '▸';
+            color: var(--primary-color);
+            font-size: 14px;
+            transition: transform 0.15s ease;
+            flex-shrink: 0;
+        }
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+        details p, details ul {
+            margin-top: 10px;
+            padding-left: 24px;
+            font-size: 14.5px;
+            color: #334155;
+        }
+        details ul { padding-left: 44px; }
+        details li { margin-bottom: 6px; }
+        a.inline-link { color: var(--primary-color); font-weight: 600; }
+        .support-box {
+            margin-top: 40px;
+            background: rgba(255, 152, 0, 0.06);
+            border: 1.5px solid rgba(255, 152, 0, 0.25);
+            border-radius: 16px;
+            padding: 22px 24px;
+            text-align: center;
+        }
+        .support-box h2 { justify-content: center; margin-top: 0; }
+        .support-btn {
+            display: inline-block;
+            margin-top: 12px;
+            background: var(--primary-color);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 12px 26px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Назад на головну</a>
+        <h1>Часті запитання та підтримка</h1>
+        <p class="intro">Тут зібрані відповіді на питання, які найчастіше виникають у батьків. Якщо не знайшли відповідь — просто напишіть нам, ми відповідаємо особисто.</p>
+
+        <h2>👤 Реєстрація та вхід</h2>
+
+        <details>
+            <summary>Я забув(-ла) ПІН-код (батьківський або дитячий)</summary>
+            <p>На жаль, наразі відновити ПІН-код самостійно на сайті не можна. Напишіть нам на <a class="inline-link" href="mailto:slovahoj.kids@gmail.com">slovahoj.kids@gmail.com</a>, вказавши email, яким реєструвались — ми допоможемо відновити доступ.</p>
+        </details>
+
+        <details>
+            <summary>Мене раптово "вивело" з акаунту, хоча я нічого не робив(-ла)</summary>
+            <p>Це не помилка — так працює захист від одночасного використання одного акаунту на кількох пристроях різними людьми. Якщо хтось інший увійшов з тим самим ПІН-кодом на іншому пристрої чи в іншому місці — попередній сеанс автоматично завершується протягом ~30 секунд.</p>
+            <p>Якщо це сталися вами на власних пристроях (наприклад, телефон і планшет) — просто увійдіть знову, це займе кілька секунд. Якщо ви підозрюєте, що ПІН-код дізнався хтось сторонній — рекомендуємо звернутися до нас і змінити ПІН-коди.</p>
+        </details>
+
+        <h2>💳 Оплата та підписка</h2>
+
+        <details>
+            <summary>Як скасувати автоматичне продовження підписки?</summary>
+            <p>У батьківському кабінеті, у блоці з активною підпискою, натисніть кнопку <strong>"Керувати підпискою"</strong>. Це відкриє захищену сторінку Stripe, де можна скасувати автопродовження, змінити карту оплати або переглянути історію платежів. Уже оплачений період залишиться повністю доступним.</p>
+        </details>
+
+        <details>
+            <summary>Чи повертаються гроші, якщо я передумав(-ла)?</summary>
+            <p>Умови повернення коштів описані в окремому документі — <a class="inline-link" href="reklamacia.html" target="_blank">Reklamačný poriadok</a>. Загалом: якщо виникла технічна проблема з нашого боку, ми повертаємо кошти за невикористаний період. Детальні умови права на відмову — у <a class="inline-link" href="vop.html" target="_blank">Умовах користування (VOP)</a>.</p>
+        </details>
+
+        <details>
+            <summary>Чи можна оплатити без автопродовження, разово?</summary>
+            <p>Наразі всі платні тарифи — це підписка з автопродовженням (це дозволяє не хвилюватися про закінчення доступу невчасно). Скасувати можна в будь-який момент через кнопку "Керувати підпискою" — доступ залишиться до кінця вже оплаченого періоду.</p>
+        </details>
+
+        <h2>🗓️ Розклад занять</h2>
+
+        <details>
+            <summary>Як налаштувати дні та час занять?</summary>
+            <p>У батьківському кабінеті знайдіть блок <strong>"Планування занять та нагадування"</strong>. Оберіть зручні дні тижня (можна декілька) та час початку занять, після чого натисніть, щоб зберегти. Система надсилатиме нагадування перед початком обраного часу.</p>
+        </details>
+
+        <details>
+            <summary>Я не отримую нагадувань — що перевірити?</summary>
+            <p>Переконайтесь, що увімкнено перемикач "Браузерні push-сповіщення" в тому ж блоці розкладу, і що браузер має дозвіл показувати сповіщення для цього сайту (зазвичай запитується один раз при першому увімкненні). Можна надіслати собі тестове нагадування кнопкою "Надіслати тестове нагадування", щоб перевірити.</p>
+        </details>
+
+        <h2>🎤 Технічні проблеми</h2>
+
+        <details>
+            <summary>Мікрофон не працює / не розпізнає вимову</summary>
+            <ul>
+                <li>Перевірте, чи дозволив браузер доступ до мікрофона для цього сайту (зазвичай значок мікрофона/замка в адресному рядку).</li>
+                <li>Спробуйте оновити сторінку (F5) і дати дозвіл на мікрофон повторно.</li>
+                <li>Переконайтесь, що мікрофон не використовується одночасно іншою програмою (Zoom, Teams тощо).</li>
+                <li>Якщо не допомогло — напишіть нам, вкажіть, яким браузером і пристроєм користуєтесь.</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>Відео не завантажується або зависає</summary>
+            <p>Перевірте стабільність інтернет-з'єднання та спробуйте оновити сторінку. Якщо проблема повторюється на конкретному уроці — напишіть нам номер місяця/тижня/дня уроку, ми перевіримо.</p>
+        </details>
+
+        <details>
+            <summary>З'явилось повідомлення про помилку — що робити?</summary>
+            <p>Зробіть, будь ласка, скріншот повідомлення про помилку (воно зазвичай показується червоним) і надішліть нам разом з коротким описом, що ви робили перед тим, як воно з'явилось.</p>
+        </details>
+
+        <h2>🎁 Реферальна програма</h2>
+
+        <details>
+            <summary>Як запросити друзів і отримати винагороду?</summary>
+            <p>У батьківському кабінеті є блок "Запросіть друзів — отримайте винагороду" з покроковою інструкцією та посиланням для реєстрації як партнера. Після реєстрації ви отримаєте персональне посилання для друзів.</p>
+        </details>
+
+        <h2>🛡️ Безпека дитини та дані</h2>
+
+        <details>
+            <summary>Які дані ви збираєте про дитину?</summary>
+            <p>Повний перелік та пояснення — у <a class="inline-link" href="gdpr.html" target="_blank">Центрі конфіденційності GDPR-K</a>. Коротко: голосові записи не зберігаються на серверах, дитина не спілкується з незнайомцями через платформу, весь контент — лише попередньо підготовлені відеоуроки та вправи.</p>
+        </details>
+
+        <div class="support-box">
+            <h2>Не знайшли відповідь?</h2>
+            <p>Напишіть нам напряму — відповідаємо особисто, зазвичай протягом одного дня.</p>
+            <a class="support-btn" href="mailto:slovahoj.kids@gmail.com?subject=SlovAhoj%20Kids%20-%20Питання">
+                <i class="fa-solid fa-envelope"></i> Написати на пошту
+            </a>
+        </div>
+    </div>
+</body>
+</html>
