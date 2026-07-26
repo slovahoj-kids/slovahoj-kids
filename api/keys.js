@@ -10,7 +10,6 @@ export default function handler(request, response) {
   // /api/chat.js) that call the external service themselves and return
   // just the result to the browser.
   const keys = {
-    AZURE_SPEECH_KEY: process.env.AZURE_SPEECH_KEY || "",
     AZURE_SPEECH_REGION: process.env.AZURE_SPEECH_REGION || "",
     AZURE_SPEECH_VOICE_NAME: process.env.AZURE_SPEECH_VOICE_NAME || process.env.CUSTOM_VOICE_NAME || "",
     OKSANA_VOICE_ID: process.env.OKSANA_VOICE_ID || process.env.ELEVENLABS_VOICE_ID || "",
