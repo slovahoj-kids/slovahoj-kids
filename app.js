@@ -4226,15 +4226,6 @@ function finishRegistration(email, parentName, age, newChildPin, newParentPin) {
     updateAuthHeaderUI();
     console.log(`Registered successfully. Parent: ${parentName}, Email: ${email}, Child PIN: ${childPin}, Parent PIN: ${parentPin}`);
 
-    // Send the PIN codes by email. Fire-and-forget: the codes are already
-    // shown on screen and saved server-side, so a delivery failure here
-    // shouldn't block the registration flow — just log it for debugging.
-    fetch('/api/send-registration-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, parentName, childPin, parentPin })
-    }).catch(e => console.warn('Failed to send registration email:', e));
-
     // Picks up test access immediately (see TEST_ACCESS_EMAILS on the
     // server) without waiting for the next page load.
     syncSubscriptionStatusFromServer().then(() => {
@@ -4305,10 +4296,10 @@ function loginWithPin() {
         return;
     }
 
-    fetch('/api/login-pin', {
+    fetch('/api/pin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, pin })
+        body: JSON.stringify({ action: 'login', email, pin })
     })
     .then(res => res.json().then(data => ({ ok: res.ok, data })))
     .then(({ ok, data }) => {
@@ -4388,10 +4379,10 @@ function requestPinResend() {
 
     statusEl.innerText = currentLang === 'uk' ? "Надсилаємо..." : "Отправляем...";
 
-    fetch('/api/resend-pin', {
+    fetch('/api/pin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ action: 'resend', email })
     })
     .then(res => res.json())
     .then(() => {
